@@ -1,0 +1,66 @@
+name: Feature Request
+description: Suggest an idea or proposal for Nutrigon
+title: "feat: <description>"
+labels: ["enhancement", "status:needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a new feature! Please provide as much context as possible.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight Checks
+      description: Confirm that you have checked existing issues and understand the approval workflow.
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I understand this issue needs the `status:approved` label before a PR can be opened.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: What problem or business need does this feature solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution from the user or architecture perspective.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      options:
+        - Architecture / Tooling
+        - Products & Catalog
+        - Branches & Locations
+        - Pricing
+        - Inventory & Movements
+        - Sales Management
+        - Web Orders & WhatsApp
+        - UI / Components
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you considered.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Mockups, references, domain considerations or notes.
