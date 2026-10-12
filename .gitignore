@@ -35,5 +35,6 @@ coverage
 
 # Tooling caches
 .codegraph
+.stitch-mcp
 .turbo
 .eslintcache
