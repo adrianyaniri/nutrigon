@@ -34,7 +34,13 @@ dist-ssr
 coverage
 
 # Tooling caches
-.codegraph
 .stitch-mcp
 .turbo
 .eslintcache
+.codegraph
+.atl/*.cache.json
+
+# Build outputs
+.next
+*.tsbuildinfo
+
