@@ -1,121 +1,94 @@
-import { useState } from "react";
-import { ChevronDown, MapPin, ShoppingBag } from "lucide-react";
+import { MapPin, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
 import { SearchInput } from "@/components/molecules/search-input";
-import { BranchPickerModal } from "./branch-picker-modal";
-import type { CatalogBranch } from "../types";
 
 export interface CatalogHeaderProps {
-  branches: readonly CatalogBranch[];
-  branchSlug: string;
-  onBranchChange: (slug: string) => void;
+  branchSlug?: string;
+  branchName?: string;
   search: string;
   onSearchChange: (value: string) => void;
   cartItemCount: number;
 }
 
 /**
- * Responsive header with brand identity, compact branch selector trigger,
- * search input, and cart button.
- *
- * Mobile layout:
- * - Row 1: Brand & Logo + Branch Chip + Cart
- * - Row 2: Search input
- *
- * Desktop layout:
- * - [Brand & Logo] [Branch Chip] [Search Input (flex-1)] [Cart Button]
+ * Editorial, clean header with prominent centered branding.
+ * Eliminates branch-switching distractions to keep the customer focused
+ * on their scanned branch location.
  */
 export function CatalogHeader({
-  branches,
   branchSlug,
-  onBranchChange,
+  branchName,
   search,
   onSearchChange,
   cartItemCount,
 }: CatalogHeaderProps) {
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-
-  const currentBranch = branches.find((b) => b.slug === branchSlug);
-
   return (
-    <>
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex w-full max-w-screen-xl flex-wrap items-center gap-x-3 gap-y-2.5 px-4 py-3 md:flex-nowrap md:gap-x-6 md:px-6">
-          {/* Brand Link */}
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-wrap items-center justify-between gap-y-3 px-4 py-3 md:flex-nowrap md:gap-x-6 md:px-6">
+        {/* Brand with Logo */}
+        <div className="flex items-center gap-3">
           <Link
             to={branchSlug ? `/catalogo/${branchSlug}` : "/catalogo"}
-            className="flex items-center gap-2.5 sm:gap-3 shrink-0"
+            className="flex items-center gap-2.5 sm:gap-3 shrink-0 group"
           >
-            <span className="relative flex size-10 sm:size-11 md:size-12 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/50 shadow-md bg-brand-surface">
+            <span className="relative flex size-11 sm:size-12 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 shadow-md bg-brand-surface transition-transform group-hover:scale-105">
               <img src="/Logo.jpeg" alt="Nutrigon" className="size-full object-cover" />
             </span>
-            <span className="flex flex-col leading-tight">
-              <span className="font-headline text-base sm:text-lg md:text-xl font-bold tracking-tight text-white">
+            <div className="flex flex-col leading-tight">
+              <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-white">
                 Nutrigon
               </span>
               <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
                 Dietética &amp; Cerealera
               </span>
-            </span>
+            </div>
           </Link>
 
-          {/* Compact Branch Selector Trigger */}
-          <button
-            type="button"
-            onClick={() => setIsPickerOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={isPickerOpen}
-            aria-label={`Sucursal actual: ${currentBranch ? currentBranch.name : "Elegir"}. Cambiar sucursal`}
-            className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 sm:px-3 text-xs font-medium text-foreground hover:border-brand-gold/50 hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 shadow-2xs"
-          >
-            <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
-            <span className="font-semibold text-white text-xs sm:text-sm">
-              {currentBranch ? `Sucursal ${currentBranch.name}` : "Elegir sucursal"}
-            </span>
-            <span className="text-[11px] text-muted-foreground hidden sm:inline">· Cambiar</span>
-            <ChevronDown className="size-3 text-muted-foreground shrink-0" aria-hidden="true" />
-          </button>
+          {/* Discreet Local Store Pin (No switcher, avoids cross-branch confusion) */}
+          {branchName && (
+            <div className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1 text-xs text-zinc-300 ml-2">
+              <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
+              <span className="font-medium">Sucursal {branchName}</span>
+            </div>
+          )}
+        </div>
 
-          {/* Cart Trigger */}
-          <div className="ml-auto md:order-last">
-            <IconButton
-              aria-label={
-                cartItemCount === 0
-                  ? "Mi pedido, vacío"
-                  : `Mi pedido, ${cartItemCount} ${cartItemCount === 1 ? "producto" : "productos"}`
-              }
-            >
-              <ShoppingBag className="size-5" aria-hidden="true" />
-              {cartItemCount > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
-                >
-                  {cartItemCount}
-                </span>
-              )}
-            </IconButton>
+        {/* Mobile Local Store Pin */}
+        {branchName && (
+          <div className="sm:hidden flex items-center gap-1 text-[11px] text-zinc-400">
+            <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
+            <span>Sucursal {branchName}</span>
           </div>
+        )}
 
-          {/* Search Input (Full width on mobile, middle flex on desktop) */}
+        {/* Right Section: Search & Cart */}
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:ml-auto">
           <SearchInput
             value={search}
             onChange={onSearchChange}
-            className="w-full md:w-auto md:max-w-md md:flex-1 md:ml-auto"
+            className="w-full sm:w-64 md:w-80"
           />
-        </div>
-      </header>
 
-      {/* Modal Dialog */}
-      <BranchPickerModal
-        isOpen={isPickerOpen}
-        onClose={() => setIsPickerOpen(false)}
-        branches={branches}
-        currentBranchSlug={branchSlug}
-        onSelectBranch={onBranchChange}
-        cartItemCount={cartItemCount}
-      />
-    </>
+          <IconButton
+            aria-label={
+              cartItemCount === 0
+                ? "Mi pedido, vacío"
+                : `Mi pedido, ${cartItemCount} ${cartItemCount === 1 ? "producto" : "productos"}`
+            }
+          >
+            <ShoppingBag className="size-5" aria-hidden="true" />
+            {cartItemCount > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
+              >
+                {cartItemCount}
+              </span>
+            )}
+          </IconButton>
+        </div>
+      </div>
+    </header>
   );
 }

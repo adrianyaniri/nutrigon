@@ -49,18 +49,15 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
   });
 
-  it("switches branch via modal and updates route and catalog availability", async () => {
+  it("navigates to another branch via footer links and updates availability", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
     // Pistachos are sold in Centro but not in Sur.
     expect(screen.getByText("Pistachos Tostados")).toBeInTheDocument();
 
-    // Click the branch location trigger to open modal
-    fireEvent.click(screen.getByRole("button", { name: /cambiar sucursal/i }));
-    expect(await screen.findByText("Seleccionar Sucursal")).toBeInTheDocument();
-
-    // Pick "Sucursal Sur"
-    fireEvent.click(screen.getByRole("radio", { name: /sucursal sur/i }));
+    // Click link to "Sucursal Sur" in footer
+    const surLink = screen.getByRole("link", { name: /sucursal sur/i });
+    fireEvent.click(surLink);
 
     expect(await screen.findByText(/en Sucursal Sur/)).toBeInTheDocument();
     expect(screen.queryByText("Pistachos Tostados")).not.toBeInTheDocument();

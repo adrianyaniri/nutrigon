@@ -7,7 +7,6 @@ import { SortSelect } from "@/components/molecules/sort-select";
 import { useCart } from "@/features/cart";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
-import { CatalogHero } from "../components/catalog-hero";
 import { CategoryChips } from "../components/category-chips";
 import { CategoryNav } from "../components/category-nav";
 import { ProductGrid } from "../components/product-grid";
@@ -87,9 +86,7 @@ export function CatalogPage() {
     return (
       <div className="flex min-h-dvh flex-col bg-background text-foreground">
         <CatalogHeader
-          branches={branches}
           branchSlug={branchSlug ?? ""}
-          onBranchChange={handleBranchChange}
           search=""
           onSearchChange={() => {}}
           cartItemCount={0}
@@ -124,21 +121,16 @@ export function CatalogPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <CatalogHeader
-        branches={branches}
         branchSlug={branchSlug ?? ""}
-        onBranchChange={handleBranchChange}
+        branchName={catalog?.branch.name}
         search={filters.search}
         onSearchChange={setSearch}
         cartItemCount={itemCount}
       />
 
-      <div className="mx-auto w-full max-w-screen-xl px-4 pt-6 md:px-6">
-        <CatalogHero branchName={catalog?.branch.name} />
-      </div>
-
-      <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
-        <aside className="hidden w-60 shrink-0 md:block">
-          <div className="sticky top-28">
+      <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
+        <aside className="hidden w-64 shrink-0 md:block">
+          <div className="sticky top-24">
             <CategoryNav
               options={categoryOptions}
               value={filters.categorySlug}
@@ -148,7 +140,7 @@ export function CatalogPage() {
         </aside>
 
         <section className="min-w-0 flex-1" aria-labelledby="catalog-title">
-          <div className="mb-5 md:hidden">
+          <div className="mb-4 md:hidden">
             <CategoryChips
               options={categoryOptions}
               value={filters.categorySlug}
@@ -167,7 +159,7 @@ export function CatalogPage() {
               {catalog && (
                 <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
                   {visibleProducts.length}{" "}
-                  {visibleProducts.length === 1 ? "producto" : "productos"} en Sucursal{" "}
+                  {visibleProducts.length === 1 ? "producto" : "productos"} disponibles en Sucursal{" "}
                   {catalog.branch.name}
                 </p>
               )}
@@ -203,7 +195,7 @@ export function CatalogPage() {
         </section>
       </main>
 
-      <CatalogFooter branches={branches} />
+      <CatalogFooter currentBranch={catalog?.branch} branches={branches} />
     </div>
   );
 }
