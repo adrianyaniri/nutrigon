@@ -42,11 +42,13 @@ apps/web/src/
     └── catalog/                   # Domain module: Public Catalog
         ├── types.ts               # View models decoupled from raw database schemas
         ├── components/            # Domain organisms
-        │   ├── product-card.tsx   # Composes ProductImage, Badge, PriceTag, IconButton
+        │   ├── catalog-header.tsx # Sticky bar with CSS order reordering and official brand logo
+        │   ├── catalog-hero.tsx   # Welcome banner establishing natural dietética personality
+        │   ├── catalog-footer.tsx # Footer with Instagram social link & multi-branch WhatsApp info
+        │   ├── product-card.tsx   # Composes ProductImage, Badge, PriceTag, IconButton in uniform card
         │   ├── product-card-skeleton.tsx # Zero-layout-shift loading counterpart
         │   ├── category-chips.tsx # Horizontal scrollable chips for mobile viewports
         │   ├── category-nav.tsx   # Sticky vertical navigation for desktop sidebar
-        │   ├── catalog-header.tsx # Sticky bar with CSS order reordering
         │   └── product-grid.tsx   # Responsive grid with loading & empty states
         ├── lib/
         │   └── filter-products.ts # Pure search, sort, and category counting logic (TDD)

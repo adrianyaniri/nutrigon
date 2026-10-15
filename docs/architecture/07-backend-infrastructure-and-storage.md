@@ -121,6 +121,34 @@ export const r2Client = new S3Client({
 });
 ```
 
+### 3.3 Estándar de Formato, Dimensiones y Calidad de Imágenes de Producto
+
+Para garantizar una experiencia visual profesional, homogénea y sin saltos de maquetación (Cumulative Layout Shift) en el catálogo público (`apps/web`), toda imagen subida a Cloudflare R2 debe cumplir estrictamente con los siguientes requisitos:
+
+| Parámetro | Requisito Mandatorio | Justificación Técnica |
+| :--- | :--- | :--- |
+| **Relación de Aspecto (Aspect Ratio)** | **`1:1` (Cuadrado estricto)** | La grilla del catálogo público utiliza `aspect-square`. Cualquier formato no cuadrado generará bordes desbalanceados o recortes de producto no deseados. |
+| **Resolución Recomendada** | **`800 × 800 px`** | Balance óptimo de densidad visual en pantallas Retina de alta densidad sin penalizar tiempos de carga. (Mínimo: `600 × 600 px`, Máximo: `1200 × 1200 px`). |
+| **Formato de Salida** | **`WebP`** (o `PNG` con canal alfa para productos aislados) | Ahorro del 30–50% en bytes comparado con JPEG tradicional a idéntica calidad perceptiva. |
+| **Calidad de Compresión** | **`80% – 85%`** | Rango donde el ojo humano no percibe artefactos de compresión y el peso se reduce drásticamente. |
+| **Peso Máximo por Archivo** | **< 300 KB** (objetivo 80–150 KB) | Crítico para el rendimiento de la PWA en redes móviles y ahorro de cuota en el precache y runtime cache de Workbox. |
+| **Tratamiento de Fondo** | **Fondo transparente o estudio neutro** (`#1A1D24` o neutro cálido) | El sistema de diseño de Nutrigon está basado en modo oscuro. Fotos con fondos heterogéneos (paredes, maderas brillantes) rompen la coherencia visual. |
+
+#### Recomendación de Pipeline en Backend / Cloudflare Worker (con Sharp):
+```typescript
+import sharp from 'sharp';
+
+export async function processProductImage(buffer: Buffer): Promise<Buffer> {
+  return sharp(buffer)
+    .resize(800, 800, {
+      fit: 'contain',
+      background: { r: 26, g: 29, b: 36, alpha: 1 }, // #1A1D24 (surface-card)
+    })
+    .webp({ quality: 82 })
+    .toBuffer();
+}
+```
+
 ---
 
 ## 4. Matriz Comparativa de Costos Operativos Mensuales

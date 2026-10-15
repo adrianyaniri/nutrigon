@@ -12,5 +12,5 @@ export default defineConfig({
       resizeOptions: { background: "#121316", fit: "contain" },
     },
   },
-  images: ["public/icon.svg"],
+  images: ["public/Logo.jpeg"],
 });
