@@ -30,6 +30,12 @@ export function RootLayout() {
             >
               Inicio
             </Link>
+            <Link
+              to="/catalogo"
+              className="text-sm font-semibold text-primary hover:underline transition-colors min-h-[44px] inline-flex items-center"
+            >
+              Catálogo Público
+            </Link>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {envConfig.isSupabaseConfigured ? (
                 <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
@@ -69,6 +75,13 @@ export function RootLayout() {
                 className="flex items-center rounded-md px-3 py-2 text-base font-medium hover:bg-muted min-h-[44px]"
               >
                 Inicio
+              </Link>
+              <Link
+                to="/catalogo"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center rounded-md px-3 py-2 text-base font-semibold text-primary hover:bg-muted min-h-[44px]"
+              >
+                Catálogo Público
               </Link>
               <div className="px-3 pt-2">
                 {envConfig.isSupabaseConfigured ? (

@@ -8,8 +8,10 @@ import {
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { envConfig } from "@/app/config/env";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
 
 export function HomePage() {
   const branches = [
@@ -60,9 +62,12 @@ export function HomePage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="default" className="min-h-[44px]">
-              Ver Documentación
-            </Button>
+            <Link
+              to="/catalogo"
+              className={cn(buttonVariants({ variant: "default" }), "min-h-[44px] px-4 font-semibold")}
+            >
+              Ver Catálogo Público (PWA)
+            </Link>
           </div>
         </div>
       </section>
