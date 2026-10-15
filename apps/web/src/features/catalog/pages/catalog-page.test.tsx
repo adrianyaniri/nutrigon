@@ -86,7 +86,7 @@ describe("CatalogPage & Route-based Branching", () => {
     await screen.findByText("Almendras Nonpareil");
 
     // Click "Categorías" drawer trigger on mobile
-    const drawerTrigger = screen.getByRole("button", { name: "Abrir todas las categorías" });
+    const drawerTrigger = screen.getByRole("button", { name: "Abrir menú de categorías" });
     fireEvent.click(drawerTrigger);
 
     // Verify modal drawer is open

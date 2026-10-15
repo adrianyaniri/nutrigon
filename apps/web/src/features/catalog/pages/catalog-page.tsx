@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, MapPin, Store } from "lucide-react";
+import { AlertTriangle, MapPin, Menu, Store, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { SearchInput } from "@/components/molecules/search-input";
 import { SortSelect } from "@/components/molecules/sort-select";
 import { useCart } from "@/features/cart";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
-import { CategoryChips } from "../components/category-chips";
 import { CategoryDrawer } from "../components/category-drawer";
 import { CategoryNav } from "../components/category-nav";
 import { ProductGrid } from "../components/product-grid";
@@ -90,8 +90,6 @@ export function CatalogPage() {
       <div className="flex min-h-dvh flex-col bg-background text-foreground">
         <CatalogHeader
           branchSlug={branchSlug ?? ""}
-          search=""
-          onSearchChange={() => {}}
           cartItemCount={0}
         />
         <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col items-center justify-center px-4 py-12">
@@ -126,12 +124,12 @@ export function CatalogPage() {
       <CatalogHeader
         branchSlug={branchSlug ?? ""}
         branchName={catalog?.branch.name}
-        search={filters.search}
-        onSearchChange={setSearch}
         cartItemCount={itemCount}
+        onOpenCategories={() => setIsCategoryDrawerOpen(true)}
       />
 
       <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
+        {/* Desktop Sidebar */}
         <aside className="hidden w-64 shrink-0 md:block">
           <div className="sticky top-24">
             <CategoryNav
@@ -142,33 +140,66 @@ export function CatalogPage() {
           </div>
         </aside>
 
+        {/* Main Catalog View */}
         <section className="min-w-0 flex-1" aria-labelledby="catalog-title">
-          <div className="mb-4 md:hidden">
-            <CategoryChips
-              options={categoryOptions}
-              value={filters.categorySlug}
-              onChange={setCategory}
-              onOpenDrawer={() => setIsCategoryDrawerOpen(true)}
-            />
-          </div>
+          {/* Integrated Catalog Toolbar: Search + Sort + Category heading */}
+          <div className="mb-6 flex flex-col gap-4 border-b border-border pb-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <SearchInput
+                value={filters.search}
+                onChange={setSearch}
+                className="w-full sm:max-w-md"
+              />
 
-          <div className="mb-5 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1
-                id="catalog-title"
-                className="font-headline text-xl font-bold tracking-tight md:text-2xl"
-              >
-                {activeCategory && filters.categorySlug ? activeCategory.label : "Todos los productos"}
-              </h1>
-              {catalog && (
-                <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
-                  {visibleProducts.length}{" "}
-                  {visibleProducts.length === 1 ? "producto" : "productos"} disponibles en Sucursal{" "}
-                  {catalog.branch.name}
-                </p>
-              )}
+              <div className="flex items-center justify-between sm:justify-end gap-3">
+                {/* Mobile Category Trigger Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCategoryDrawerOpen(true)}
+                  className="min-h-[44px] md:hidden flex items-center gap-1.5 border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10"
+                >
+                  <Menu className="size-4" />
+                  <span>Categorías</span>
+                </Button>
+
+                <SortSelect value={filters.sort} options={SORT_OPTIONS} onChange={setSort} />
+              </div>
             </div>
-            <SortSelect value={filters.sort} options={SORT_OPTIONS} onChange={setSort} />
+
+            {/* Active Category Heading and Filter Dismiss Tag */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1
+                    id="catalog-title"
+                    className="font-headline text-xl font-bold tracking-tight md:text-2xl"
+                  >
+                    {activeCategory && filters.categorySlug
+                      ? activeCategory.label
+                      : "Todos los productos"}
+                  </h1>
+                  {filters.categorySlug && (
+                    <button
+                      type="button"
+                      onClick={() => setCategory(null)}
+                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-brand-gold hover:bg-brand-gold/25 transition-colors"
+                      title="Quitar filtro de categoría"
+                    >
+                      <span>Quitar filtro</span>
+                      <X className="size-3" />
+                    </button>
+                  )}
+                </div>
+                {catalog && (
+                  <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
+                    {visibleProducts.length}{" "}
+                    {visibleProducts.length === 1 ? "producto" : "productos"} disponibles en Sucursal{" "}
+                    {catalog.branch.name}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {hasError ? (
