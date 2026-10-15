@@ -131,3 +131,29 @@ Self-hosted via `@fontsource-variable` to ensure offline capability, privacy, an
   <span className="text-brand-gold font-bold">$ 1.450</span>
 </article>
 ```
+
+---
+
+## 7. Atomic Component Registry
+
+Implemented under `apps/web/src/components/` and `apps/web/src/features/catalog/components/`:
+
+- **Atoms (`src/components/atoms/`)**:
+  - `Badge`: Status and promotional tags (`variant="sale" | "neutral"`).
+  - `Chip`: Filter pill button with guaranteed `min-h-[44px]` touch target and `aria-pressed`.
+  - `IconButton`: Circular interactive icon button with required `aria-label` for screen readers.
+  - `PriceTag`: Formatted currency with strikethrough original price display.
+  - `ProductImage`: Aspect-square image container with lazy loading and wheat icon fallback.
+  - `Skeleton`: Accessible loading placeholder respecting `prefers-reduced-motion`.
+- **Molecules (`src/components/molecules/`)**:
+  - `SearchInput`: Accessible search input with search icon and 16px mobile text (prevents iOS safari zoom).
+  - `BranchSwitcher`: Accessible `radiogroup` segmented control to toggle between physical branches.
+  - `SortSelect`: Native `<select>` wrapper offering accessible mobile OS pickers.
+  - `EmptyState`: Resilient state card with icon, message, and action button.
+- **Domain Organisms (`src/features/catalog/components/`)**:
+  - `CatalogHeader`: Responsive header with CSS order rearrangement between mobile and desktop.
+  - `ProductCard`: Composed product card with price, unit badge, promotion indicator, and add button.
+  - `ProductCardSkeleton`: Loading counterpart preventing layout shift.
+  - `CategoryChips`: Horizontal scrollable navigation for small viewports.
+  - `CategoryNav`: Vertical sticky navigation for desktop viewports.
+  - `ProductGrid`: Responsive grid managing loading, empty, and populated states.

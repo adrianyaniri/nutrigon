@@ -1,0 +1,76 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it } from "vitest";
+import { CartProvider } from "@/features/cart";
+import { CatalogPage } from "./catalog-page";
+
+function renderPage(initialEntry = "/catalogo") {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <CartProvider>
+          <CatalogPage />
+        </CartProvider>
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+
+describe("CatalogPage", () => {
+  it("renders products of the default branch", async () => {
+    renderPage();
+    expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Todos los productos");
+    expect(screen.getByText(/en Sucursal Centro/)).toBeInTheDocument();
+  });
+
+  it("filters by search term and offers to clear filters when nothing matches", async () => {
+    renderPage();
+    await screen.findByText("Almendras Nonpareil");
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
+      target: { value: "quinoa" },
+    });
+    expect(screen.getByText("Quinoa Real")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
+      target: { value: "zzzz" },
+    });
+    expect(screen.getByText("No encontramos productos")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Quitar filtros" }));
+    expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
+  });
+
+  it("switches branch and shows its own availability", async () => {
+    renderPage();
+    await screen.findByText("Almendras Nonpareil");
+    // Pistachos are sold in Centro but not in Sur.
+    expect(screen.getByText("Pistachos Tostados")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Sur" }));
+    expect(await screen.findByText(/en Sucursal Sur/)).toBeInTheDocument();
+    expect(screen.queryByText("Pistachos Tostados")).not.toBeInTheDocument();
+  });
+
+  it("reflects added products in the cart button", async () => {
+    renderPage();
+    await screen.findByText("Almendras Nonpareil");
+    expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" }));
+    expect(screen.getByRole("button", { name: "Mi pedido, 1 producto" })).toBeInTheDocument();
+  });
+
+  it("applies the category from the URL", async () => {
+    renderPage("/catalogo?categoria=suplementos");
+    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Suplementos");
+    const nav = screen.getAllByRole("navigation", { name: "Categorías" })[0]!;
+    expect(within(nav).getAllByRole("button").length).toBeGreaterThan(1);
+  });
+});
