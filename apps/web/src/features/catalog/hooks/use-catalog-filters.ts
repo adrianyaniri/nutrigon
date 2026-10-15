@@ -9,13 +9,11 @@ function parseSort(value: string | null): SortOption {
 }
 
 /**
- * Catalog filters live in the URL (`?sucursal=&q=&categoria=&orden=`):
- * state survives reloads and PWA relaunches and any view can be shared.
+ * Catalog filters manage URL query parameters (`?q=&categoria=&orden=`):
+ * search, category, and sorting survive reloads, and the branch is part of the route path (`/catalogo/:branchSlug`).
  */
-export function useCatalogFilters(defaultBranchSlug: string | null) {
+export function useCatalogFilters() {
   const [params, setParams] = useSearchParams();
-
-  const branchSlug = params.get("sucursal") ?? defaultBranchSlug;
 
   const filters = useMemo<CatalogFilters>(
     () => ({
@@ -44,10 +42,7 @@ export function useCatalogFilters(defaultBranchSlug: string | null) {
   );
 
   return {
-    branchSlug,
     filters,
-    // A category from one branch may not exist in another: reset it on switch.
-    setBranch: (slug: string) => update({ sucursal: slug, categoria: null }),
     setSearch: (value: string) => update({ q: value }),
     setCategory: (slug: string | null) => update({ categoria: slug }),
     setSort: (sort: SortOption) => update({ orden: sort === "popular" ? null : sort }),

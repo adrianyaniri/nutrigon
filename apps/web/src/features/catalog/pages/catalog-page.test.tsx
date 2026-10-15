@@ -1,33 +1,37 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { CartProvider } from "@/features/cart";
+import { CatalogLandingPage } from "./catalog-landing-page";
 import { CatalogPage } from "./catalog-page";
 
-function renderPage(initialEntry = "/catalogo") {
+function renderPage(initialEntry = "/catalogo/centro") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[initialEntry]}>
         <CartProvider>
-          <CatalogPage />
+          <Routes>
+            <Route path="/catalogo" element={<CatalogLandingPage />} />
+            <Route path="/catalogo/:branchSlug" element={<CatalogPage />} />
+          </Routes>
         </CartProvider>
       </MemoryRouter>
     </QueryClientProvider>
   );
 }
 
-describe("CatalogPage", () => {
-  it("renders products of the default branch", async () => {
-    renderPage();
+describe("CatalogPage & Route-based Branching", () => {
+  it("renders products of the specified branch route", async () => {
+    renderPage("/catalogo/centro");
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Todos los productos");
     expect(screen.getByText(/en Sucursal Centro/)).toBeInTheDocument();
   });
 
   it("filters by search term and offers to clear filters when nothing matches", async () => {
-    renderPage();
+    renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
@@ -45,19 +49,25 @@ describe("CatalogPage", () => {
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
   });
 
-  it("switches branch and shows its own availability", async () => {
-    renderPage();
+  it("switches branch via modal and updates route and catalog availability", async () => {
+    renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
     // Pistachos are sold in Centro but not in Sur.
     expect(screen.getByText("Pistachos Tostados")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("radio", { name: "Sur" }));
+    // Click the branch location trigger to open modal
+    fireEvent.click(screen.getByRole("button", { name: /cambiar sucursal/i }));
+    expect(await screen.findByText("Seleccionar Sucursal")).toBeInTheDocument();
+
+    // Pick "Sucursal Sur"
+    fireEvent.click(screen.getByRole("radio", { name: /sucursal sur/i }));
+
     expect(await screen.findByText(/en Sucursal Sur/)).toBeInTheDocument();
     expect(screen.queryByText("Pistachos Tostados")).not.toBeInTheDocument();
   });
 
   it("reflects added products in the cart button", async () => {
-    renderPage();
+    renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
@@ -66,11 +76,26 @@ describe("CatalogPage", () => {
   });
 
   it("applies the category from the URL", async () => {
-    renderPage("/catalogo?categoria=suplementos");
+    renderPage("/catalogo/centro?categoria=suplementos");
     expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
     expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Suplementos");
     const nav = screen.getAllByRole("navigation", { name: "Categorías" })[0]!;
     expect(within(nav).getAllByRole("button").length).toBeGreaterThan(1);
+  });
+
+  it("shows branch not found view when navigating to an invalid branch slug", async () => {
+    renderPage("/catalogo/inexistente");
+    expect(await screen.findByText("Sucursal no encontrada")).toBeInTheDocument();
+    expect(screen.getByText(/La sucursal "inexistente" no existe/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ir a Sucursal Centro/i })).toBeInTheDocument();
+  });
+
+  it("renders branch selection landing page when visiting /catalogo root", async () => {
+    renderPage("/catalogo");
+    expect(await screen.findByText("Elegí tu sucursal más cercana")).toBeInTheDocument();
+    expect(await screen.findByText("Ver Catálogo Centro")).toBeInTheDocument();
+    expect(screen.getByText("Ver Catálogo Norte")).toBeInTheDocument();
+    expect(screen.getByText("Ver Catálogo Sur")).toBeInTheDocument();
   });
 });

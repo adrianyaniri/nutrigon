@@ -1,5 +1,6 @@
-import { useMemo } from "react";
-import { AlertTriangle } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { AlertTriangle, MapPin, Store } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { SortSelect } from "@/components/molecules/sort-select";
@@ -23,16 +24,31 @@ const SORT_OPTIONS: readonly { value: SortOption; label: string }[] = [
 ];
 
 export function CatalogPage() {
+  const { branchSlug } = useParams<{ branchSlug: string }>();
+  const navigate = useNavigate();
+
   const branchesQuery = useBranches();
   const branches = branchesQuery.data ?? [];
 
-  const { branchSlug, filters, setBranch, setSearch, setCategory, setSort, clearFilters } =
-    useCatalogFilters(branches[0]?.slug ?? null);
+  const isValidBranch = branches.length === 0 || branches.some((b) => b.slug === branchSlug);
 
-  const catalogQuery = useBranchCatalog(branchSlug);
+  const { filters, setSearch, setCategory, setSort, clearFilters } = useCatalogFilters();
+
+  const catalogQuery = useBranchCatalog(isValidBranch ? (branchSlug ?? null) : null);
   const catalog = catalogQuery.data;
 
-  const { itemCount, addProduct } = useCart();
+  const { itemCount, addProduct, clear: clearCart } = useCart();
+
+  // Remember last visited valid branch in localStorage
+  useEffect(() => {
+    if (branchSlug && isValidBranch && branches.length > 0) {
+      try {
+        localStorage.setItem("nutrigon:last-branch", branchSlug);
+      } catch {
+        // Ignore storage errors in private browsing
+      }
+    }
+  }, [branchSlug, isValidBranch, branches.length]);
 
   const categoryOptions = useMemo(
     () => (catalog ? buildCategoryOptions(catalog.categories, catalog.products) : []),
@@ -52,12 +68,65 @@ export function CatalogPage() {
     if (branchSlug) addProduct(branchSlug, product.id);
   }
 
+  function handleBranchChange(newSlug: string) {
+    if (newSlug !== branchSlug) {
+      if (itemCount > 0) {
+        clearCart();
+      }
+      try {
+        localStorage.setItem("nutrigon:last-branch", newSlug);
+      } catch {
+        // Ignore
+      }
+      navigate(`/catalogo/${newSlug}`);
+    }
+  }
+
+  // Branch not found in master configuration
+  if (!branchesQuery.isPending && branches.length > 0 && !isValidBranch) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-background text-foreground">
+        <CatalogHeader
+          branches={branches}
+          branchSlug={branchSlug ?? ""}
+          onBranchChange={handleBranchChange}
+          search=""
+          onSearchChange={() => {}}
+          cartItemCount={0}
+        />
+        <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col items-center justify-center px-4 py-12">
+          <EmptyState
+            icon={<MapPin className="size-10 text-brand-gold" />}
+            title="Sucursal no encontrada"
+            description={`La sucursal "${branchSlug}" no existe o el código QR es incorrecto.`}
+            action={
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {branches.map((b) => (
+                  <Button
+                    key={b.slug}
+                    variant="outline"
+                    className="min-h-[44px]"
+                    onClick={() => handleBranchChange(b.slug)}
+                  >
+                    <Store className="size-4 mr-2" />
+                    Ir a Sucursal {b.name}
+                  </Button>
+                ))}
+              </div>
+            }
+          />
+        </main>
+        <CatalogFooter branches={branches} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <CatalogHeader
         branches={branches}
         branchSlug={branchSlug ?? ""}
-        onBranchChange={setBranch}
+        onBranchChange={handleBranchChange}
         search={filters.search}
         onSearchChange={setSearch}
         cartItemCount={itemCount}

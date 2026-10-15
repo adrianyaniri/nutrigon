@@ -7,6 +7,7 @@ The Public Catalog (`/catalogo`) provides an accessible, mobile-first, installab
 In accordance with:
 - **ADR-001 (Modular Architecture)**: Clean separation of presentation, business logic, and data access.
 - **ADR-002 (Branch-Segregated Pricing)**: Catalog and cart state are bound to the currently selected branch (`branchSlug`). Prices and product availability vary per branch.
+- **Physical QR Storefront Strategy**: Each branch displays physical QR codes linking directly to their branch-scoped catalog (`/catalogo/:branchSlug`).
 - **Nutrigon Design System**: Dark-mode palette (`#121316` surface, `#F5B731` gold primary), self-hosted `Plus Jakarta Sans` & `Public Sans`, and 8px border radius (`ROUND_EIGHT`).
 
 ---
@@ -42,7 +43,8 @@ apps/web/src/
     └── catalog/                   # Domain module: Public Catalog
         ├── types.ts               # View models decoupled from raw database schemas
         ├── components/            # Domain organisms
-        │   ├── catalog-header.tsx # Sticky bar with CSS order reordering and official brand logo
+        │   ├── catalog-header.tsx # Responsive bar with brand logo & compact branch picker trigger
+        │   ├── branch-picker-modal.tsx # Accessible modal with cart-reset warning on branch change
         │   ├── catalog-hero.tsx   # Welcome banner establishing natural dietética personality
         │   ├── catalog-footer.tsx # Footer with Instagram social link & multi-branch WhatsApp info
         │   ├── product-card.tsx   # Composes ProductImage, Badge, PriceTag, IconButton in uniform card
@@ -56,40 +58,57 @@ apps/web/src/
         │   ├── catalog-repository.ts # Repository interface contract
         │   └── mock-catalog.ts    # In-memory mock with per-branch price multipliers
         └── pages/
-            └── catalog-page.tsx   # Top-level page template syncing filters with URL
+            ├── catalog-landing-page.tsx # Branch selector landing for /catalogo root visitors
+            └── catalog-page.tsx   # Branch catalog for /catalogo/:branchSlug
 ```
 
 ---
 
-## 3. Responsive Dual-Canvas Strategy
+## 3. Responsive Dual-Canvas Strategy & Mobile Optimization
 
-In adherence to project responsive rules:
+In adherence to project mobile-first rules:
 1. **Mobile (< 768px)**:
-   - Header rearranges via CSS `order`: Brand + Cart on top row, Search on second row, Branch switcher on third row.
+   - Header is simplified into two compact rows:
+     - Row 1: `[Brand Logo] [📍 Sucursal · Cambiar (Trigger)]` and `[Cart Button (right)]`.
+     - Row 2: Full-width `SearchInput`.
+   - Eliminating the wide segmented switcher freed ~50px of vertical header space on mobile.
    - Categories render as a horizontal touch-scrolling chip bar (`CategoryChips`).
    - Products display in a compact 2-column fluid grid.
    - Touch targets strictly maintain `min-h-[44px]` (or `size-11` for icon buttons).
 2. **Desktop (>= 768px / `md:`, `lg:`, `xl:`)**:
-   - Header collapses into a single streamlined row: `[Brand | Branch Switcher | Search | Cart Button]`.
+   - Header collapses into a single streamlined row: `[Brand Logo | Branch Trigger | Search Input (flex-1) | Cart Button]`.
    - Categories render as a sticky left sidebar (`w-60`).
    - Products expand across 3 to 4 columns (`lg:grid-cols-3 xl:grid-cols-4`).
    - Viewport is constrained to `max-w-screen-xl mx-auto` with clean lateral padding.
 
 ---
 
-## 4. State Management & URL Synchronization
+## 4. Route-Based Branching & Physical QR Code Model
 
-### 4.1 URL as Source of Truth (`useCatalogFilters`)
-Filter criteria are stored directly in query params:
-- `?sucursal=centro` — Selected branch
+### 4.1 Canonical Branch URLs (`/catalogo/:branchSlug`)
+Each physical dietética location prints its own QR code on counter displays and packaging:
+- **Sucursal Centro**: `https://nutrigon.com/catalogo/centro`
+- **Sucursal Norte**: `https://nutrigon.com/catalogo/norte`
+- **Sucursal Sur**: `https://nutrigon.com/catalogo/sur`
+
+Customers scanning the counter QR code land directly in the context of that specific branch with its catalog, prices, and direct WhatsApp contact without needing to select anything manually.
+
+### 4.2 Generic Landing (`/catalogo`)
+Visitors entering `/catalogo` without a route slug (e.g. from the homepage or direct typing) arrive at `CatalogLandingPage`:
+- Presents clear branch cards with address, operating hours, and specialty tags.
+- Automatically detects and displays the last visited branch from `localStorage` (`nutrigon:last-branch`) with a quick "Continuar allí" action.
+
+### 4.3 Switching Branches & Cart Invalidation Guard
+Because product prices and inventory differ across branches (ADR-002), the header provides a discrete `📍 Sucursal [Nombre] · Cambiar` trigger that opens `BranchPickerModal`:
+- If the cart already contains items, an alert warns the customer:
+  > *"Tenés X productos en tu pedido. Al cambiar de sucursal se vaciará el carrito, ya que los precios y disponibilidad son propios de cada sucursal."*
+- Confirming a branch change clears the cart, updates `localStorage`, and routes cleanly to `/catalogo/:newBranchSlug`.
+
+### 4.4 URL Query Parameters (`useCatalogFilters`)
+Filter criteria within a branch are stored in standard query params:
 - `?q=almendras` — Case- and accent-insensitive search query
 - `?categoria=frutos-secos` — Selected category slug
 - `?orden=price-asc` — Sorting (`popular`, `price-asc`, `price-desc`, `name-asc`)
-
-**Benefits**: Shareable URLs, native browser back/forward history support, and state preservation when returning to an installed PWA.
-
-### 4.2 Branch-Scoped Cart (`cartReducer`)
-Cart state is explicitly scoped to a single branch (`state.branchSlug`). If a customer switches branches while holding items, the cart is reset because prices and branch stocks are strictly segregated per branch.
 
 ---
 
@@ -121,21 +140,6 @@ When `apps/api` implements the public endpoints (e.g. `GET /api/v1/public/catalo
   - Product photos are cached at runtime with `CacheFirst` strategy (max 120 entries, 30 days expiration).
 - **Safe Area**: Viewport meta includes `viewport-fit=cover` and CSS uses `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)`.
 
-### How to Update the Official Brand Logo:
-1. Place the official vector SVG or high-resolution PNG (at least 512x512) at:
-   `apps/web/public/icon.svg`
-2. Run the PWA generator script:
-   ```powershell
-   pnpm --filter @nutrigon/web generate-pwa-assets
-   ```
-3. This automatically regenerates:
-   - `apps/web/public/favicon.ico`
-   - `apps/web/public/apple-touch-icon-180x180.png`
-   - `apps/web/public/pwa-64x64.png`
-   - `apps/web/public/pwa-192x192.png`
-   - `apps/web/public/pwa-512x512.png`
-   - `apps/web/public/maskable-icon-512x512.png`
-
 ---
 
 ## 7. Verification & Testing
@@ -143,7 +147,12 @@ When `apps/api` implements the public endpoints (e.g. `GET /api/v1/public/catalo
 Every layer has automated coverage via Vitest:
 - Pure business logic (`filter-products.test.ts`, `cart-reducer.test.ts`)
 - Component rendering and interaction (`product-card.test.tsx`)
-- Full page integration with TanStack Query and MemoryRouter (`catalog-page.test.tsx`)
+- Full page and route integration (`catalog-page.test.tsx`):
+  - Canonical branch route rendering
+  - Search and category query filtering
+  - Modal branch switching and URL navigation
+  - Invalid branch fallback view
+  - Generic `/catalogo` landing page
 
 To run validation:
 ```powershell
