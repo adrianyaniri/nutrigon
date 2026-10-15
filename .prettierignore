@@ -2,6 +2,7 @@ node_modules
 dist
 coverage
 .codegraph
+.stitch-mcp
 .agents
 docs
 package-lock.json

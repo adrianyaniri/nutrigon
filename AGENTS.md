@@ -12,3 +12,13 @@
 | Habilidad | Descripción | Referencia |
 | :--- | :--- | :--- |
 | `stitch-responsive-design` | Flujo de diseño dual (Mobile + Desktop Web) en Google Stitch mediante Stitch MCP | [.agents/skills/stitch-responsive-design/SKILL.md](.agents/skills/stitch-responsive-design/SKILL.md) |
+| `nestjs-drizzle-tdd` | Arquitectura NestJS, Drizzle ORM, validación con Zod y ciclo TDD | [.agents/skills/nestjs-drizzle-tdd/SKILL.md](.agents/skills/nestjs-drizzle-tdd/SKILL.md) |
+| `cloudflare-r2-storage` | Almacenamiento y subida directa de imágenes mediante Presigned URLs hacia Cloudflare R2 | [.agents/skills/cloudflare-r2-storage/SKILL.md](.agents/skills/cloudflare-r2-storage/SKILL.md) |
+
+
+# Reglas del Backend (apps/api)
+
+1. **TDD por defecto**: en reglas de negocio y seguridad (services, guards, esquemas Zod) escribir primero el test que falla, luego el código mínimo y después refactorizar. Ver [docs/decisions/ADR-004-drizzle-zod-and-tdd.md](docs/decisions/ADR-004-drizzle-zod-and-tdd.md).
+2. **Validación con Zod** desde `packages/contracts`; no usar `class-validator`.
+3. **Acceso a datos con Drizzle** solo dentro de repositorios; los services no importan Drizzle.
+4. Un cambio no se integra si falla `pnpm turbo run lint typecheck test`.
