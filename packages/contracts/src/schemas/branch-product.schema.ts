@@ -58,6 +58,7 @@ export const branchProductQuerySchema = z
     status: z.nativeEnum(BranchProductStatus).optional(),
     search: z.string().trim().optional(),
     categoryId: z.string().uuid().optional(),
+    barcode: z.string().trim().optional(),
     page: z.coerce.number().int().min(1).default(1).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(50).optional(),
   })
@@ -73,6 +74,7 @@ export const branchProductAdminItemSchema = z
     categoryId: z.string().uuid(),
     categoryName: z.string(),
     saleUnit: z.nativeEnum(SaleUnit),
+    barcode: z.string().nullable().optional(),
     imageUrls: z.array(z.string()),
     status: z.nativeEnum(BranchProductStatus),
     price: z.number().nullable(),

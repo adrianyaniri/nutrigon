@@ -1,12 +1,11 @@
 /**
- * Preliminary Database Entity Contracts.
- * NOTE: These types reflect the architectural draft and are subject to validation.
+ * Database Entity Contracts (aligned with Drizzle schemas and clean seeds).
  */
 
 export interface Branch {
   id: string;
-  code: "sucursal-1" | "sucursal-2" | "sucursal-3" | string;
   name: string;
+  slug: string;
   address: string | null;
   phone: string | null;
   whatsapp_number: string | null;
@@ -19,75 +18,74 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
+  order_index: number;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
-export type SaleUnit = "unit" | "weight_kg" | "weight_g";
+export type SaleUnit = "UNIT" | "WEIGHT";
 
 export interface Product {
   id: string;
-  category_id: string | null;
-  sku: string | null;
+  category_id: string;
+  code?: string | null;
+  barcode?: string | null;
   name: string;
   description: string | null;
   sale_unit: SaleUnit;
-  is_visible_web: boolean;
+  image_urls: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface BranchPrice {
+export interface BranchProduct {
   id: string;
-  product_id: string;
   branch_id: string;
+  product_id: string;
   price: number;
-  updated_at: string;
-  updated_by: string | null;
-}
-
-export interface BranchInventory {
-  id: string;
-  product_id: string;
-  branch_id: string;
-  current_stock: number;
-  min_stock_alert: number;
+  promotional_price: number | null;
+  is_on_sale: boolean;
+  is_available: boolean;
+  created_at: string;
   updated_at: string;
 }
 
-export type MovementType = "in" | "out" | "adjustment" | "transfer";
-
-export interface InventoryMovement {
+export interface Combo {
   id: string;
-  product_id: string;
-  branch_id: string;
-  movement_type: MovementType;
-  quantity: number;
-  reason: string;
-  created_by: string | null;
+  name: string;
+  description: string | null;
+  image_urls: string[];
+  is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
-export type SaleStatus = "completed" | "cancelled";
-
-export interface Sale {
+export interface ComboItem {
   id: string;
-  branch_id: string;
-  sale_number: string;
-  total_amount: number;
-  payment_method: string;
-  status: SaleStatus;
-  created_by: string | null;
-  created_at: string;
-}
-
-export interface SaleItem {
-  id: string;
-  sale_id: string;
+  combo_id: string;
   product_id: string;
   quantity: number;
-  unit_price: number;
-  subtotal: number;
+}
+
+export interface BranchCombo {
+  id: string;
+  branch_id: string;
+  combo_id: string;
+  price: number;
+  is_available: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  role: "ADMIN_GENERAL" | "BRANCH_ADMIN";
+  branch_id: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
