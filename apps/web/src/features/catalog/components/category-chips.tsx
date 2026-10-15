@@ -1,24 +1,41 @@
+import { Menu } from "lucide-react";
 import type { CategoryOption } from "@/features/catalog/types";
 import { cn } from "@/lib/utils/cn";
-import { getCategoryIcon } from "../lib/category-icons";
 
 interface CategoryChipsProps {
   options: readonly CategoryOption[];
   value: string | null;
   onChange: (value: string | null) => void;
+  onOpenDrawer?: () => void;
 }
 
 /**
- * Tactile, horizontal scrolling category dock for mobile viewports.
- * Uses organic icons, clear counts, and warm gold active states.
+ * Clean, typography-first horizontal scrolling category dock with integrated
+ * hamburger drawer trigger for mobile viewports. Zero emojis.
  */
-export function CategoryChips({ options, value, onChange }: CategoryChipsProps) {
+export function CategoryChips({
+  options,
+  value,
+  onChange,
+  onOpenDrawer,
+}: CategoryChipsProps) {
   return (
-    <nav aria-label="Categorías" className="relative">
-      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <nav aria-label="Categorías" className="flex items-center gap-2">
+      {onOpenDrawer && (
+        <button
+          type="button"
+          onClick={onOpenDrawer}
+          aria-label="Abrir todas las categorías"
+          className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-brand-gold/40 bg-brand-surface/90 px-3.5 py-2 text-xs font-semibold text-brand-gold hover:border-brand-gold hover:text-white transition-colors shadow-2xs"
+        >
+          <Menu className="size-4" aria-hidden="true" />
+          <span>Categorías</span>
+        </button>
+      )}
+
+      <ul className="-mx-1 flex flex-1 gap-2 overflow-x-auto px-1 pb-1 pt-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {options.map((option) => {
           const isSelected = option.value === value;
-          const icon = getCategoryIcon(option.value);
 
           return (
             <li key={option.value ?? "all"} className="shrink-0">
@@ -28,15 +45,12 @@ export function CategoryChips({ options, value, onChange }: CategoryChipsProps) 
                 aria-pressed={isSelected}
                 onClick={() => onChange(option.value)}
                 className={cn(
-                  "flex min-h-[44px] items-center gap-2 rounded-2xl px-3.5 py-2 text-xs sm:text-sm font-medium transition-all select-none border",
+                  "flex min-h-[44px] items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs sm:text-sm font-medium transition-all select-none border",
                   isSelected
                     ? "border-brand-gold bg-brand-gold/15 text-white ring-1 ring-brand-gold/40 shadow-xs font-semibold"
                     : "border-border/80 bg-brand-surface/70 text-zinc-300 hover:border-brand-gold/40 hover:bg-brand-surface hover:text-white"
                 )}
               >
-                <span className="text-sm sm:text-base leading-none" aria-hidden="true">
-                  {icon}
-                </span>
                 <span>{option.label}</span>
                 <span
                   className={cn(

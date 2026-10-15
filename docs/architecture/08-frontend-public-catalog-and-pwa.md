@@ -43,14 +43,13 @@ apps/web/src/
     └── catalog/                   # Domain module: Public Catalog
         ├── types.ts               # View models decoupled from raw database schemas
         ├── components/            # Domain organisms
-        │   ├── catalog-header.tsx # Responsive bar with brand logo & compact branch picker trigger
-        │   ├── branch-picker-modal.tsx # Accessible modal with cart-reset warning on branch change
-        │   ├── catalog-hero.tsx   # Welcome banner establishing natural dietética personality
-        │   ├── catalog-footer.tsx # Footer with Instagram social link & multi-branch WhatsApp info
+        │   ├── catalog-header.tsx # Clean header with brand logo & discrete branch location badge
+        │   ├── category-drawer.tsx # Mobile/tablet slide-over category panel (AGENTS.md rule 4)
+        │   ├── category-chips.tsx # Horizontal typography-first chips with hamburger drawer trigger
+        │   ├── category-nav.tsx   # Desktop vertical category dock with count badges
+        │   ├── catalog-footer.tsx # API-backed footer with prominent logo, Maps link & minimal Instagram
         │   ├── product-card.tsx   # Composes ProductImage, Badge, PriceTag, IconButton in uniform card
         │   ├── product-card-skeleton.tsx # Zero-layout-shift loading counterpart
-        │   ├── category-chips.tsx # Horizontal scrollable chips for mobile viewports
-        │   ├── category-nav.tsx   # Sticky vertical navigation for desktop sidebar
         │   └── product-grid.tsx   # Responsive grid with loading & empty states
         ├── lib/
         │   └── filter-products.ts # Pure search, sort, and category counting logic (TDD)

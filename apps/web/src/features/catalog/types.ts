@@ -6,6 +6,8 @@ export interface CatalogBranch {
   id: string;
   name: string;
   slug: string;
+  address: string | null;
+  phone: string | null;
   whatsappNumber: string | null;
 }
 

@@ -55,8 +55,8 @@ describe("CatalogPage & Route-based Branching", () => {
     // Pistachos are sold in Centro but not in Sur.
     expect(screen.getByText("Pistachos Tostados")).toBeInTheDocument();
 
-    // Click link to "Sucursal Sur" in footer
-    const surLink = screen.getByRole("link", { name: /sucursal sur/i });
+    // Click link to "Sur" in footer
+    const surLink = screen.getByRole("link", { name: "Sur" });
     fireEvent.click(surLink);
 
     expect(await screen.findByText(/en Sucursal Sur/)).toBeInTheDocument();
@@ -79,6 +79,27 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Suplementos");
     const nav = screen.getAllByRole("navigation", { name: "Categorías" })[0]!;
     expect(within(nav).getAllByRole("button").length).toBeGreaterThan(1);
+  });
+
+  it("opens mobile category drawer and selects a category", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    // Click "Categorías" drawer trigger on mobile
+    const drawerTrigger = screen.getByRole("button", { name: "Abrir todas las categorías" });
+    fireEvent.click(drawerTrigger);
+
+    // Verify modal drawer is open
+    expect(await screen.findByRole("dialog", { name: "Categorías" })).toBeInTheDocument();
+
+    // Select "Suplementos" inside drawer
+    const drawer = screen.getByRole("dialog", { name: "Categorías" });
+    const suplementosOption = within(drawer).getByRole("button", { name: /suplementos/i });
+    fireEvent.click(suplementosOption);
+
+    // Verify filter applied
+    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
   });
 
   it("shows branch not found view when navigating to an invalid branch slug", async () => {

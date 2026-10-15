@@ -12,9 +12,30 @@ import type {
  */
 
 const BRANCHES: CatalogBranch[] = [
-  { id: "b-centro", name: "Centro", slug: "centro", whatsappNumber: null },
-  { id: "b-norte", name: "Norte", slug: "norte", whatsappNumber: null },
-  { id: "b-sur", name: "Sur", slug: "sur", whatsappNumber: null },
+  {
+    id: "b-centro",
+    name: "Centro",
+    slug: "centro",
+    address: "San Martín 450 (Centro)",
+    phone: "351-4210001",
+    whatsappNumber: "5493514210001",
+  },
+  {
+    id: "b-norte",
+    name: "Norte",
+    slug: "norte",
+    address: "Av. Libertad 1200",
+    phone: "351-4820002",
+    whatsappNumber: "5493514820002",
+  },
+  {
+    id: "b-sur",
+    name: "Sur",
+    slug: "sur",
+    address: "Belgrano 890",
+    phone: "351-4630003",
+    whatsappNumber: "5493514630003",
+  },
 ];
 
 /** Branch-specific price multiplier, to exercise per-branch pricing. */

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, MapPin, Store } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useCart } from "@/features/cart";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
 import { CategoryChips } from "../components/category-chips";
+import { CategoryDrawer } from "../components/category-drawer";
 import { CategoryNav } from "../components/category-nav";
 import { ProductGrid } from "../components/product-grid";
 import { useCatalogFilters } from "../hooks/use-catalog-filters";
@@ -25,6 +26,8 @@ const SORT_OPTIONS: readonly { value: SortOption; label: string }[] = [
 export function CatalogPage() {
   const { branchSlug } = useParams<{ branchSlug: string }>();
   const navigate = useNavigate();
+
+  const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
 
   const branchesQuery = useBranches();
   const branches = branchesQuery.data ?? [];
@@ -145,6 +148,7 @@ export function CatalogPage() {
               options={categoryOptions}
               value={filters.categorySlug}
               onChange={setCategory}
+              onOpenDrawer={() => setIsCategoryDrawerOpen(true)}
             />
           </div>
 
@@ -194,6 +198,15 @@ export function CatalogPage() {
           )}
         </section>
       </main>
+
+      {/* Mobile/Tablet Category Slide-over Drawer */}
+      <CategoryDrawer
+        isOpen={isCategoryDrawerOpen}
+        onClose={() => setIsCategoryDrawerOpen(false)}
+        options={categoryOptions}
+        value={filters.categorySlug}
+        onChange={setCategory}
+      />
 
       <CatalogFooter currentBranch={catalog?.branch} branches={branches} />
     </div>
