@@ -1,0 +1,16 @@
+meta {
+  name: 1. List Public Categories
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/categories
+  body: none
+  auth: none
+}
+
+vars:post-response {
+  categoryId: res.body[0].id
+  categorySlug: res.body[0].slug
+}

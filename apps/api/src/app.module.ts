@@ -7,6 +7,7 @@ import { AppService } from './app.service.js';
 import { DatabaseModule } from './core/database/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BranchesModule } from './modules/branches/branches.module.js';
+import { CategoriesModule } from './modules/categories/categories.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { BranchesModule } from './modules/branches/branches.module.js';
     DatabaseModule,
     AuthModule,
     BranchesModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

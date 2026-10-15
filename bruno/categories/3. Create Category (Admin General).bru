@@ -1,0 +1,23 @@
+meta {
+  name: 3. Create Category (Admin General)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/categories
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Superalimentos",
+    "slug": "superalimentos",
+    "orderIndex": 21
+  }
+}
