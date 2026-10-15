@@ -23,6 +23,7 @@ export class BranchAccessGuard implements CanActivate {
 
     const branchId =
       request.params?.branchId ||
+      request.params?.id ||
       request.query?.branchId ||
       request.body?.branchId;
 

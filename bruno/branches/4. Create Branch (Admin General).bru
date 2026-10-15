@@ -1,0 +1,24 @@
+meta {
+  name: 4. Create Branch (Admin General)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/branches
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Sucursal Moron",
+    "slug": "moron",
+    "address": "Av. Rivadavia 18000, Moron",
+    "whatsappNumber": "5491133445566"
+  }
+}

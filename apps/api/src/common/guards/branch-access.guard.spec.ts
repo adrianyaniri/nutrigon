@@ -37,6 +37,16 @@ describe('BranchAccessGuard (TDD - Multi-Branch Segregation)', () => {
     expect(guard.canActivate(context)).toBe(true);
   });
 
+  it('should allow BRANCH_ADMIN if route params.id matches user.branchId', () => {
+    const branchId = 'origone-branch-uuid';
+    const context = createMockContext(
+      { role: Role.BRANCH_ADMIN, branchId },
+      { id: branchId },
+    );
+
+    expect(guard.canActivate(context)).toBe(true);
+  });
+
   it('should throw ForbiddenException if BRANCH_ADMIN attempts to access another branch', () => {
     const context = createMockContext(
       { role: Role.BRANCH_ADMIN, branchId: 'origone-branch-uuid' },
