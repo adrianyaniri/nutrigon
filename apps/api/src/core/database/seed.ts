@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
 import argon2 from 'argon2';
 import { env } from '../config/env.js';
 import {
@@ -110,7 +109,7 @@ async function runSeed() {
     const productRows = parseCsv(productsContent).slice(1);
 
     const productValues = productRows
-      .filter(([_, name]) => Boolean(name && name.trim()))
+      .filter(([, name]) => Boolean(name && name.trim()))
       .map(([code, name, categorySlug, saleUnit, isActive, description]) => {
         const categoryId = categoryMap.get(categorySlug!) || fallbackCategoryId;
         return {

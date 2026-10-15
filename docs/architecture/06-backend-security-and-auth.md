@@ -47,6 +47,16 @@ interface JwtPayload {
 }
 ```
 
+### Endpoints del Módulo de Autenticación
+1. **`POST /api/v1/auth/login`** (`@Public()`):
+   - **Request**: `LoginDto` (`email`, `password`) validado con `loginSchema` (`nestjs-zod`).
+   - **Response**: `LoginResponse` (`accessToken: string`, `user: AuthUser`).
+   - **Errores**: `401 Unauthorized` ante credenciales inválidas o usuario inactivo (`isActive = false`).
+2. **`GET /api/v1/auth/me`** (`@UseGuards(JwtAuthGuard)`):
+   - **Headers**: `Authorization: Bearer <accessToken>`.
+   - **Response**: `AuthUser` (`id`, `email`, `fullName`, `role`, `branchId`).
+   - **Decorador**: `@CurrentUser()` inyecta el usuario autenticado validado por `JwtStrategy`.
+
 ### Hashing de Contraseñas
 Las contraseñas de los administradores se procesan mediante **Argon2id**, el estándar recomendado por OWASP para resistencia contra ataques de fuerza bruta y GPU. Nunca se almacenan contraseñas en texto plano ni con algoritmos obsoletos (MD5, SHA1, SHA256 sin salting).
 
