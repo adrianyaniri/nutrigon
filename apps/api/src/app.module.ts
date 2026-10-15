@@ -8,6 +8,7 @@ import { DatabaseModule } from './core/database/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BranchesModule } from './modules/branches/branches.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
+import { ProductsModule } from './modules/products/products.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CategoriesModule } from './modules/categories/categories.module.js';
     AuthModule,
     BranchesModule,
     CategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [
