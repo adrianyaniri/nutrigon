@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { type INestApplication } from '@nestjs/common';
+import helmet from 'helmet';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
@@ -14,12 +15,18 @@ describe('AuthModule (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.use(helmet());
     app.setGlobalPrefix('api/v1');
     await app.init();
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  it('should return security headers from helmet', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/auth/me');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
   });
 
   it('POST /api/v1/auth/login with valid credentials should return 200 and JWT access token', async () => {
@@ -80,5 +87,24 @@ describe('AuthModule (e2e)', () => {
     expect(meRes.body.email).toBe('admin.origone@nutrigon.com');
     expect(meRes.body.role).toBe('BRANCH_ADMIN');
     expect(meRes.body.branchId).toBeDefined();
+  });
+
+  it('POST /api/v1/auth/login should enforce rate limiting (429) when exceeding 5 requests/min', async () => {
+    // 5th attempt was made across previous tests; 6th attempt must trigger 429
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'admin@nutrigon.com',
+        password: 'Attempt5',
+      });
+
+    const blockedRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'admin@nutrigon.com',
+        password: 'AdminNutrigon2026!',
+      });
+
+    expect(blockedRes.status).toBe(429);
   });
 });

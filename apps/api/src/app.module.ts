@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard, seconds } from '@nestjs/throttler';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -7,13 +8,27 @@ import { DatabaseModule } from './core/database/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: seconds(60),
+        limit: 120,
+      },
+    ]),
+    DatabaseModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
