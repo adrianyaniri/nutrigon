@@ -4,7 +4,10 @@ import { type INestApplication } from '@nestjs/common';
 import helmet from 'helmet';
 import request from 'supertest';
 import type { App } from 'supertest/types';
+import { or, like } from 'drizzle-orm';
 import { AppModule } from '../src/app.module.js';
+import { DRIZZLE_CLIENT } from '../src/core/database/database.constants.js';
+import * as schema from '../src/core/database/schema/index.js';
 
 describe('BranchesModule (e2e)', () => {
   let app: INestApplication<App>;
@@ -49,7 +52,17 @@ describe('BranchesModule (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    try {
+      const db = app.get(DRIZZLE_CLIENT);
+      await db.delete(schema.branches).where(
+        or(
+          like(schema.branches.name, '%Temporal%'),
+          like(schema.branches.name, '%Borrar%'),
+        ),
+      );
+    } finally {
+      await app.close();
+    }
   });
 
   describe('GET /api/v1/branches', () => {

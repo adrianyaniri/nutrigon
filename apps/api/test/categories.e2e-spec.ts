@@ -6,6 +6,10 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 
+import { like } from 'drizzle-orm';
+import { DRIZZLE_CLIENT } from '../src/core/database/database.constants.js';
+import * as schema from '../src/core/database/schema/index.js';
+
 describe('CategoriesModule (e2e)', () => {
   let app: INestApplication<App>;
   let adminGeneralToken: string;
@@ -41,7 +45,12 @@ describe('CategoriesModule (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    try {
+      const db = app.get(DRIZZLE_CLIENT);
+      await db.delete(schema.categories).where(like(schema.categories.name, '%E2E%'));
+    } finally {
+      await app.close();
+    }
   });
 
   describe('GET /api/v1/categories', () => {
