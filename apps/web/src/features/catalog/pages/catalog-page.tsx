@@ -56,7 +56,12 @@ export function CatalogPage() {
   }, [branchSlug, isValidBranch, branches.length]);
 
   const categoryOptions = useMemo(
-    () => (catalog ? buildCategoryOptions(catalog.categories, catalog.products) : []),
+    () =>
+      catalog
+        ? buildCategoryOptions(catalog.categories, catalog.products, {
+            includeSpecialFilters: true,
+          })
+        : [],
     [catalog]
   );
 

@@ -10,6 +10,25 @@ const BRANCH_DETAILS: Record<
   string,
   { address: string; hours: string; description: string; badge?: string }
 > = {
+  origone: {
+    address: "Tte. Manuel Origone 196, Villa Tesei",
+    hours: "Lunes a Viernes 8:30 a 20:30 · Sábados 9:00 a 14:00",
+    description:
+      "Nuestra casa central en Villa Tesei con la mayor variedad de frutos secos, harinas y especias a granel.",
+    badge: "Casa Central",
+  },
+  "pedro-diaz": {
+    address: "Av. Gral. Pedro Díaz 1265, Hurlingham",
+    hours: "Lunes a Viernes 9:00 a 20:00 · Sábados 9:00 a 13:30",
+    description:
+      "Sucursal Hurlingham, especializada en líneas completas Sin TACC, semillas y nutrición deportiva.",
+  },
+  "w-morris": {
+    address: "Gdor. Vergara 4210, William C. Morris",
+    hours: "Lunes a Viernes 8:30 a 20:00 · Sábados 9:00 a 13:30",
+    description:
+      "Sucursal William Morris, atención personalizada, amplia selección de cereales, legumbres y suplementos.",
+  },
   centro: {
     address: "San Martín 450 (Centro)",
     hours: "Lunes a Viernes 8:30 a 20:30 · Sábados 9:00 a 14:00",
@@ -128,8 +147,8 @@ export function CatalogLandingPage() {
           <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
             {branches.map((branch) => {
             const details = BRANCH_METADATA[branch.slug] ?? BRANCH_DETAILS[branch.slug] ?? {
-              address: `Sucursal ${branch.name}`,
-              hours: "Consulte horarios",
+              address: branch.address ?? `Sucursal ${branch.name}`,
+              hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
               description: "Productos seleccionados de dietética y alimentos naturales.",
             };
             const extra = BRANCH_DETAILS[branch.slug];
@@ -157,7 +176,7 @@ export function CatalogLandingPage() {
                     </h2>
                     <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
                       <MapPin className="size-3.5 shrink-0 text-brand-gold mt-0.5" />
-                      <span>{details.address}</span>
+                      <span>{branch.address ?? details.address}</span>
                     </div>
                   </div>
 
@@ -193,6 +212,18 @@ export function CatalogLandingPage() {
 }
 
 const BRANCH_METADATA: Record<string, { address: string; hours: string }> = {
+  origone: {
+    address: "Tte. Manuel Origone 196, Villa Tesei",
+    hours: "Lun a Vie 8:30 a 20:30 · Sáb 9:00 a 14:00",
+  },
+  "pedro-diaz": {
+    address: "Av. Gral. Pedro Díaz 1265, Hurlingham",
+    hours: "Lun a Vie 9:00 a 20:00 · Sáb 9:00 a 13:30",
+  },
+  "w-morris": {
+    address: "Gdor. Vergara 4210, William C. Morris",
+    hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
+  },
   centro: {
     address: "San Martín 450 (Centro)",
     hours: "Lun a Vie 8:30 a 20:30 · Sáb 9:00 a 14:00",
@@ -206,3 +237,4 @@ const BRANCH_METADATA: Record<string, { address: string; hours: string }> = {
     hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
   },
 };
+
