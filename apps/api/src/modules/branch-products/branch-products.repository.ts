@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import {
   eq,
   and,
+  or,
   ilike,
   isNull,
   isNotNull,
@@ -50,7 +51,14 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     ];
 
     if (query.search && query.search.trim()) {
-      conditions.push(ilike(schema.products.name, `%${query.search.trim()}%`));
+      const term = `%${query.search.trim()}%`;
+      conditions.push(
+        or(
+          ilike(schema.products.name, term),
+          ilike(schema.products.code, term),
+          ilike(schema.products.barcode, term),
+        )!,
+      );
     }
 
     if (query.categoryId) {
@@ -241,7 +249,14 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     ];
 
     if (query.search && query.search.trim()) {
-      conditions.push(ilike(schema.products.name, `%${query.search.trim()}%`));
+      const term = `%${query.search.trim()}%`;
+      conditions.push(
+        or(
+          ilike(schema.products.name, term),
+          ilike(schema.products.code, term),
+          ilike(schema.products.barcode, term),
+        )!,
+      );
     }
 
     if (query.categoryId) {

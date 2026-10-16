@@ -26,7 +26,7 @@ function renderLoginPage(initialEntry = "/admin/login") {
 }
 
 describe("AdminLoginPage", () => {
-  it("renders brand headers, branch selector, and login form fields", () => {
+  it("renders brand headers and login form fields without manual branch selector", () => {
     renderLoginPage();
 
     expect(screen.getByText("Red Operativa Conectada")).toBeInTheDocument();
@@ -35,10 +35,9 @@ describe("AdminLoginPage", () => {
     );
     expect(screen.getByText("Acceso al Panel de Gestión")).toBeInTheDocument();
 
-    // Branch selector buttons
-    expect(screen.getByRole("radio", { name: /Centro/i })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: /Norte/i })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: /Sur/i })).toBeInTheDocument();
+    // No branch selector radio buttons
+    expect(screen.queryByRole("radio")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Seleccionar Punto de Venta/i)).not.toBeInTheDocument();
 
     // Form fields
     expect(screen.getByLabelText("Email o Usuario")).toBeInTheDocument();
@@ -53,19 +52,41 @@ describe("AdminLoginPage", () => {
     );
   });
 
-  it("allows selecting a branch in the segmented control", () => {
-    renderLoginPage();
+  it("authenticates branch admin and safely redirects to products page even if coming from restricted master catalog", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter
+          initialEntries={[
+            { pathname: "/admin/login", state: { from: { pathname: "/admin/catalogo-maestro" } } },
+          ]}
+        >
+          <AuthProvider>
+            <Routes>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin/productos"
+                element={<div data-testid="branch-admin-destination">Panel de Sucursal</div>}
+              />
+            </Routes>
+          </AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
 
-    const centroRadio = screen.getByRole("radio", { name: /Centro/i });
-    const norteRadio = screen.getByRole("radio", { name: /Norte/i });
+    fireEvent.change(screen.getByLabelText("Email o Usuario"), {
+      target: { value: "admin.origone@nutrigon.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Contraseña"), {
+      target: { value: "BranchAdmin2026!" },
+    });
 
-    expect(centroRadio).toHaveAttribute("aria-checked", "true");
-    expect(norteRadio).toHaveAttribute("aria-checked", "false");
+    const submitBtn = screen.getByRole("button", { name: /Ingresar al Panel/i });
+    fireEvent.click(submitBtn);
 
-    fireEvent.click(norteRadio);
-
-    expect(norteRadio).toHaveAttribute("aria-checked", "true");
-    expect(centroRadio).toHaveAttribute("aria-checked", "false");
+    await waitFor(() => {
+      expect(screen.getByTestId("branch-admin-destination")).toBeInTheDocument();
+    });
   });
 
   it("toggles password visibility when clicking the eye button", () => {

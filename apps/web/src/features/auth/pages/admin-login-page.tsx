@@ -9,29 +9,17 @@ import {
   Info,
   Loader2,
   Lock,
-  MapPin,
-  RefreshCw,
   ShieldCheck,
   User,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
-
-interface BranchOption {
-  slug: string;
-  name: string;
-}
-
-const BRANCHES: readonly BranchOption[] = [
-  { slug: "centro", name: "Sucursal Centro" },
-  { slug: "norte", name: "Sucursal Norte" },
-  { slug: "sur", name: "Sucursal Sur" },
-];
+import { Role } from "../types";
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, selectedBranchSlug, setSelectedBranchSlug } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,11 +45,20 @@ export function AdminLoginPage() {
 
     setIsSubmitting(true);
     try {
-      await login({ email: trimmedEmail, password }, rememberMe);
+      const user = await login({ email: trimmedEmail, password }, rememberMe);
 
-      // Redirect to previous intended page or default to admin catalog
+      // Intelligent redirect based on role and intended destination
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
-      navigate(from || "/admin/productos", { replace: true });
+      if (from) {
+        // Prevent branch admins from accessing general-admin-only routes
+        const isRestrictedForBranch =
+          user.role === Role.BRANCH_ADMIN &&
+          (from.includes("catalogo-maestro") || from.includes("sucursales"));
+
+        navigate(isRestrictedForBranch ? "/admin/productos" : from, { replace: true });
+      } else {
+        navigate("/admin/productos", { replace: true });
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMessage(err.message);
@@ -131,51 +128,6 @@ export function AdminLoginPage() {
             <p className="text-xs sm:text-sm text-muted-foreground font-normal">
               Acceso al Panel de Gestión
             </p>
-          </div>
-
-          {/* Point of Sale Branch Selector */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Seleccionar Punto de Venta
-              </label>
-              <span className="text-[11px] text-brand-gold font-medium flex items-center gap-1 bg-brand-gold/10 px-2 py-0.5 rounded-full border border-brand-gold/20">
-                <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" style={{ animationDuration: "8s" }} />
-                Sincronizado
-              </span>
-            </div>
-
-            <div
-              className="grid grid-cols-3 p-1 bg-muted/40 border border-border rounded-xl gap-1"
-              role="radiogroup"
-              aria-label="Selección de sucursal activa"
-            >
-              {BRANCHES.map((branch) => {
-                const isSelected = selectedBranchSlug === branch.slug;
-                return (
-                  <button
-                    key={branch.slug}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => setSelectedBranchSlug(branch.slug)}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-150 min-h-[44px] ${
-                      isSelected
-                        ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/60 shadow-xs font-bold"
-                        : "text-muted-foreground hover:text-foreground border border-transparent"
-                    }`}
-                  >
-                    <MapPin
-                      className={`size-3.5 shrink-0 ${
-                        isSelected ? "text-brand-gold" : "opacity-60"
-                      }`}
-                      aria-hidden="true"
-                    />
-                    <span className="truncate">{branch.name.replace("Sucursal ", "")}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Login Form */}
@@ -309,7 +261,7 @@ export function AdminLoginPage() {
           {/* Security Trust Line */}
           <div className="mt-7 pt-5 border-t border-border/60 flex items-center justify-center gap-2 text-[11px] text-muted-foreground text-center">
             <ShieldCheck className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
-            <span>Conexión cifrada de extremo a extremo · Sucursales sincronizadas</span>
+            <span>Conexión cifrada de extremo a extremo · Control de acceso por roles</span>
           </div>
         </div>
 
@@ -339,7 +291,7 @@ export function AdminLoginPage() {
             <Lock className="size-3" aria-hidden="true" /> SSL 256-Bit TLS 1.3
           </span>
           <span className="font-mono text-muted-foreground/80 uppercase">
-            Terminal ID: POS-{selectedBranchSlug.toUpperCase()}-01
+            Autenticación Centralizada
           </span>
         </div>
       </footer>

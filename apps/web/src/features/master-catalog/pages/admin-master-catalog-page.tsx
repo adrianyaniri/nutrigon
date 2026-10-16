@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Barcode,
-  Boxes,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -86,6 +85,18 @@ export function AdminMasterCatalogPage() {
   useEffect(() => {
     setPage(1);
   }, [searchTerm, selectedCategoryId, statusFilter]);
+
+  // Handle ESC key for modal dismissals
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (isProductModalOpen) setIsProductModalOpen(false);
+        if (isCategoryModalOpen) setIsCategoryModalOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isProductModalOpen, isCategoryModalOpen]);
 
   // Categories Query
   const categoriesQuery = useQuery({
@@ -415,13 +426,7 @@ export function AdminMasterCatalogPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.08] pb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-gold/15 text-brand-gold border border-brand-gold/20">
-              <Boxes className="size-3.5" aria-hidden="true" />
-              Administración General
-            </span>
-          </div>
-          <h1 className="mt-2 font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Catálogo Maestro de Productos
           </h1>
           <p className="mt-1 text-sm text-zinc-400 max-w-2xl">
@@ -457,23 +462,22 @@ export function AdminMasterCatalogPage() {
         </div>
       </div>
 
-      {/* KPI Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-white/[0.08] bg-surface-card p-4">
-          <span className="text-xs text-zinc-400 font-medium">Productos en Vista Actual</span>
-          <p className="mt-1 font-headline text-2xl font-bold text-white">{totalProducts}</p>
+      {/* Operational Summary Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-card border border-white/[0.08]">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-zinc-400 font-medium">Productos en vista</span>
+            <span className="font-headline text-base font-bold text-white tabular-nums">{totalProducts}</span>
+          </div>
+          <div className="h-4 w-px bg-white/[0.1]" aria-hidden="true" />
+          <div className="flex items-center gap-2">
+            <span className="text-brand-gold font-medium">Categorías Maestras</span>
+            <span className="font-headline text-base font-bold text-brand-gold tabular-nums">{categories.length}</span>
+          </div>
         </div>
-        <div className="rounded-xl border border-white/[0.08] bg-surface-card p-4">
-          <span className="text-xs text-brand-gold font-medium">Categorías Maestras</span>
-          <p className="mt-1 font-headline text-2xl font-bold text-brand-gold">
-            {categories.length}
-          </p>
-        </div>
-        <div className="rounded-xl border border-white/[0.08] bg-surface-card p-4">
-          <span className="text-xs text-emerald-400 font-medium">Alcance Operativo</span>
-          <p className="mt-1 font-headline text-sm font-semibold text-emerald-300">
-            Sincronizado con 3 sucursales
-          </p>
+        <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+          <CheckCircle2 className="size-3.5 text-emerald-400" />
+          <span>Sincronizado con 3 sucursales</span>
         </div>
       </div>
 
@@ -487,15 +491,25 @@ export function AdminMasterCatalogPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por nombre, código interno o EAN..."
-              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] pl-9 pr-4 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] pl-9 pr-9 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white rounded-md transition-colors"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
           </div>
 
           <select
             value={selectedCategoryId}
             onChange={(e) => setSelectedCategoryId(e.target.value)}
             aria-label="Filtrar por categoría"
-            className="min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            className="min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           >
             <option value="">Todas las categorías</option>
             {categories.map((cat) => (
@@ -579,18 +593,35 @@ export function AdminMasterCatalogPage() {
               No se encontraron productos maestros
             </h3>
             <p className="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">
-              Ajustá los filtros de búsqueda o creá un nuevo producto global para sumarlo al
-              catálogo.
+              {searchTerm || selectedCategoryId || statusFilter !== "ALL"
+                ? "No hay productos que coincidan con los filtros aplicados. Podés restablecerlos o crear uno nuevo."
+                : "Ajustá los filtros de búsqueda o creá un nuevo producto global para sumarlo al catálogo."}
             </p>
           </div>
-          <Button
-            type="button"
-            onClick={openCreateProductModal}
-            className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 text-xs font-semibold px-4"
-          >
-            <Plus className="size-4 mr-1" />
-            Crear Producto Maestro
-          </Button>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {(searchTerm || selectedCategoryId || statusFilter !== "ALL") && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategoryId("");
+                  setStatusFilter("ALL");
+                }}
+                className="min-h-[44px] text-xs font-semibold border-white/[0.15]"
+              >
+                Limpiar filtros
+              </Button>
+            )}
+            <Button
+              type="button"
+              onClick={openCreateProductModal}
+              className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 text-xs font-semibold px-4"
+            >
+              <Plus className="size-4 mr-1" />
+              Crear Producto Maestro
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -812,7 +843,7 @@ export function AdminMasterCatalogPage() {
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                   placeholder="ej. Almendras Nonpareil Tostadas"
-                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 />
               </div>
 
@@ -829,7 +860,7 @@ export function AdminMasterCatalogPage() {
                     required
                     value={productCategoryId}
                     onChange={(e) => setProductCategoryId(e.target.value)}
-                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                   >
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -850,7 +881,7 @@ export function AdminMasterCatalogPage() {
                     id="master-product-unit"
                     value={productSaleUnit}
                     onChange={(e) => setProductSaleUnit(e.target.value as SaleUnit)}
-                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white focus:outline-none focus:border-brand-gold"
+                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                   >
                     <option value="WEIGHT">Granel (Precio por 1 kg)</option>
                     <option value="UNIT">Por Unidad cerrada</option>
@@ -872,7 +903,7 @@ export function AdminMasterCatalogPage() {
                     value={productCode}
                     onChange={(e) => setProductCode(e.target.value)}
                     placeholder="ej. FS-015"
-                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                   />
                 </div>
 
@@ -889,7 +920,7 @@ export function AdminMasterCatalogPage() {
                     value={productBarcode}
                     onChange={(e) => setProductBarcode(e.target.value)}
                     placeholder="ej. 7791234567890"
-                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                    className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                   />
                 </div>
               </div>
@@ -907,7 +938,7 @@ export function AdminMasterCatalogPage() {
                   value={productDescription}
                   onChange={(e) => setProductDescription(e.target.value)}
                   placeholder="ej. Producto natural seleccionado, ideal para repostería o snack saludable."
-                  className="w-full rounded-xl border border-white/[0.1] bg-[#111215] p-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold resize-none"
+                  className="w-full rounded-xl border border-white/[0.1] bg-[#111215] p-3 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold resize-none"
                 />
               </div>
 
@@ -1033,7 +1064,7 @@ export function AdminMasterCatalogPage() {
               <button
                 type="button"
                 onClick={() => setIsCategoryModalOpen(false)}
-                className="p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                 aria-label="Cerrar modal de categoría"
               >
                 <X className="size-5" />
@@ -1064,7 +1095,7 @@ export function AdminMasterCatalogPage() {
                     setCategorySlug(slugifyCategoryName(e.target.value));
                   }}
                   placeholder="ej. Legumbres y Semillas"
-                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 />
               </div>
 
@@ -1082,7 +1113,7 @@ export function AdminMasterCatalogPage() {
                   value={categorySlug}
                   onChange={(e) => setCategorySlug(e.target.value)}
                   placeholder="ej. legumbres-y-semillas"
-                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-brand-gold"
+                  className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs font-mono text-zinc-300 placeholder:text-zinc-500 caret-brand-gold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 />
               </div>
 

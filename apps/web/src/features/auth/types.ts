@@ -13,7 +13,7 @@ export interface AuthState {
 }
 
 export interface AuthContextValue extends AuthState {
-  login: (credentials: LoginDto, rememberMe?: boolean) => Promise<void>;
+  login: (credentials: LoginDto, rememberMe?: boolean) => Promise<AuthUser>;
   logout: () => void;
   setSelectedBranchSlug: (slug: string) => void;
 }

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, and, ilike, count, asc, type SQL } from 'drizzle-orm';
+import { eq, and, or, ilike, count, asc, type SQL } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE_CLIENT } from '../../core/database/database.constants.js';
 import * as schema from '../../core/database/schema/index.js';
@@ -25,7 +25,14 @@ export class ProductsRepository implements IProductsRepository {
     const conditions: SQL[] = [];
 
     if (query.search && query.search.trim()) {
-      conditions.push(ilike(schema.products.name, `%${query.search.trim()}%`));
+      const term = `%${query.search.trim()}%`;
+      conditions.push(
+        or(
+          ilike(schema.products.name, term),
+          ilike(schema.products.code, term),
+          ilike(schema.products.barcode, term),
+        )!,
+      );
     }
 
     if (query.categoryId) {

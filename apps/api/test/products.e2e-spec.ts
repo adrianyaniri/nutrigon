@@ -87,6 +87,41 @@ describe('ProductsModule (e2e)', () => {
       );
       expect(allMatch).toBe(true);
     });
+
+    it('should filter products by search term matching internal code or barcode', async () => {
+      const uniqueCode = `CODE-E2E-${Date.now()}`;
+      const uniqueBarcode = `7799999${Date.now().toString().slice(-6)}`;
+
+      const createRes = await request(app.getHttpServer())
+        .post('/api/v1/products')
+        .set('Authorization', `Bearer ${adminGeneralToken}`)
+        .send({
+          categoryId: firstCategoryId,
+          name: 'Producto E2E Busqueda Código',
+          saleUnit: SaleUnit.UNIT,
+          code: uniqueCode,
+          barcode: uniqueBarcode,
+        })
+        .expect(201);
+
+      const createdId = createRes.body.id;
+
+      // 1. Search by internal code in ?search=
+      const searchByCodeRes = await request(app.getHttpServer())
+        .get(`/api/v1/products?search=${uniqueCode}`)
+        .set('Authorization', `Bearer ${adminGeneralToken}`)
+        .expect(200);
+
+      expect(searchByCodeRes.body.items.some((p: any) => p.id === createdId)).toBe(true);
+
+      // 2. Search by barcode in ?search=
+      const searchByBarcodeRes = await request(app.getHttpServer())
+        .get(`/api/v1/products?search=${uniqueBarcode}`)
+        .set('Authorization', `Bearer ${adminGeneralToken}`)
+        .expect(200);
+
+      expect(searchByBarcodeRes.body.items.some((p: any) => p.id === createdId)).toBe(true);
+    });
   });
 
   describe('GET /api/v1/products/:id', () => {

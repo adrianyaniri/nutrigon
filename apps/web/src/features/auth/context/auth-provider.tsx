@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { authRepository } from "../data/auth-repository";
-import type { AuthUser, LoginDto } from "../types";
+import { Role, type AuthUser, type LoginDto } from "../types";
 import { AuthContext } from "./auth-context";
 
 interface AuthProviderProps {
@@ -11,14 +11,21 @@ const TOKEN_KEY = "nutrigon:auth-token";
 const USER_KEY = "nutrigon:auth-user";
 const LAST_BRANCH_KEY = "nutrigon:last-branch";
 
+const BRANCH_ID_TO_SLUG: Record<string, string> = {
+  "b-origone": "origone",
+  "b-pedrodiaz": "pedro-diaz",
+  "b-wmorris": "w-morris",
+  "b-centro": "origone",
+};
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [selectedBranchSlug, setSelectedBranchSlugState] = useState<string>(() => {
     try {
-      return localStorage.getItem(LAST_BRANCH_KEY) || "centro";
+      return localStorage.getItem(LAST_BRANCH_KEY) || "origone";
     } catch {
-      return "centro";
+      return "origone";
     }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -32,8 +39,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
 
       if (storedToken && storedUserJson) {
+        const parsedUser = JSON.parse(storedUserJson) as AuthUser;
         setToken(storedToken);
-        setUser(JSON.parse(storedUserJson) as AuthUser);
+        setUser(parsedUser);
+
+        if (parsedUser.role === Role.BRANCH_ADMIN && parsedUser.branchId) {
+          const branchSlug = BRANCH_ID_TO_SLUG[parsedUser.branchId];
+          if (branchSlug) {
+            setSelectedBranchSlugState(branchSlug);
+          }
+        }
       }
     } catch {
       // Storage access failed, keep unauthenticated
@@ -52,12 +67,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = useCallback(
-    async (credentials: LoginDto, rememberMe = true) => {
+    async (credentials: LoginDto, rememberMe = true): Promise<AuthUser> => {
       setIsLoading(true);
       try {
         const response = await authRepository.login(credentials);
         setToken(response.accessToken);
         setUser(response.user);
+
+        if (response.user.role === Role.BRANCH_ADMIN && response.user.branchId) {
+          const branchSlug = BRANCH_ID_TO_SLUG[response.user.branchId];
+          if (branchSlug) {
+            setSelectedBranchSlugState(branchSlug);
+            try {
+              localStorage.setItem(LAST_BRANCH_KEY, branchSlug);
+            } catch {
+              // Ignore
+            }
+          }
+        }
 
         const storage = rememberMe ? localStorage : sessionStorage;
         const otherStorage = rememberMe ? sessionStorage : localStorage;
@@ -68,6 +95,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         storage.setItem(TOKEN_KEY, response.accessToken);
         storage.setItem(USER_KEY, JSON.stringify(response.user));
+
+        return response.user;
       } finally {
         setIsLoading(false);
       }
