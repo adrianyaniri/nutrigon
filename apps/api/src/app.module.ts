@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { BranchesModule } from './modules/branches/branches.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
+import { BranchProductsModule } from './modules/branch-products/branch-products.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProductsModule } from './modules/products/products.module.js';
     BranchesModule,
     CategoriesModule,
     ProductsModule,
+    BranchProductsModule,
   ],
   controllers: [AppController],
   providers: [

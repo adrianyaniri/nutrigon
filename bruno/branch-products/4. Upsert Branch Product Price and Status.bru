@@ -1,0 +1,24 @@
+meta {
+  name: 4. Upsert Branch Product Price and Status
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/branches/{{branchId}}/products/{{productId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "price": 5500,
+    "promotionalPrice": null,
+    "isOnSale": false,
+    "isAvailable": true
+  }
+}
