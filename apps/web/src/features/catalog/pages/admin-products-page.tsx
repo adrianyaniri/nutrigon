@@ -6,19 +6,15 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Loader2,
   Package,
-  PauseCircle,
   Percent,
   Search,
   Sparkles,
   Star,
-  Store,
   Tag,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { ProductImage } from "@/components/atoms/product-image";
 import { Button } from "@/components/ui/button";
 import { useAuth, Role } from "@/features/auth";
@@ -82,6 +78,17 @@ export function AdminProductsPage() {
   useEffect(() => {
     setPage(1);
   }, [activeTab, searchTerm, branchId]);
+
+  // Handle ESC key for offer modal dismissal
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && offerModalItem) {
+        setOfferModalItem(null);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [offerModalItem]);
 
   const queryFilter = useMemo(() => {
     return {
@@ -300,38 +307,19 @@ export function AdminProductsPage() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 max-w-screen-xl mx-auto w-full gap-6">
+    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-white pb-12">
       {/* Top Operational Header */}
       <section className="rounded-2xl border border-white/[0.08] bg-surface-card p-5 sm:p-6 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-xs font-semibold text-brand-gold">
-              <Store className="size-3.5" aria-hidden="true" />
-              <span>Sucursal {activeBranch.name}</span>
-            </div>
+        <div className="space-y-1.5">
+          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Gestión de Precios y Ofertas por Sucursal
+          </h1>
 
-            <h1 className="font-headline text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Gestión de Precios y Ofertas por Sucursal
-            </h1>
-
-            <p className="text-xs sm:text-sm text-brand-muted max-w-2xl leading-relaxed">
-              Configurá el precio por kilogramo o por unidad, habilitá productos en el
-              mostrador online y activá ofertas exclusivas para{" "}
-              <strong className="text-white">Sucursal {activeBranch.name}</strong>.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to={`/catalogo/${activeBranch.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-brand-gold/40 bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-headline font-bold text-xs sm:text-sm px-4 py-2.5 transition-all active:scale-95"
-            >
-              <span>Ver Tienda {activeBranch.name}</span>
-              <ExternalLink className="size-3.5" aria-hidden="true" />
-            </Link>
-          </div>
+          <p className="text-xs sm:text-sm text-brand-muted max-w-2xl leading-relaxed">
+            Configurá el precio por kilogramo o por unidad, habilitá productos en el
+            mostrador online y activá ofertas exclusivas para{" "}
+            <strong className="text-white">Sucursal {activeBranch.name}</strong>.
+          </p>
         </div>
 
         {/* Status Counter Tabs */}
@@ -377,6 +365,7 @@ export function AdminProductsPage() {
       {feedbackBanner && (
         <div
           role="status"
+          aria-live="polite"
           className={cn(
             "flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-xs sm:text-sm font-medium animate-in fade-in-50 duration-150",
             feedbackBanner.type === "success"
@@ -416,14 +405,14 @@ export function AdminProductsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar producto por nombre o código..."
             aria-label="Buscar producto en la sucursal"
-            className="min-h-[44px] w-full rounded-xl border border-white/[0.08] bg-surface-card pl-10 pr-9 text-sm text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+            className="min-h-[44px] w-full rounded-xl border border-white/[0.08] bg-surface-card pl-10 pr-10 text-sm text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm("")}
               aria-label="Limpiar búsqueda"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-white rounded-md transition-colors"
             >
               <X className="size-4" />
             </button>
@@ -491,43 +480,55 @@ export function AdminProductsPage() {
                     </div>
 
                     <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-gold">
+                      {/* Top Eyebrow: Category · Unit · Status + Promo chips (Oferta & Destacado) */}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-gold shrink-0">
                           {item.categoryName}
                         </span>
-                        <span className="text-white/20">·</span>
-                        <span className="text-[11px] font-medium text-zinc-400">
+                        <span className="text-zinc-500 select-none">·</span>
+                        <span className="text-[11px] font-medium text-zinc-300 shrink-0">
                           {unitBadge}
                         </span>
+                        <span className="text-zinc-500 select-none">·</span>
 
                         {item.status === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-                            <Check className="size-3" /> En tienda
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 shrink-0">
+                            <span className="size-1.5 rounded-full bg-emerald-400" />
+                            <span>En tienda</span>
                           </span>
                         )}
                         {item.status === "INACTIVE" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-300">
-                            <PauseCircle className="size-3" /> Pausado
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-400 shrink-0">
+                            <span className="size-1.5 rounded-full bg-amber-400" />
+                            <span>Pausado</span>
                           </span>
                         )}
                         {item.status === "UNCONFIGURED" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-500/20 border border-zinc-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                            Sin precio
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 shrink-0">
+                            <span className="size-1.5 rounded-full bg-zinc-500" />
+                            <span>Sin precio</span>
                           </span>
                         )}
+
+                        {/* Promo Chips (arriba del nombre) */}
                         {item.isOnSale && item.promotionalPrice !== null && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
-                            <Sparkles className="size-3" /> Oferta:{" "}
-                            {formatPrice(item.promotionalPrice)} {unitSuffix}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold shrink-0">
+                            <Sparkles className="size-2.5 shrink-0" aria-hidden="true" />
+                            <span>
+                              Oferta {formatPrice(item.promotionalPrice)} {unitSuffix}
+                            </span>
                           </span>
                         )}
+
                         {item.isFeatured && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
-                            <Star className="size-3 fill-brand-gold" /> Destacado
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300 shrink-0">
+                            <Star className="size-2.5 fill-amber-300 text-amber-300 shrink-0" aria-hidden="true" />
+                            <span>Destacado</span>
                           </span>
                         )}
                       </div>
 
+                      {/* Product Name */}
                       <h2 className="font-headline text-sm sm:text-base font-bold text-white truncate">
                         {item.name}
                       </h2>
@@ -541,11 +542,11 @@ export function AdminProductsPage() {
                   </div>
 
                   {/* Right: Price Input, Save, Offer Trigger & Availability Switch */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 pt-3 border-t border-white/[0.06] lg:pt-0 lg:border-t-0 shrink-0">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pt-3 border-t border-white/[0.06] lg:pt-0 lg:border-t-0 shrink-0">
                     {/* Price Input Group */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <div className="relative flex items-center">
-                        <span className="pointer-events-none absolute left-3 text-xs font-bold text-zinc-400">
+                        <span className="pointer-events-none absolute left-2.5 text-xs font-bold text-zinc-400">
                           $
                         </span>
                         <input
@@ -560,30 +561,37 @@ export function AdminProductsPage() {
                               [item.productId]: e.target.value,
                             }))
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleSavePrice(item);
+                            }
+                          }}
                           placeholder="0"
-                          className="min-h-[44px] w-36 rounded-xl border border-white/[0.1] bg-[#111215] pl-7 pr-11 text-sm font-semibold tabular-nums text-white focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                          className="h-10 w-28 sm:w-32 rounded-xl border border-white/[0.1] bg-[#111215] pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-white placeholder:text-zinc-500 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
                         />
-                        <span className="pointer-events-none absolute right-3 text-[11px] font-medium text-zinc-400">
+                        <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-zinc-400">
                           {unitSuffix}
                         </span>
                       </div>
 
                       <Button
                         type="button"
+                        aria-label="Guardar precio"
                         onClick={() => handleSavePrice(item)}
                         disabled={upsertMutation.isPending}
-                        className="min-h-[44px] px-3.5 text-xs font-semibold"
+                        className="h-10 px-3 text-xs font-semibold gap-1 shrink-0"
                       >
-                        Guardar precio
+                        <Check className="size-3.5" aria-hidden="true" />
+                        <span>Guardar</span>
                       </Button>
                     </div>
 
-                    {/* Featured, Offer & Availability Actions */}
-                    <div className="flex items-center gap-2">
+                    {/* Operational Actions (Destacar, Oferta, Pausar/Activar) */}
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        disabled={!isConfigured || upsertMutation.isPending}
-                        onClick={() => handleToggleFeatured(item)}
+                        aria-label={item.isFeatured ? "Destacado" : "Destacar"}
                         title={
                           isConfigured
                             ? item.isFeatured
@@ -591,46 +599,50 @@ export function AdminProductsPage() {
                               : "Marcar como destacado en esta sucursal"
                             : "Guardá primero un precio base para destacar"
                         }
+                        disabled={!isConfigured || upsertMutation.isPending}
+                        onClick={() => handleToggleFeatured(item)}
                         className={cn(
-                          "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer",
+                          "size-10 inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
                           item.isFeatured
                             ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
                             : "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-brand-gold/50 hover:text-white"
                         )}
                       >
                         <Star
-                          className={cn("size-3.5", item.isFeatured && "fill-brand-gold")}
+                          className={cn("size-4", item.isFeatured && "fill-brand-gold")}
                           aria-hidden="true"
                         />
-                        <span>{item.isFeatured ? "Destacado" : "Destacar"}</span>
                       </button>
 
                       <button
                         type="button"
-                        disabled={!isConfigured}
-                        onClick={() => openOfferModal(item)}
+                        aria-label={item.isOnSale ? "Editar oferta" : "Oferta"}
                         title={
                           isConfigured
-                            ? "Configurar oferta para este producto"
+                            ? item.isOnSale
+                              ? `Oferta activa: ${formatPrice(item.promotionalPrice)} (clic para editar)`
+                              : "Configurar oferta para este producto"
                             : "Guardá primero un precio base para habilitar ofertas"
                         }
+                        disabled={!isConfigured}
+                        onClick={() => openOfferModal(item)}
                         className={cn(
-                          "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-3.5 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed",
+                          "size-10 inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
                           item.isOnSale
                             ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
                             : "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-brand-gold/50 hover:text-white"
                         )}
                       >
-                        <Tag className="size-3.5" aria-hidden="true" />
-                        <span>{item.isOnSale ? "Editar oferta" : "Oferta"}</span>
+                        <Tag className="size-4" aria-hidden="true" />
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleSavePrice(item, !item.isAvailable)}
                         disabled={upsertMutation.isPending}
+                        title={item.isAvailable ? "Pausar producto en esta sucursal" : "Activar producto en esta sucursal"}
                         className={cn(
-                          "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-3.5 text-xs font-semibold transition-all cursor-pointer",
+                          "h-10 inline-flex items-center justify-center rounded-xl border px-3 text-xs font-semibold transition-all cursor-pointer shrink-0",
                           item.isAvailable
                             ? "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-amber-500/40 hover:text-amber-300"
                             : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
@@ -707,7 +719,7 @@ export function AdminProductsPage() {
                 type="button"
                 onClick={() => setOfferModalItem(null)}
                 aria-label="Cerrar modal de oferta"
-                className="flex size-9 items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors"
               >
                 <X className="size-5" />
               </button>
@@ -744,8 +756,14 @@ export function AdminProductsPage() {
                     setPromoPriceInput(e.target.value);
                     setOfferModalError(null);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleActivateOffer();
+                    }
+                  }}
                   placeholder="Ej: 12500"
-                  className="min-h-[46px] w-full rounded-xl border border-white/[0.12] bg-[#111215] pl-8 pr-16 text-sm font-bold text-white focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                  className="min-h-[46px] w-full rounded-xl border border-white/[0.12] bg-[#111215] pl-8 pr-16 text-sm font-bold text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
                 />
                 {offerModalItem.price &&
                   Number(promoPriceInput) > 0 &&

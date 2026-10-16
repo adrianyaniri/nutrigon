@@ -49,17 +49,22 @@ export function AdminLoginPage() {
 
       // Intelligent redirect based on role and intended destination
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
-      if (from) {
-        // Prevent branch admins from accessing general-admin-only routes
-        const isRestrictedForBranch =
-          user.role === Role.BRANCH_ADMIN &&
-          (from.includes("catalogo-maestro") || from.includes("sucursales"));
 
-        navigate(isRestrictedForBranch ? "/admin/productos" : from, { replace: true });
-      } else if (user.role === Role.ADMIN_GENERAL) {
-        navigate("/admin/catalogo-maestro", { replace: true });
+      if (user.role === Role.ADMIN_GENERAL) {
+        // ADMIN_GENERAL should always land on /admin/catalogo-maestro,
+        // unless explicitly trying to access a general admin destination like /admin/sucursales
+        const isGeneralRoute =
+          from && (from.includes("catalogo-maestro") || from.includes("sucursales"));
+        navigate(isGeneralRoute ? from : "/admin/catalogo-maestro", { replace: true });
       } else {
-        navigate("/admin/productos", { replace: true });
+        // BRANCH_ADMIN should land on /admin/productos (or safe branch routes like /admin/combos)
+        const isRestrictedForBranch =
+          from && (from.includes("catalogo-maestro") || from.includes("sucursales"));
+        const target =
+          from && !isRestrictedForBranch && from !== "/admin"
+            ? from
+            : "/admin/productos";
+        navigate(target, { replace: true });
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

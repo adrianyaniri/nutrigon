@@ -155,4 +155,46 @@ describe("AdminLoginPage", () => {
       expect(screen.getByTestId("admin-master-destination")).toBeInTheDocument();
     });
   });
+
+  it("authenticates general admin and redirects to master catalog even if previous route was branch products page", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter
+          initialEntries={[
+            { pathname: "/admin/login", state: { from: { pathname: "/admin/productos" } } },
+          ]}
+        >
+          <AuthProvider>
+            <Routes>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin/catalogo-maestro"
+                element={<div data-testid="general-admin-master-destination">Panel Maestro</div>}
+              />
+              <Route
+                path="/admin/productos"
+                element={<div data-testid="branch-products-destination">Panel Sucursal</div>}
+              />
+            </Routes>
+          </AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.change(screen.getByLabelText("Email o Usuario"), {
+      target: { value: "admin@nutrigon.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Contraseña"), {
+      target: { value: "AdminNutrigon2026!" },
+    });
+
+    const submitBtn = screen.getByRole("button", { name: /Ingresar al Panel/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("general-admin-master-destination")).toBeInTheDocument();
+      expect(screen.queryByTestId("branch-products-destination")).not.toBeInTheDocument();
+    });
+  });
 });

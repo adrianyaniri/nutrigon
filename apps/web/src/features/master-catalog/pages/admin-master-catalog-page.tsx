@@ -657,28 +657,30 @@ export function AdminMasterCatalogPage() {
                   {/* Metadata */}
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white/[0.06] text-zinc-300">
-                        <Layers className="size-3 text-brand-gold" />
-                        {categoryLabel}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white/[0.06] text-zinc-300 shrink-0 whitespace-nowrap">
+                        <Layers className="size-3 text-brand-gold shrink-0" />
+                        <span>{categoryLabel}</span>
                       </span>
 
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono border",
+                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono border shrink-0 whitespace-nowrap",
                           product.saleUnit === "WEIGHT"
                             ? "bg-brand-gold/10 text-brand-gold border-brand-gold/25"
                             : "bg-sky-500/10 text-sky-300 border-sky-500/25"
                         )}
                       >
-                        <Scale className="size-3" />
-                        {product.saleUnit === "WEIGHT"
-                          ? "Granel · Venta por kg"
-                          : "Por Unidad"}
+                        <Scale className="size-3 shrink-0" />
+                        <span>
+                          {product.saleUnit === "WEIGHT"
+                            ? "Granel · Venta por kg"
+                            : "Por Unidad"}
+                        </span>
                       </span>
 
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-md text-[11px] font-bold font-mono",
+                          "inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold font-mono shrink-0 whitespace-nowrap",
                           product.isActive
                             ? "bg-emerald-500/15 text-emerald-300"
                             : "bg-amber-500/15 text-amber-300"

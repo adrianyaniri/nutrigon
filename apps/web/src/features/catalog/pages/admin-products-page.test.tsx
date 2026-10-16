@@ -127,4 +127,31 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
       await screen.findByText(/Precio y estado actualizados para "Nueces Mariposa Extra Light"/i)
     ).toBeInTheDocument();
   });
+
+  it("saves product price when pressing Enter inside the price input", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Almendras Nonpareil");
+    const priceInput = screen.getByLabelText("Precio de Almendras Nonpareil");
+    fireEvent.change(priceInput, { target: { value: "16500" } });
+    fireEvent.keyDown(priceInput, { key: "Enter" });
+
+    expect(
+      await screen.findByText(/Precio y estado actualizados para "Almendras Nonpareil"/i)
+    ).toBeInTheDocument();
+  });
+
+  it("dismisses offer modal when pressing Escape", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Almendras Nonpareil");
+    const offerButtons = screen.getAllByRole("button", { name: /oferta/i });
+    fireEvent.click(offerButtons[0]!);
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });
