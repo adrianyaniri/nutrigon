@@ -100,21 +100,20 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
       await screen.findByRole("heading", { name: "Nueva Sucursal" })
     ).toBeInTheDocument();
 
-    const nameInput = screen.getByPlaceholderText(/Ej. Morón, Castelar, Ramos Mejía/i);
+    const nameInput = screen.getByLabelText(/Nombre de la Sucursal/i);
     fireEvent.change(nameInput, { target: { value: "Castelar Norte" } });
 
-    const phoneInput = screen.getByPlaceholderText(/Ej. 11-4450-1234/i);
+    const phoneInput = screen.getByLabelText(/Teléfono Fijo \/ Local/i);
     fireEvent.change(phoneInput, { target: { value: "11-4450-9999" } });
 
-    const whatsappInput = screen.getByPlaceholderText("5491144501234");
+    const whatsappInput = screen.getByLabelText(/WhatsApp de Pedidos/i);
     fireEvent.change(whatsappInput, { target: { value: "5491199998888" } });
 
     const submitBtn = screen.getByRole("button", { name: "Crear Sucursal" });
     fireEvent.click(submitBtn);
 
-    expect(
-      await screen.findByText(/Sucursal "Castelar Norte" creada exitosamente/i)
-    ).toBeInTheDocument();
+    const statusBanner = await screen.findByRole("status");
+    expect(statusBanner).toHaveTextContent(/creada exitosamente/i);
 
     expect(screen.getByText(/Sucursal Castelar Norte/i)).toBeInTheDocument();
   });
@@ -131,15 +130,14 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
       await screen.findByRole("heading", { name: /Editar Sucursal/i })
     ).toBeInTheDocument();
 
-    const addressInput = screen.getByPlaceholderText(/Ej. Av. Vergara 2400/i);
+    const addressInput = screen.getByLabelText(/Dirección Física/i);
     fireEvent.change(addressInput, { target: { value: "Av. Origone 1234 (Renovada)" } });
 
     const submitBtn = screen.getByRole("button", { name: "Guardar Cambios" });
     fireEvent.click(submitBtn);
 
-    expect(
-      await screen.findByText(/actualizada correctamente/i)
-    ).toBeInTheDocument();
+    const statusBanner = await screen.findByRole("status");
+    expect(statusBanner).toHaveTextContent(/actualizada correctamente/i);
 
     expect(screen.getByText("Av. Origone 1234 (Renovada)")).toBeInTheDocument();
   });
@@ -154,8 +152,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
 
     fireEvent.click(pauseButtons[0]);
 
-    expect(
-      await screen.findByText(/pausada/i)
-    ).toBeInTheDocument();
+    const statusBanner = await screen.findByRole("status");
+    expect(statusBanner).toHaveTextContent(/Sucursal "Origone" pausada/i);
   });
 });

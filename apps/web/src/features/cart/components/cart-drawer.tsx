@@ -176,7 +176,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
         ref={drawerRef}
         className={cn(
           "relative z-10 flex h-full w-full max-w-lg md:max-w-xl flex-col border-l border-border bg-card shadow-2xl",
-          "animate-in slide-in-from-right duration-200"
+          "animate-in slide-in-from-right duration-200 motion-reduce:animate-none"
         )}
       >
         {/* Top Header */}
@@ -409,7 +409,9 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                     htmlFor={notesInputId}
                     className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
                   >
-                    Notas para la sucursal (opcional)
+                    {fulfillment === "delivery"
+                      ? "Dirección de entrega y notas"
+                      : "Notas para la sucursal (opcional)"}
                   </label>
                   <div className="relative flex items-start">
                     <FileText className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" />
@@ -418,7 +420,11 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                       rows={2}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Ej: Paso a retirar a las 18:30 hs..."
+                      placeholder={
+                        fulfillment === "delivery"
+                          ? "Ej: Av. San Martín 1234, timbre 2B. Entregar después de las 17 hs..."
+                          : "Ej: Paso a retirar a las 18:30 hs..."
+                      }
                       className="w-full resize-none rounded-xl border border-border bg-card pl-9 pr-3 py-2.5 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     />
                   </div>
@@ -433,7 +439,11 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                 </div>
                 <div className="flex items-center gap-2 rounded-lg bg-brand-surface/60 p-2 border border-border/50 text-[11px] text-muted-foreground">
                   <Clock className="size-3.5 text-primary shrink-0" />
-                  <span>Listo para retirar rápido</span>
+                  <span>
+                    {fulfillment === "delivery"
+                      ? "Envío directo desde local"
+                      : "Listo para retirar rápido"}
+                  </span>
                 </div>
               </div>
             </>

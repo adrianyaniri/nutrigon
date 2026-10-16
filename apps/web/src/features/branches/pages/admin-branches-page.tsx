@@ -775,10 +775,11 @@ function EditBranchModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">
+            <label htmlFor="edit-branch-name" className="block text-xs font-semibold text-zinc-300 mb-1">
               Nombre de la Sucursal *
             </label>
             <input
+              id="edit-branch-name"
               type="text"
               required
               value={name}
@@ -788,10 +789,11 @@ function EditBranchModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">
+            <label htmlFor="edit-branch-address" className="block text-xs font-semibold text-zinc-300 mb-1">
               Dirección Física
             </label>
             <input
+              id="edit-branch-address"
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -802,10 +804,11 @@ function EditBranchModal({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+              <label htmlFor="edit-branch-phone" className="block text-xs font-semibold text-zinc-300 mb-1">
                 Teléfono Fijo / Local
               </label>
               <input
+                id="edit-branch-phone"
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -815,10 +818,11 @@ function EditBranchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+              <label htmlFor="edit-branch-whatsapp" className="block text-xs font-semibold text-zinc-300 mb-1">
                 WhatsApp de Pedidos
               </label>
               <input
+                id="edit-branch-whatsapp"
                 type="text"
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
@@ -831,7 +835,9 @@ function EditBranchModal({
           {/* Active status toggle */}
           <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#111215] p-3.5">
             <div>
-              <span className="text-xs font-semibold text-white block">Estado de la Sucursal</span>
+              <label htmlFor="is-branch-active-toggle" className="text-xs font-semibold text-white block cursor-pointer">
+                Estado de la Sucursal
+              </label>
               <span className="text-[11px] text-zinc-400">
                 {isActive
                   ? "Visible y operativa para los clientes en el catálogo web."

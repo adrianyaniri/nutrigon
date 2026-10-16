@@ -12,7 +12,6 @@ import {
   MapPin,
   RefreshCw,
   ShieldCheck,
-  Store,
   User,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -75,42 +74,42 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col justify-between bg-surface text-foreground font-body antialiased selection:bg-brand-gold selection:text-surface overflow-x-hidden">
+    <div className="relative flex min-h-dvh flex-col justify-between bg-background text-foreground font-body antialiased selection:bg-brand-gold selection:text-brand-dark overflow-x-hidden">
       {/* Ambient Subtle Wheat-Gold Glow */}
-      <div className="fixed inset-0 pointer-events-none opacity-40" aria-hidden="true">
+      <div className="fixed inset-0 pointer-events-none opacity-40 motion-reduce:hidden" aria-hidden="true">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[400px] bg-gradient-to-b from-brand-gold/15 via-brand-gold/5 to-transparent blur-[120px] rounded-full" />
       </div>
 
       {/* Top Minimalist Utility Bar */}
-      <header className="relative z-10 w-full px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between border-b border-white/[0.04] bg-surface/80 backdrop-blur-md">
+      <header className="relative z-10 w-full px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between border-b border-border bg-card/80 backdrop-blur-md">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="size-8 rounded-lg bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold shadow-sm">
-            <Store className="size-4" aria-hidden="true" />
-          </div>
+          <span className="relative flex size-8 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 bg-brand-surface shadow-xs">
+            <img src="/Logo.jpeg" alt="" width="32" height="32" className="size-full object-cover" />
+          </span>
           <div className="flex items-center gap-2">
-            <span className="font-headline font-bold text-sm tracking-tight text-white">
+            <span className="font-headline font-bold text-sm tracking-tight text-foreground">
               Nutrigon
             </span>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-white/[0.06] text-white/70 font-mono font-medium">
+            <span className="text-[11px] px-2 py-0.5 rounded bg-muted/80 text-muted-foreground font-mono font-medium border border-border/40">
               POS &amp; Admin
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-4 sm:gap-6 text-xs font-medium">
-          <div className="flex items-center gap-2 bg-surface-card/80 px-2.5 sm:px-3 py-1 rounded-full border border-white/[0.06]">
+          <div className="flex items-center gap-2 bg-muted/50 px-2.5 sm:px-3 py-1 rounded-full border border-border">
             <span className="relative flex size-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-reduce:hidden" />
               <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
             </span>
-            <span className="text-white/80 text-[11px] sm:text-xs">
+            <span className="text-muted-foreground text-[11px] sm:text-xs">
               Red Operativa Conectada
             </span>
           </div>
 
           <a
             href="mailto:soporte@nutrigon.com"
-            className="hidden sm:flex items-center gap-1.5 text-white/60 hover:text-brand-gold transition-colors text-xs"
+            className="hidden sm:flex items-center gap-1.5 text-muted-foreground hover:text-brand-gold transition-colors text-xs"
           >
             <Headphones className="size-3.5" aria-hidden="true" />
             <span>Soporte TI</span>
@@ -120,16 +119,16 @@ export function AdminLoginPage() {
 
       {/* Central Login Canvas */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
-        <div className="w-full max-w-[440px] bg-surface-card border border-white/[0.08] rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-sm transition-all duration-300">
+        <div className="w-full max-w-[440px] bg-card border border-border rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-sm transition-all duration-300">
           {/* Card Header & Brand Identity */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center size-14 sm:size-16 rounded-2xl bg-brand-gold/10 border border-brand-gold/25 mb-3.5 shadow-[0_0_24px_rgba(245,183,49,0.12)]">
-              <Store className="size-7 sm:size-8 text-brand-gold" aria-hidden="true" />
+            <div className="relative inline-flex items-center justify-center size-16 rounded-full overflow-hidden ring-2 ring-brand-gold/60 bg-brand-surface shadow-lg mb-3.5">
+              <img src="/Logo.jpeg" alt="" width="64" height="64" className="size-full object-cover" />
             </div>
-            <h1 className="font-headline text-xl sm:text-2xl font-bold tracking-tight text-white mb-1">
+            <h1 className="font-headline text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-1">
               Nutrigon <span className="text-brand-gold font-normal">·</span> Dietética &amp; Cerealera
             </h1>
-            <p className="text-xs sm:text-sm text-brand-muted font-normal">
+            <p className="text-xs sm:text-sm text-muted-foreground font-normal">
               Acceso al Panel de Gestión
             </p>
           </div>
@@ -137,17 +136,17 @@ export function AdminLoginPage() {
           {/* Point of Sale Branch Selector */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Seleccionar Punto de Venta
               </label>
               <span className="text-[11px] text-brand-gold font-medium flex items-center gap-1 bg-brand-gold/10 px-2 py-0.5 rounded-full border border-brand-gold/20">
-                <RefreshCw className="size-3 animate-spin" style={{ animationDuration: "8s" }} />
+                <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" style={{ animationDuration: "8s" }} />
                 Sincronizado
               </span>
             </div>
 
             <div
-              className="grid grid-cols-3 p-1 bg-[#111215] border border-white/[0.06] rounded-xl gap-1"
+              className="grid grid-cols-3 p-1 bg-muted/40 border border-border rounded-xl gap-1"
               role="radiogroup"
               aria-label="Selección de sucursal activa"
             >
@@ -162,8 +161,8 @@ export function AdminLoginPage() {
                     onClick={() => setSelectedBranchSlug(branch.slug)}
                     className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-150 min-h-[44px] ${
                       isSelected
-                        ? "bg-white/[0.1] text-white border border-brand-gold/50 shadow-sm shadow-black/40 font-semibold"
-                        : "text-white/60 hover:text-white border border-transparent"
+                        ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/60 shadow-xs font-bold"
+                        : "text-muted-foreground hover:text-foreground border border-transparent"
                     }`}
                   >
                     <MapPin
@@ -185,12 +184,12 @@ export function AdminLoginPage() {
             <div>
               <label
                 htmlFor="usernameInput"
-                className="block text-xs font-medium text-white/80 mb-1.5"
+                className="block text-xs font-semibold text-foreground mb-1.5"
               >
                 Email o Usuario
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/35">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                   <User className="size-4" aria-hidden="true" />
                 </div>
                 <input
@@ -202,7 +201,7 @@ export function AdminLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@nutrigon.com"
                   required
-                  className="w-full bg-[#111215] text-white text-sm rounded-xl pl-10 pr-4 py-3 border border-white/[0.08] focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all placeholder:text-white/25 min-h-[44px]"
+                  className="w-full bg-muted/30 text-foreground text-sm rounded-xl pl-10 pr-4 py-3 border border-border focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all placeholder:text-muted-foreground/50 min-h-[44px]"
                 />
               </div>
             </div>
@@ -211,12 +210,12 @@ export function AdminLoginPage() {
             <div>
               <label
                 htmlFor="passwordInput"
-                className="block text-xs font-medium text-white/80 mb-1.5"
+                className="block text-xs font-semibold text-foreground mb-1.5"
               >
                 Contraseña
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/35">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                   <Lock className="size-4" aria-hidden="true" />
                 </div>
                 <input
@@ -228,13 +227,13 @@ export function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full bg-[#111215] text-white text-sm rounded-xl pl-10 pr-11 py-3 border border-white/[0.08] focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all placeholder:text-white/25 min-h-[44px]"
+                  className="w-full bg-muted/30 text-foreground text-sm rounded-xl pl-10 pr-11 py-3 border border-border focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all placeholder:text-muted-foreground/50 min-h-[44px]"
                 />
                 <button
                   type="button"
                   aria-label={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/40 hover:text-brand-gold transition-colors min-h-[44px] min-w-[44px] justify-center"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-brand-gold transition-colors min-h-[44px] min-w-[44px] justify-center"
                 >
                   {showPassword ? (
                     <EyeOff className="size-4" aria-hidden="true" />
@@ -252,20 +251,28 @@ export function AdminLoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="size-4 rounded bg-[#111215] border-white/20 text-brand-gold focus:ring-brand-gold focus:ring-offset-surface-card transition-colors"
+                  className="size-4 rounded bg-muted/50 border-border text-brand-gold focus:ring-brand-gold focus:ring-offset-card transition-colors"
                 />
-                <span className="text-xs text-white/70">Recordar sesión</span>
+                <span className="text-xs text-muted-foreground">Recordar sesión</span>
               </label>
               <button
                 type="button"
-                onClick={() =>
-                  alert("Para restablecer la clave, contactá al Administrador General o a soporte@nutrigon.com.")
-                }
-                className="text-xs text-white/50 hover:text-brand-gold transition-colors font-medium"
+                onClick={() => setShowRecoveryHint((prev) => !prev)}
+                className="text-xs text-muted-foreground hover:text-brand-gold transition-colors font-medium"
               >
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
+
+            {/* Password Recovery In-Context Notification */}
+            {showRecoveryHint && (
+              <div className="rounded-xl border border-brand-gold/30 bg-brand-gold/10 p-3 text-xs text-foreground flex items-start gap-2 animate-in fade-in duration-200">
+                <Info className="size-4 text-brand-gold shrink-0 mt-0.5" />
+                <span className="leading-relaxed">
+                  Para restablecer tu clave o gestionar permisos de sucursal, comunicate con el Administrador General o escribí a soporte@nutrigon.com.
+                </span>
+              </div>
+            )}
 
             {/* Dynamic Error Feedback Message */}
             {errorMessage && (
@@ -283,11 +290,11 @@ export function AdminLoginPage() {
               id="submitBtn"
               type="submit"
               disabled={isSubmitting}
-              className="w-full min-h-[48px] bg-brand-gold hover:bg-brand-gold-hover active:scale-[0.99] disabled:opacity-60 text-stone-950 font-headline font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/20 mt-2 cursor-pointer"
+              className="w-full min-h-[48px] bg-brand-gold hover:bg-brand-gold-hover active:scale-[0.99] disabled:opacity-60 text-brand-dark font-headline font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/20 mt-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                   <span>Verificando acceso...</span>
                 </>
               ) : (
@@ -300,14 +307,14 @@ export function AdminLoginPage() {
           </form>
 
           {/* Security Trust Line */}
-          <div className="mt-7 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2 text-[11px] text-white/50 text-center">
+          <div className="mt-7 pt-5 border-t border-border/60 flex items-center justify-center gap-2 text-[11px] text-muted-foreground text-center">
             <ShieldCheck className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
             <span>Conexión cifrada de extremo a extremo · Sucursales sincronizadas</span>
           </div>
         </div>
 
         {/* Auxiliary Links Outside the Card */}
-        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-8 text-xs text-white/40">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-8 text-xs text-muted-foreground">
           <Link
             to="/catalogo"
             className="hover:text-brand-gold transition-colors flex items-center gap-1.5 font-medium min-h-[44px] sm:min-h-0"
@@ -315,7 +322,7 @@ export function AdminLoginPage() {
             <ArrowLeft className="size-3.5" aria-hidden="true" />
             <span>Volver al Catálogo Público</span>
           </Link>
-          <span className="hidden sm:inline-block text-white/10" aria-hidden="true">
+          <span className="hidden sm:inline-block text-border" aria-hidden="true">
             •
           </span>
           <span className="font-mono text-[11px]">Nutrigon v1.0 · Sistema Seguro</span>
@@ -323,15 +330,15 @@ export function AdminLoginPage() {
       </main>
 
       {/* Clean Desktop/Mobile Footer */}
-      <footer className="relative z-10 w-full px-4 sm:px-8 py-4 sm:py-5 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between text-xs text-white/40 gap-3 text-center sm:text-left">
+      <footer className="relative z-10 w-full px-4 sm:px-8 py-4 sm:py-5 border-t border-border flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-3 text-center sm:text-left">
         <div className="flex items-center gap-3">
-          <span>© 2025 Nutrigon Dietética &amp; Cerealera. Todos los derechos reservados.</span>
+          <span>© {new Date().getFullYear()} Nutrigon Dietética &amp; Cerealera. Todos los derechos reservados.</span>
         </div>
         <div className="flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs">
-          <span className="flex items-center gap-1 text-white/50">
+          <span className="flex items-center gap-1 text-muted-foreground">
             <Lock className="size-3" aria-hidden="true" /> SSL 256-Bit TLS 1.3
           </span>
-          <span className="font-mono text-white/40 uppercase">
+          <span className="font-mono text-muted-foreground/80 uppercase">
             Terminal ID: POS-{selectedBranchSlug.toUpperCase()}-01
           </span>
         </div>
