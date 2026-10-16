@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { BranchProductStatus } from '../enums/branch-product-status.enum.js';
 import { SaleUnit } from '../enums/sale-unit.enum.js';
+import { branchComboCatalogItemSchema } from './combo.schema.js';
 
 export const branchProductSchema = z
   .object({
@@ -21,7 +22,11 @@ export type BranchProduct = z.infer<typeof branchProductSchema>;
 export const upsertBranchProductSchema = z
   .object({
     price: z.number().nonnegative('Price must be greater than or equal to 0'),
-    promotionalPrice: z.number().nonnegative('Promotional price must be non-negative').nullable().optional(),
+    promotionalPrice: z
+      .number()
+      .nonnegative('Promotional price must be non-negative')
+      .nullable()
+      .optional(),
     isOnSale: z.boolean().default(false).optional(),
     isAvailable: z.boolean().default(false),
   })
@@ -40,7 +45,10 @@ export const upsertBranchProductSchema = z
   )
   .refine(
     (data) => {
-      if (data.isOnSale && (!data.promotionalPrice || data.promotionalPrice >= data.price)) {
+      if (
+        data.isOnSale &&
+        (!data.promotionalPrice || data.promotionalPrice >= data.price)
+      ) {
         return false;
       }
       return true;
@@ -53,6 +61,33 @@ export const upsertBranchProductSchema = z
 
 export type UpsertBranchProductDto = z.infer<typeof upsertBranchProductSchema>;
 
+export const updateBranchProductOfferSchema = z
+  .object({
+    isOnSale: z.boolean(),
+    promotionalPrice: z
+      .number()
+      .positive('Promotional price must be greater than 0')
+      .nullable()
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (data) => {
+      if (data.isOnSale && (!data.promotionalPrice || data.promotionalPrice <= 0)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'A positive promotional price is required when activating an offer',
+      path: ['promotionalPrice'],
+    },
+  );
+
+export type UpdateBranchProductOfferDto = z.infer<
+  typeof updateBranchProductOfferSchema
+>;
+
 export const branchProductQuerySchema = z
   .object({
     status: z.nativeEnum(BranchProductStatus).optional(),
@@ -60,12 +95,28 @@ export const branchProductQuerySchema = z
     categoryId: z.string().uuid().optional(),
     categorySlug: z.string().trim().optional(),
     barcode: z.string().trim().optional(),
+    isOnSale: z.preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional()),
     page: z.coerce.number().int().min(1).default(1).optional(),
     limit: z.coerce.number().int().min(1).max(500).default(50).optional(),
   })
   .strict();
 
 export type BranchProductQueryDto = z.infer<typeof branchProductQuerySchema>;
+
+export const branchProductCountsSchema = z
+  .object({
+    [BranchProductStatus.ACTIVE]: z.number().int().nonnegative(),
+    [BranchProductStatus.INACTIVE]: z.number().int().nonnegative(),
+    [BranchProductStatus.UNCONFIGURED]: z.number().int().nonnegative(),
+    ON_SALE: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export type BranchProductCounts = z.infer<typeof branchProductCountsSchema>;
 
 export const branchProductAdminItemSchema = z
   .object({
@@ -140,5 +191,18 @@ export const branchPublicCatalogResponseSchema = z
   })
   .strict();
 
-export type BranchPublicCatalogResponse = z.infer<typeof branchPublicCatalogResponseSchema>;
+export type BranchPublicCatalogResponse = z.infer<
+  typeof branchPublicCatalogResponseSchema
+>;
 
+export const branchPublicOffersResponseSchema = z
+  .object({
+    branch: branchCatalogBranchSchema,
+    products: z.array(branchCatalogItemSchema),
+    combos: z.array(branchComboCatalogItemSchema),
+  })
+  .strict();
+
+export type BranchPublicOffersResponse = z.infer<
+  typeof branchPublicOffersResponseSchema
+>;

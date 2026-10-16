@@ -1,0 +1,22 @@
+meta {
+  name: 5. Update Product Offer
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/branches/{{branchId}}/products/{{productId}}/offer
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "isOnSale": true,
+    "promotionalPrice": 4200
+  }
+}

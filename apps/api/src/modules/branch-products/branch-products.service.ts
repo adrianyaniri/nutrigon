@@ -1,6 +1,7 @@
 import {
   Injectable,
   Inject,
+  Optional,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -10,7 +11,9 @@ import {
   type BranchProduct,
   type BranchProductAdminItem,
   type BranchCatalogItem,
+  type BranchProductCounts,
   type BranchPublicCatalogResponse,
+  type BranchPublicOffersResponse,
 } from '@nutrigon/contracts';
 import {
   BRANCH_PRODUCTS_REPOSITORY,
@@ -25,8 +28,10 @@ import {
   type IProductsRepository,
   type PaginatedResult,
 } from '../products/products.repository.interface.js';
+import { CombosService } from '../combos/combos.service.js';
 import type {
   UpsertBranchProductDto,
+  UpdateBranchProductOfferDto,
   BranchProductQueryDto,
 } from './dto/branch-product.dto.js';
 
@@ -39,6 +44,8 @@ export class BranchProductsService {
     private readonly branchesRepository: IBranchesRepository,
     @Inject(PRODUCTS_REPOSITORY)
     private readonly productsRepository: IProductsRepository,
+    @Optional()
+    private readonly combosService?: CombosService,
   ) {}
 
   async listForBranch(
@@ -84,7 +91,7 @@ export class BranchProductsService {
     };
   }
 
-  async countByStatus(branchId: string): Promise<Record<BranchProductStatus, number>> {
+  async countByStatus(branchId: string): Promise<BranchProductCounts> {
     const branch = await this.branchesRepository.findById(branchId);
     if (!branch) {
       throw new NotFoundException(`Branch with ID "${branchId}" was not found`);
@@ -127,6 +134,64 @@ export class BranchProductsService {
       promotionalPrice,
       isOnSale,
       isAvailable: dto.isAvailable ?? false,
+    });
+
+    return {
+      id: entity.id,
+      branchId: entity.branchId,
+      productId: entity.productId,
+      price: Number(entity.price),
+      promotionalPrice:
+        entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
+      isOnSale: entity.isOnSale,
+      isAvailable: entity.isAvailable,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    };
+  }
+
+  async updateOffer(
+    branchId: string,
+    productId: string,
+    dto: UpdateBranchProductOfferDto,
+  ): Promise<BranchProduct> {
+    const branch = await this.branchesRepository.findById(branchId);
+    if (!branch || !branch.isActive) {
+      throw new NotFoundException(
+        `Branch with ID "${branchId}" was not found or is inactive`,
+      );
+    }
+
+    const existing = await this.branchProductsRepository.findByBranchAndProduct(
+      branchId,
+      productId,
+    );
+    if (!existing) {
+      throw new BadRequestException(
+        `Product "${productId}" must have a configured regular price in branch "${branchId}" before setting an offer`,
+      );
+    }
+
+    const regularPrice = Number(existing.price);
+    if (dto.isOnSale) {
+      if (
+        dto.promotionalPrice === null ||
+        dto.promotionalPrice === undefined ||
+        dto.promotionalPrice <= 0 ||
+        dto.promotionalPrice >= regularPrice
+      ) {
+        throw new BadRequestException(
+          `Promotional price must be greater than 0 and strictly less than the regular price (${regularPrice})`,
+        );
+      }
+    }
+
+    const entity = await this.branchProductsRepository.upsert(branchId, productId, {
+      price: existing.price,
+      promotionalPrice:
+        dto.isOnSale && dto.promotionalPrice ? dto.promotionalPrice.toFixed(2) : null,
+      isOnSale: dto.isOnSale,
+      isAvailable: existing.isAvailable,
     });
 
     return {
@@ -188,6 +253,51 @@ export class BranchProductsService {
       page: result.page,
       limit: result.limit,
       totalPages: result.totalPages,
+    };
+  }
+
+  async getPublicOffers(slug: string): Promise<BranchPublicOffersResponse> {
+    const branch = await this.branchesRepository.findBySlug(slug);
+    if (!branch || !branch.isActive) {
+      throw new NotFoundException(`Branch "${slug}" was not found or is inactive`);
+    }
+
+    const [onSaleProducts, combos] = await Promise.all([
+      this.branchProductsRepository.findPublished(branch.id, {
+        isOnSale: true,
+        limit: 200,
+      }),
+      this.combosService
+        ? this.combosService.listPublicForBranch(slug)
+        : Promise.resolve([]),
+    ]);
+
+    const products: BranchCatalogItem[] = onSaleProducts.items.map((row) => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      categoryId: row.categoryId,
+      categoryName: row.categoryName,
+      saleUnit: row.saleUnit as SaleUnit,
+      price: Number(row.price),
+      promotionalPrice:
+        row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
+      isOnSale: row.isOnSale,
+      priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
+      imageUrls: row.imageUrls ?? [],
+    }));
+
+    return {
+      branch: {
+        id: branch.id,
+        name: branch.name,
+        slug: branch.slug,
+        address: branch.address,
+        phone: branch.phone,
+        whatsappNumber: branch.whatsappNumber,
+      },
+      products,
+      combos,
     };
   }
 }

@@ -127,6 +127,7 @@ describe('BranchProductsModule (e2e)', () => {
       expect(typeof res.body[BranchProductStatus.ACTIVE]).toBe('number');
       expect(typeof res.body[BranchProductStatus.INACTIVE]).toBe('number');
       expect(typeof res.body[BranchProductStatus.UNCONFIGURED]).toBe('number');
+      expect(typeof res.body.ON_SALE).toBe('number');
     });
   });
 
@@ -161,6 +162,57 @@ describe('BranchProductsModule (e2e)', () => {
     });
   });
 
+  describe('PATCH /api/v1/branches/:branchId/products/:productId/offer', () => {
+    it('returns 400 when promotionalPrice is greater than or equal to current price', async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/branches/${branchAdminBranchId}/products/${testProductId}/offer`)
+        .set('Authorization', `Bearer ${branchAdminToken}`)
+        .send({ isOnSale: true, promotionalPrice: 6500 })
+        .expect(400);
+    });
+
+    it('activates an offer on the branch product with a valid promotionalPrice', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/api/v1/branches/${branchAdminBranchId}/products/${testProductId}/offer`)
+        .set('Authorization', `Bearer ${branchAdminToken}`)
+        .send({ isOnSale: true, promotionalPrice: 5100 })
+        .expect(200);
+
+      expect(res.body.isOnSale).toBe(true);
+      expect(res.body.promotionalPrice).toBe(5100);
+    });
+
+    it('filters branch products by isOnSale=true', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/branches/${branchAdminBranchId}/products?isOnSale=true`)
+        .set('Authorization', `Bearer ${branchAdminToken}`)
+        .expect(200);
+
+      const found = res.body.items.find((i: any) => i.productId === testProductId);
+      expect(found).toBeDefined();
+      expect(found.isOnSale).toBe(true);
+      expect(found.promotionalPrice).toBe(5100);
+    });
+  });
+
+  describe('GET /api/v1/branches/:slug/offers', () => {
+    it('returns public on-sale products and active combos for the branch', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/branches/${branchAdminSlug}/offers`)
+        .expect(200);
+
+      expect(res.body.branch.id).toBe(branchAdminBranchId);
+      expect(res.body.branch.slug).toBe(branchAdminSlug);
+      expect(Array.isArray(res.body.products)).toBe(true);
+      expect(Array.isArray(res.body.combos)).toBe(true);
+
+      const found = res.body.products.find((p: any) => p.id === testProductId);
+      expect(found).toBeDefined();
+      expect(found.isOnSale).toBe(true);
+      expect(found.promotionalPrice).toBe(5100);
+    });
+  });
+
   describe('GET /api/v1/branches/:slug/catalog', () => {
     it('publicly lists the newly activated product along with branch metadata and categories', async () => {
       const res = await request(app.getHttpServer())
@@ -181,3 +233,4 @@ describe('BranchProductsModule (e2e)', () => {
     });
   });
 });
+

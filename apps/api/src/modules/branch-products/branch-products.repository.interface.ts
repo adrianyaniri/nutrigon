@@ -1,7 +1,7 @@
 import type {
-  BranchProductStatus,
   SaleUnit,
   BranchCatalogCategory,
+  BranchProductCounts,
 } from '@nutrigon/contracts';
 import type { BranchProductEntity } from '../../core/database/schema/branch-products.js';
 import type { PaginatedResult } from '../products/products.repository.interface.js';
@@ -50,7 +50,11 @@ export interface IBranchProductsRepository {
     branchId: string,
     query: BranchProductQueryDto,
   ): Promise<PaginatedResult<BranchProductAdminRow>>;
-  countByStatus(branchId: string): Promise<Record<BranchProductStatus, number>>;
+  countByStatus(branchId: string): Promise<BranchProductCounts>;
+  findByBranchAndProduct(
+    branchId: string,
+    productId: string,
+  ): Promise<BranchProductEntity | null>;
   upsert(
     branchId: string,
     productId: string,

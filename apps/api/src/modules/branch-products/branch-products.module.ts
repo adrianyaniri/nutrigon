@@ -5,9 +5,10 @@ import { BranchProductsRepository } from './branch-products.repository.js';
 import { BRANCH_PRODUCTS_REPOSITORY } from './branch-products.repository.interface.js';
 import { BranchesModule } from '../branches/branches.module.js';
 import { ProductsModule } from '../products/products.module.js';
+import { CombosModule } from '../combos/combos.module.js';
 
 @Module({
-  imports: [BranchesModule, ProductsModule],
+  imports: [BranchesModule, ProductsModule, CombosModule],
   controllers: [BranchProductsController],
   providers: [
     BranchProductsService,

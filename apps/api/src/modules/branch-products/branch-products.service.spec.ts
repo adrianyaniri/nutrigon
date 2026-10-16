@@ -4,6 +4,8 @@ import {
   BranchProductStatus,
   SaleUnit,
   type BranchCatalogCategory,
+  type BranchProductCounts,
+  type BranchComboCatalogItem,
 } from '@nutrigon/contracts';
 import { BranchProductsService } from './branch-products.service.js';
 import type {
@@ -15,6 +17,7 @@ import type {
 import type { PaginatedResult } from '../products/products.repository.interface.js';
 import type { IBranchesRepository } from '../branches/branches.repository.interface.js';
 import type { IProductsRepository } from '../products/products.repository.interface.js';
+import type { CombosService } from '../combos/combos.service.js';
 import type { BranchEntity } from '../../core/database/schema/branches.js';
 import type { ProductEntity } from '../../core/database/schema/products.js';
 import type { BranchProductEntity } from '../../core/database/schema/branch-products.js';
@@ -66,10 +69,12 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
   public publishedCategories: BranchCatalogCategory[] = [
     { id: CATEGORY_ID, name: 'Frutos secos', slug: 'frutos-secos' },
   ];
-  public counts: Record<BranchProductStatus, number> = {
+  public existingBranchProduct: BranchProductEntity | null = null;
+  public counts: BranchProductCounts = {
     [BranchProductStatus.ACTIVE]: 0,
     [BranchProductStatus.INACTIVE]: 0,
     [BranchProductStatus.UNCONFIGURED]: 0,
+    ON_SALE: 0,
   };
   public lastAdminQuery: BranchProductQueryDto | null = null;
   public lastCatalogQuery: BranchProductQueryDto | null = null;
@@ -86,6 +91,10 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
 
   async countByStatus(_branchId: string) {
     return this.counts;
+  }
+
+  async findByBranchAndProduct(_branchId: string, _productId: string) {
+    return this.existingBranchProduct;
   }
 
   async upsert(
@@ -122,11 +131,13 @@ describe('BranchProductsService', () => {
   let repo: FakeBranchProductsRepository;
   let branches: BranchEntity[];
   let products: ProductEntity[];
+  let publicCombos: BranchComboCatalogItem[];
 
   beforeEach(() => {
     repo = new FakeBranchProductsRepository();
     branches = [makeBranch()];
     products = [makeProduct()];
+    publicCombos = [];
 
     const branchesRepo = {
       findById: async (id: string) => branches.find((b) => b.id === id) ?? null,
@@ -137,7 +148,11 @@ describe('BranchProductsService', () => {
       findById: async (id: string) => products.find((p) => p.id === id) ?? null,
     } as unknown as IProductsRepository;
 
-    service = new BranchProductsService(repo, branchesRepo, productsRepo);
+    const combosService = {
+      listPublicForBranch: async (_slug: string) => publicCombos,
+    } as unknown as CombosService;
+
+    service = new BranchProductsService(repo, branchesRepo, productsRepo, combosService);
   });
 
   describe('listForBranch', () => {
@@ -208,9 +223,10 @@ describe('BranchProductsService', () => {
       expect(result.total).toBe(3);
     });
 
-    it('forwards the query to the repository', async () => {
+    it('forwards the query (including isOnSale) to the repository', async () => {
       const query: BranchProductQueryDto = {
-        status: BranchProductStatus.INACTIVE,
+        status: BranchProductStatus.ACTIVE,
+        isOnSale: true,
         search: 'x',
       };
       await service.listForBranch(BRANCH_ID, query);
@@ -225,11 +241,12 @@ describe('BranchProductsService', () => {
       );
     });
 
-    it('returns counts per status', async () => {
+    it('returns counts per status including ON_SALE', async () => {
       repo.counts = {
         [BranchProductStatus.ACTIVE]: 4,
         [BranchProductStatus.INACTIVE]: 2,
         [BranchProductStatus.UNCONFIGURED]: 7,
+        ON_SALE: 2,
       };
       expect(await service.countByStatus(BRANCH_ID)).toEqual(repo.counts);
     });
@@ -304,7 +321,68 @@ describe('BranchProductsService', () => {
     });
   });
 
-  describe('getPublicCatalog', () => {
+  describe('updateOffer', () => {
+    it('throws BadRequestException if product is not configured in the branch yet', async () => {
+      repo.existingBranchProduct = null;
+      await expect(
+        service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+          isOnSale: true,
+          promotionalPrice: 4000,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws BadRequestException if promotionalPrice >= current regular price', async () => {
+      repo.existingBranchProduct = {
+        id: 'bp-1',
+        branchId: BRANCH_ID,
+        productId: PRODUCT_ID,
+        price: '5000.00',
+        promotionalPrice: null,
+        isOnSale: false,
+        isAvailable: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await expect(
+        service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+          isOnSale: true,
+          promotionalPrice: 5000,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('activates and deactivates an offer preserving regular price and availability', async () => {
+      repo.existingBranchProduct = {
+        id: 'bp-1',
+        branchId: BRANCH_ID,
+        productId: PRODUCT_ID,
+        price: '5000.00',
+        promotionalPrice: null,
+        isOnSale: false,
+        isAvailable: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const activated = await service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+        isOnSale: true,
+        promotionalPrice: 4200,
+      });
+      expect(activated.isOnSale).toBe(true);
+      expect(activated.promotionalPrice).toBe(4200);
+      expect(activated.price).toBe(5000);
+
+      const deactivated = await service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+        isOnSale: false,
+      });
+      expect(deactivated.isOnSale).toBe(false);
+      expect(deactivated.promotionalPrice).toBeNull();
+    });
+  });
+
+  describe('getPublicCatalog & getPublicOffers', () => {
     it('throws NotFound for an unknown slug', async () => {
       await expect(service.getPublicCatalog('nope', {})).rejects.toBeInstanceOf(
         NotFoundException,
@@ -372,21 +450,45 @@ describe('BranchProductsService', () => {
       });
     });
 
-    it('ignores the admin-only status filter and forwards categorySlug on the public catalog', async () => {
-      await service.getPublicCatalog('centro', {
-        status: BranchProductStatus.INACTIVE,
-        search: 'alm',
-        categorySlug: 'frutos-secos',
-        page: 2,
-        limit: 10,
-      });
+    it('returns active offers (on-sale products and combos) for a branch slug', async () => {
+      repo.catalogPage = {
+        ...emptyPage(),
+        items: [
+          {
+            id: PRODUCT_ID,
+            name: 'Almendras',
+            description: null,
+            categoryId: CATEGORY_ID,
+            categoryName: 'Frutos secos',
+            saleUnit: SaleUnit.WEIGHT,
+            price: '5000.00',
+            promotionalPrice: '4200.00',
+            isOnSale: true,
+            imageUrls: [],
+          },
+        ],
+        total: 1,
+      };
+      publicCombos = [
+        {
+          id: 'combo-1',
+          name: 'Mix Energía',
+          description: null,
+          price: 9500,
+          priceUnitLabel: 'combo',
+          imageUrls: [],
+          items: [],
+        },
+      ];
 
-      expect(repo.lastCatalogQuery).toEqual({
-        search: 'alm',
-        categorySlug: 'frutos-secos',
-        page: 2,
-        limit: 10,
-      });
+      const offers = await service.getPublicOffers('centro');
+
+      expect(repo.lastCatalogQuery).toEqual({ isOnSale: true, limit: 200 });
+      expect(offers.branch.slug).toBe('centro');
+      expect(offers.products).toHaveLength(1);
+      expect(offers.products[0]!.promotionalPrice).toBe(4200);
+      expect(offers.combos).toHaveLength(1);
+      expect(offers.combos[0]!.name).toBe('Mix Energía');
     });
   });
 });

@@ -4,6 +4,7 @@ import { BranchProductsController } from './branch-products.controller.js';
 import type { BranchProductsService } from './branch-products.service.js';
 import type {
   UpsertBranchProductDto,
+  UpdateBranchProductOfferDto,
   BranchProductQueryDto,
 } from './dto/branch-product.dto.js';
 
@@ -20,7 +21,9 @@ describe('BranchProductsController (TDD)', () => {
       listForBranch: vi.fn(),
       countByStatus: vi.fn(),
       upsert: vi.fn(),
+      updateOffer: vi.fn(),
       getPublicCatalog: vi.fn(),
+      getPublicOffers: vi.fn(),
     };
     controller = new BranchProductsController(
       mockService as unknown as BranchProductsService,
@@ -31,6 +34,15 @@ describe('BranchProductsController (TDD)', () => {
     it('delegates to service.getPublicCatalog with slug and query', async () => {
       const query: BranchProductQueryDto = { search: 'almendras', page: 1, limit: 20 };
       const catalogPage = {
+        branch: {
+          id: BRANCH_ID,
+          name: 'Sucursal Centro',
+          slug: 'sucursal-centro',
+          address: null,
+          phone: null,
+          whatsappNumber: null,
+        },
+        categories: [],
         items: [
           {
             id: PRODUCT_ID,
@@ -60,6 +72,29 @@ describe('BranchProductsController (TDD)', () => {
     });
   });
 
+  describe('getPublicOffers', () => {
+    it('delegates to service.getPublicOffers with slug', async () => {
+      const offers = {
+        branch: {
+          id: BRANCH_ID,
+          name: 'Centro',
+          slug: 'centro',
+          address: null,
+          phone: null,
+          whatsappNumber: null,
+        },
+        products: [],
+        combos: [],
+      };
+      mockService.getPublicOffers!.mockResolvedValue(offers);
+
+      const result = await controller.getPublicOffers('centro');
+
+      expect(mockService.getPublicOffers).toHaveBeenCalledWith('centro');
+      expect(result).toEqual(offers);
+    });
+  });
+
   describe('listForBranch', () => {
     it('delegates to service.listForBranch with branchId and query', async () => {
       const query: BranchProductQueryDto = { status: BranchProductStatus.UNCONFIGURED };
@@ -85,6 +120,7 @@ describe('BranchProductsController (TDD)', () => {
         [BranchProductStatus.ACTIVE]: 10,
         [BranchProductStatus.INACTIVE]: 2,
         [BranchProductStatus.UNCONFIGURED]: 5,
+        ON_SALE: 3,
       };
       mockService.countByStatus!.mockResolvedValue(counts);
 
@@ -118,6 +154,32 @@ describe('BranchProductsController (TDD)', () => {
       const result = await controller.upsert(BRANCH_ID, PRODUCT_ID, dto);
 
       expect(mockService.upsert).toHaveBeenCalledWith(BRANCH_ID, PRODUCT_ID, dto);
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('updateOffer', () => {
+    it('delegates to service.updateOffer with branchId, productId and dto', async () => {
+      const dto: UpdateBranchProductOfferDto = {
+        isOnSale: true,
+        promotionalPrice: 4200,
+      };
+      const expected = {
+        id: 'bp-uuid-1',
+        branchId: BRANCH_ID,
+        productId: PRODUCT_ID,
+        price: 5000,
+        promotionalPrice: 4200,
+        isOnSale: true,
+        isAvailable: true,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      };
+      mockService.updateOffer!.mockResolvedValue(expected);
+
+      const result = await controller.updateOffer(BRANCH_ID, PRODUCT_ID, dto);
+
+      expect(mockService.updateOffer).toHaveBeenCalledWith(BRANCH_ID, PRODUCT_ID, dto);
       expect(result).toEqual(expected);
     });
   });

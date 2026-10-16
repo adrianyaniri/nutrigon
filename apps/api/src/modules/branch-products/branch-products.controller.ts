@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Put,
+  Patch,
   Param,
   Body,
   Query,
@@ -9,6 +10,7 @@ import {
 import { BranchProductsService } from './branch-products.service.js';
 import {
   UpsertBranchProductDto,
+  UpdateBranchProductOfferDto,
   BranchProductQueryDto,
 } from './dto/branch-product.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
@@ -25,6 +27,12 @@ export class BranchProductsController {
     @Query() query: BranchProductQueryDto,
   ) {
     return this.branchProductsService.getPublicCatalog(slug, query);
+  }
+
+  @Public()
+  @Get(':slug/offers')
+  async getPublicOffers(@Param('slug') slug: string) {
+    return this.branchProductsService.getPublicOffers(slug);
   }
 
   @AuthBranchScoped()
@@ -50,5 +58,15 @@ export class BranchProductsController {
     @Body() dto: UpsertBranchProductDto,
   ) {
     return this.branchProductsService.upsert(branchId, productId, dto);
+  }
+
+  @AuthBranchScoped()
+  @Patch(':branchId/products/:productId/offer')
+  async updateOffer(
+    @Param('branchId') branchId: string,
+    @Param('productId') productId: string,
+    @Body() dto: UpdateBranchProductOfferDto,
+  ) {
+    return this.branchProductsService.updateOffer(branchId, productId, dto);
   }
 }

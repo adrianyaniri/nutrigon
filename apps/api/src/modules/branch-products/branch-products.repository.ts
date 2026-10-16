@@ -14,6 +14,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   BranchProductStatus,
   type BranchCatalogCategory,
+  type BranchProductCounts,
 } from '@nutrigon/contracts';
 import { DRIZZLE_CLIENT } from '../../core/database/database.constants.js';
 import * as schema from '../../core/database/schema/index.js';
@@ -61,6 +62,16 @@ export class BranchProductsRepository implements IBranchProductsRepository {
 
     if (query.barcode && query.barcode.trim()) {
       conditions.push(eq(schema.products.barcode, query.barcode.trim()));
+    }
+
+    if (typeof query.isOnSale === 'boolean') {
+      if (query.isOnSale) {
+        conditions.push(eq(schema.branchProducts.isOnSale, true));
+      } else {
+        conditions.push(
+          sql`coalesce(${schema.branchProducts.isOnSale}, false) = false`,
+        );
+      }
     }
 
     if (query.status === BranchProductStatus.ACTIVE) {
@@ -127,9 +138,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     };
   }
 
-  async countByStatus(
-    branchId: string,
-  ): Promise<Record<BranchProductStatus, number>> {
+  async countByStatus(branchId: string): Promise<BranchProductCounts> {
     const joinCondition = and(
       eq(schema.branchProducts.productId, schema.products.id),
       eq(schema.branchProducts.branchId, branchId),
@@ -140,6 +149,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         active: sql<number>`count(*) filter (where ${schema.branchProducts.isAvailable} = true)`,
         inactive: sql<number>`count(*) filter (where ${schema.branchProducts.id} is not null and ${schema.branchProducts.isAvailable} = false)`,
         unconfigured: sql<number>`count(*) filter (where ${schema.branchProducts.id} is null)`,
+        onSale: sql<number>`count(*) filter (where ${schema.branchProducts.isAvailable} = true and ${schema.branchProducts.isOnSale} = true)`,
       })
       .from(schema.products)
       .innerJoin(
@@ -159,7 +169,26 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       [BranchProductStatus.ACTIVE]: Number(row?.active ?? 0),
       [BranchProductStatus.INACTIVE]: Number(row?.inactive ?? 0),
       [BranchProductStatus.UNCONFIGURED]: Number(row?.unconfigured ?? 0),
+      ON_SALE: Number(row?.onSale ?? 0),
     };
+  }
+
+  async findByBranchAndProduct(
+    branchId: string,
+    productId: string,
+  ): Promise<BranchProductEntity | null> {
+    const rows = await this.db
+      .select()
+      .from(schema.branchProducts)
+      .where(
+        and(
+          eq(schema.branchProducts.branchId, branchId),
+          eq(schema.branchProducts.productId, productId),
+        ),
+      )
+      .limit(1);
+
+    return rows[0] ?? null;
   }
 
   async upsert(
@@ -221,6 +250,10 @@ export class BranchProductsRepository implements IBranchProductsRepository {
 
     if (query.barcode && query.barcode.trim()) {
       conditions.push(eq(schema.products.barcode, query.barcode.trim()));
+    }
+
+    if (typeof query.isOnSale === 'boolean') {
+      conditions.push(eq(schema.branchProducts.isOnSale, query.isOnSale));
     }
 
     const whereClause = and(...conditions);
