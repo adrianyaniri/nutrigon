@@ -117,4 +117,40 @@ describe("buildCategoryOptions", () => {
     const options = buildCategoryOptions(categories, [products[0]!]);
     expect(options.map((o) => o.value)).toEqual([null, "frutos-secos"]);
   });
+
+  it("includes Ofertas and Combos when includeSpecialFilters is enabled", () => {
+    const withCombo = [
+      ...products,
+      product({
+        id: "combo-1",
+        name: "Combo Desayuno",
+        categoryId: "__combos__",
+        saleUnit: "UNIT",
+        price: 12000,
+        promotionalPrice: 9900,
+        isCombo: true,
+      }),
+    ];
+    const options = buildCategoryOptions(categories, withCombo, { includeSpecialFilters: true });
+    expect(options.slice(0, 3)).toEqual([
+      { value: null, label: "Todos", count: 5 },
+      { value: "ofertas", label: "Ofertas", count: 1 },
+      { value: "combos", label: "Combos", count: 1 },
+    ]);
+
+    const offersOnly = filterAndSortProducts(withCombo, categories, {
+      search: "",
+      categorySlug: "ofertas",
+      sort: "popular",
+    });
+    expect(offersOnly.map((p) => p.id)).toEqual(["p3"]);
+
+    const combosOnly = filterAndSortProducts(withCombo, categories, {
+      search: "",
+      categorySlug: "combos",
+      sort: "popular",
+    });
+    expect(combosOnly.map((p) => p.id)).toEqual(["combo-1"]);
+  });
 });
+

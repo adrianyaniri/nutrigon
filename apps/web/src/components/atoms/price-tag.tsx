@@ -5,10 +5,12 @@ interface PriceTagProps {
   price: number;
   /** When set, rendered struck-through next to the current price. */
   originalPrice?: number;
+  /** Optional unit suffix such as "/ kg" or "/ un." */
+  unitLabel?: string;
   className?: string;
 }
 
-export function PriceTag({ price, originalPrice, className }: PriceTagProps) {
+export function PriceTag({ price, originalPrice, unitLabel, className }: PriceTagProps) {
   return (
     <div className={cn("flex flex-col leading-tight", className)}>
       {originalPrice !== undefined && (
@@ -17,9 +19,13 @@ export function PriceTag({ price, originalPrice, className }: PriceTagProps) {
           {formatPrice(originalPrice)}
         </span>
       )}
-      <span className="text-base font-semibold tracking-tight text-brand-gold">
-        {formatPrice(price)}
+      <span className="flex items-baseline gap-1 text-base font-semibold tracking-tight text-brand-gold">
+        <span>{formatPrice(price)}</span>
+        {unitLabel && (
+          <span className="text-[11px] font-medium text-brand-muted">{unitLabel}</span>
+        )}
       </span>
     </div>
   );
 }
+

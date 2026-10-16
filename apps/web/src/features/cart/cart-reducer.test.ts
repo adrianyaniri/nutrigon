@@ -27,4 +27,26 @@ describe("cartReducer", () => {
     expect(state.lines).toEqual([{ productId: "b", quantity: 1 }]);
     expect(cartReducer(state, { type: "clear" })).toEqual(initialCartState);
   });
+
+  it("decrements quantity when quantity > 1", () => {
+    let state = cartReducer(initialCartState, { type: "add", branchSlug: "centro", productId: "a" });
+    state = cartReducer(state, { type: "add", branchSlug: "centro", productId: "a" });
+    state = cartReducer(state, { type: "decrement", productId: "a" });
+    expect(state.lines).toEqual([{ productId: "a", quantity: 1 }]);
+  });
+
+  it("removes product when decrementing quantity of 1", () => {
+    let state = cartReducer(initialCartState, { type: "add", branchSlug: "centro", productId: "a" });
+    state = cartReducer(state, { type: "decrement", productId: "a" });
+    expect(state.lines).toEqual([]);
+  });
+
+  it("sets explicit quantity and removes product when quantity <= 0", () => {
+    let state = cartReducer(initialCartState, { type: "add", branchSlug: "centro", productId: "a" });
+    state = cartReducer(state, { type: "setQuantity", productId: "a", quantity: 5 });
+    expect(state.lines).toEqual([{ productId: "a", quantity: 5 }]);
+    state = cartReducer(state, { type: "setQuantity", productId: "a", quantity: 0 });
+    expect(state.lines).toEqual([]);
+  });
 });
+

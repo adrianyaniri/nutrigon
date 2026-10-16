@@ -9,12 +9,19 @@ interface ProductGridProps {
   products: readonly CatalogProduct[];
   isLoading: boolean;
   onAdd: (product: CatalogProduct) => void;
+  onSelect?: (product: CatalogProduct) => void;
   onClearFilters: () => void;
 }
 
 const SKELETON_COUNT = 8;
 
-export function ProductGrid({ products, isLoading, onAdd, onClearFilters }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  isLoading,
+  onAdd,
+  onSelect,
+  onClearFilters,
+}: ProductGridProps) {
   if (isLoading) {
     return (
       <div
@@ -49,7 +56,7 @@ export function ProductGrid({ products, isLoading, onAdd, onClearFilters }: Prod
       {products.map((product) => (
         <li key={product.id} className="flex">
           <div className="flex w-full">
-            <ProductCard product={product} onAdd={onAdd} />
+            <ProductCard product={product} onAdd={onAdd} onSelect={onSelect} />
           </div>
         </li>
       ))}

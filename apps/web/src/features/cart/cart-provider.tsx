@@ -9,8 +9,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       itemCount: countCartItems(state),
-      addProduct: (branchSlug, productId) => dispatch({ type: "add", branchSlug, productId }),
-      removeProduct: (productId) => dispatch({ type: "remove", productId }),
+      addProduct: (branchSlug, productId, quantity, portion) =>
+        dispatch({ type: "add", branchSlug, productId, quantity, portion }),
+      decrementProduct: (productId, portion) =>
+        dispatch({ type: "decrement", productId, portion }),
+      setProductQuantity: (productId, quantity, portion) =>
+        dispatch({ type: "setQuantity", productId, quantity, portion }),
+      removeProduct: (productId, portion) =>
+        dispatch({ type: "remove", productId, portion }),
       clear: () => dispatch({ type: "clear" }),
       dispatch,
     }),

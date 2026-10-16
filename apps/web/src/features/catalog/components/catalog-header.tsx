@@ -7,6 +7,7 @@ export interface CatalogHeaderProps {
   branchName?: string;
   cartItemCount: number;
   onOpenCategories?: () => void;
+  onOpenCart?: () => void;
 }
 
 /**
@@ -20,6 +21,7 @@ export function CatalogHeader({
   branchName,
   cartItemCount,
   onOpenCategories,
+  onOpenCart,
 }: CatalogHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -31,7 +33,7 @@ export function CatalogHeader({
               type="button"
               onClick={onOpenCategories}
               aria-label="Abrir menú de categorías"
-              className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/80 px-3 py-2 text-xs font-semibold text-white hover:border-brand-gold hover:text-brand-gold transition-colors md:hidden shadow-2xs"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/80 px-3 py-2 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors md:hidden shadow-2xs"
             >
               <Menu className="size-4 text-brand-gold" aria-hidden="true" />
               <span className="hidden sm:inline">Categorías</span>
@@ -39,9 +41,9 @@ export function CatalogHeader({
           )}
 
           {branchName && (
-            <div className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1 text-xs text-zinc-300">
+            <div className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1 text-xs text-muted-foreground">
               <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
-              <span className="font-medium">Sucursal {branchName}</span>
+              <span className="font-medium text-foreground">Sucursal {branchName}</span>
             </div>
           )}
         </div>
@@ -56,7 +58,7 @@ export function CatalogHeader({
               <img src="/Logo.jpeg" alt="Nutrigon" className="size-full object-cover" />
             </span>
             <div className="flex flex-col leading-tight text-center sm:text-left">
-              <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-white">
+              <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-foreground">
                 Nutrigon
               </span>
               <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
@@ -69,6 +71,7 @@ export function CatalogHeader({
         {/* Right Column: Cart Button */}
         <div className="flex w-1/4 items-center justify-end">
           <IconButton
+            onClick={onOpenCart}
             aria-label={
               cartItemCount === 0
                 ? "Mi pedido, vacío"

@@ -63,13 +63,54 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.queryByText("Pistachos Tostados")).not.toBeInTheDocument();
   });
 
-  it("reflects added products in the cart button", async () => {
+  it("adds UNIT products directly to cart when clicking the add button", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Galletas de Arroz");
+    expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" }));
+    expect(screen.getByRole("button", { name: "Mi pedido, 1 producto" })).toBeInTheDocument();
+  });
+
+  it("opens portion modal when clicking the add button on WEIGHT products", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" }));
-    expect(screen.getByRole("button", { name: "Mi pedido, 1 producto" })).toBeInTheDocument();
+
+    // Modal opens instead of directly adding to cart
+    expect(await screen.findByRole("dialog", { name: "Almendras Nonpareil" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Opciones de gramaje" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
+
+    // Adding from inside the modal updates the cart
+    const submitBtn = screen.getByRole("button", { name: /Agregar al Pedido/i });
+    fireEvent.click(submitBtn);
+    expect(await screen.findByRole("button", { name: "Mi pedido, 1 producto" })).toBeInTheDocument();
+  });
+
+  it("opens the cart drawer when clicking the cart button in header", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Galletas de Arroz");
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" }));
+    const cartButton = screen.getByRole("button", { name: "Mi pedido, 1 producto" });
+    fireEvent.click(cartButton);
+
+    expect(await screen.findByRole("dialog", { name: /tu pedido/i })).toBeInTheDocument();
+    expect(screen.getByText("Enviar Pedido por WhatsApp")).toBeInTheDocument();
+  });
+
+  it("opens the product detail modal when clicking a product card in the grid", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    const heading = screen.getByRole("heading", { name: "Almendras Nonpareil" });
+    fireEvent.click(heading);
+
+    expect(await screen.findByRole("dialog", { name: "Almendras Nonpareil" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Opciones de gramaje" })).toBeInTheDocument();
   });
 
   it("applies the category from the URL", async () => {

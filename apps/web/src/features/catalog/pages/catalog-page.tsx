@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { SearchInput } from "@/components/molecules/search-input";
 import { SortSelect } from "@/components/molecules/sort-select";
-import { useCart } from "@/features/cart";
+import { useCart, CartDrawer } from "@/features/cart";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
 import { CategoryDrawer } from "../components/category-drawer";
 import { CategoryNav } from "../components/category-nav";
+import { ProductModal } from "../components/product-modal";
 import { ProductGrid } from "../components/product-grid";
 import { useCatalogFilters } from "../hooks/use-catalog-filters";
 import { useBranchCatalog, useBranches } from "../hooks/use-catalog-queries";
@@ -28,6 +29,8 @@ export function CatalogPage() {
   const navigate = useNavigate();
 
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
 
   const branchesQuery = useBranches();
   const branches = branchesQuery.data ?? [];
@@ -67,7 +70,11 @@ export function CatalogPage() {
   const hasError = branchesQuery.isError || catalogQuery.isError;
 
   function handleAdd(product: CatalogProduct) {
-    if (branchSlug) addProduct(branchSlug, product.id);
+    if (product.saleUnit === "WEIGHT") {
+      setSelectedProduct(product);
+    } else if (branchSlug) {
+      addProduct(branchSlug, product.id);
+    }
   }
 
   function handleBranchChange(newSlug: string) {
@@ -126,6 +133,7 @@ export function CatalogPage() {
         branchName={catalog?.branch.name}
         cartItemCount={itemCount}
         onOpenCategories={() => setIsCategoryDrawerOpen(true)}
+        onOpenCart={() => setIsCartOpen(true)}
       />
 
       <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
@@ -224,6 +232,7 @@ export function CatalogPage() {
               products={visibleProducts}
               isLoading={isLoading}
               onAdd={handleAdd}
+              onSelect={setSelectedProduct}
               onClearFilters={clearFilters}
             />
           )}
@@ -237,6 +246,23 @@ export function CatalogPage() {
         options={categoryOptions}
         value={filters.categorySlug}
         onChange={setCategory}
+      />
+
+      {/* Cart Review & WhatsApp Dispatch Drawer */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        branch={catalog?.branch}
+        products={catalog?.products ?? []}
+      />
+
+      {/* Product Detail & Bulk Portion Modal */}
+      <ProductModal
+        isOpen={selectedProduct !== null}
+        onClose={() => setSelectedProduct(null)}
+        product={selectedProduct}
+        branch={catalog?.branch}
+        categories={catalog?.categories ?? []}
       />
 
       <CatalogFooter currentBranch={catalog?.branch} branches={branches} />

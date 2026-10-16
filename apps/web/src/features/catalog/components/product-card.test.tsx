@@ -18,7 +18,8 @@ describe("ProductCard", () => {
   it("shows name, sale unit and price", () => {
     render(<ProductCard product={base} />);
     expect(screen.getByRole("heading", { name: "Almendras Nonpareil" })).toBeInTheDocument();
-    expect(screen.getByText("Granel · 100 g")).toBeInTheDocument();
+    expect(screen.getByText("Granel · Precio por 1 kg")).toBeInTheDocument();
+    expect(screen.getByText("/ kg")).toBeInTheDocument();
     expect(screen.getByText(/1\.450/)).toBeInTheDocument();
     expect(screen.queryByText("Oferta")).not.toBeInTheDocument();
   });
@@ -40,5 +41,15 @@ describe("ProductCard", () => {
   it("does not render an add button without onAdd", () => {
     render(<ProductCard product={base} />);
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("calls onSelect when clicking the product card without triggering onAdd", () => {
+    const onAdd = vi.fn();
+    const onSelect = vi.fn();
+    render(<ProductCard product={base} onAdd={onAdd} onSelect={onSelect} />);
+
+    fireEvent.click(screen.getByRole("heading", { name: "Almendras Nonpareil" }));
+    expect(onSelect).toHaveBeenCalledWith(base);
+    expect(onAdd).not.toHaveBeenCalled();
   });
 });

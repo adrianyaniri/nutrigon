@@ -17,9 +17,16 @@ export interface CatalogCategory {
   slug: string;
 }
 
+export interface ComboItemSummary {
+  productId: string;
+  productName: string;
+  quantity: number;
+  saleUnit: SaleUnit;
+}
+
 /**
  * Product as seen by a visitor of a specific branch.
- * `price` is per unit for `UNIT` products and per 100 g for `WEIGHT` products.
+ * `price` is per unit for `UNIT` products and per 1 kg for `WEIGHT` products.
  */
 export interface CatalogProduct {
   id: string;
@@ -30,6 +37,8 @@ export interface CatalogProduct {
   imageUrl: string | null;
   price: number;
   promotionalPrice: number | null;
+  isCombo?: boolean;
+  comboItems?: ComboItemSummary[];
 }
 
 export interface BranchCatalog {
