@@ -501,28 +501,28 @@ export function AdminProductsPage() {
                         </span>
 
                         {item.status === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
                             <Check className="size-3" /> En tienda
                           </span>
                         )}
                         {item.status === "INACTIVE" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-300">
                             <PauseCircle className="size-3" /> Pausado
                           </span>
                         )}
                         {item.status === "UNCONFIGURED" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-500/20 border border-zinc-500/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-500/20 border border-zinc-500/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                             Sin precio
                           </span>
                         )}
                         {item.isOnSale && item.promotionalPrice !== null && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
                             <Sparkles className="size-3" /> Oferta:{" "}
                             {formatPrice(item.promotionalPrice)} {unitSuffix}
                           </span>
                         )}
                         {item.isFeatured && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
                             <Star className="size-3 fill-brand-gold" /> Destacado
                           </span>
                         )}

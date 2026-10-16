@@ -70,7 +70,7 @@ export function AdminHeader() {
               <span className="font-headline text-sm font-semibold tracking-tight text-white">
                 Nutrigon
               </span>
-              <span className="text-[10px] sm:text-[11px] font-medium text-white/50 px-1.5 py-0.5 rounded bg-white/[0.05] font-mono">
+              <span className="text-[11px] font-medium text-white/60 px-1.5 py-0.5 rounded bg-white/[0.05] font-mono">
                 Admin
               </span>
             </div>
@@ -83,7 +83,7 @@ export function AdminHeader() {
                 to="/admin/catalogo-maestro"
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                     isActive
                       ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
                       : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
@@ -99,7 +99,7 @@ export function AdminHeader() {
               to="/admin/productos"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                   isActive
                     ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
                     : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
@@ -114,7 +114,7 @@ export function AdminHeader() {
               to="/admin/combos"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                   isActive
                     ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
                     : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
@@ -179,7 +179,7 @@ export function AdminHeader() {
             <span className="text-xs font-semibold text-white leading-tight">
               {user?.fullName || "Administrador"}
             </span>
-            <span className="text-[10px] text-white/50 font-mono">
+            <span className="text-[11px] text-white/60 font-mono">
               {user?.role === Role.ADMIN_GENERAL ? "Admin General" : "Admin Sucursal"}
             </span>
           </div>
@@ -188,7 +188,7 @@ export function AdminHeader() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/[0.04] transition-colors"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/50 hover:text-red-400 p-2 rounded-lg hover:bg-white/[0.04] transition-colors"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >

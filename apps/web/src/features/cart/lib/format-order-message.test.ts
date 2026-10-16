@@ -58,4 +58,36 @@ describe("formatWhatsAppOrderMessage", () => {
     expect(message).toContain("Cliente: A coordinar");
     expect(message).not.toContain("Notas:");
   });
+
+  it("correctly describes portion size for WEIGHT items without contradiction", () => {
+    const message = formatWhatsAppOrderMessage({
+      branchName: "Centro",
+      items: [
+        {
+          name: "Almendras Nonpareil",
+          quantity: 2,
+          saleUnit: "WEIGHT",
+          portion: "250g",
+          unitPrice: 3625,
+          lineTotal: 7250,
+        },
+        {
+          name: "Mix Frutos Rojos",
+          quantity: 1,
+          saleUnit: "WEIGHT",
+          portion: "500g",
+          unitPrice: 5900,
+          lineTotal: 5900,
+        },
+      ],
+      total: 13150,
+      fulfillment: "pickup",
+      customerName: "Carlos Pérez",
+    });
+
+    expect(message).toContain("• 2x Almendras Nonpareil (Granel · 250g)");
+    expect(message).toContain("• 1x Mix Frutos Rojos (Granel · 500g)");
+    expect(message).not.toContain("100 g");
+  });
 });
+

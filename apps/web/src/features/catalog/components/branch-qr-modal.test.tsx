@@ -52,4 +52,21 @@ describe("BranchQrModal", () => {
       expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining("origone"));
     });
   });
+
+  it("calls onClose when Escape key is pressed", () => {
+    const handleClose = vi.fn();
+    render(<BranchQrModal isOpen={true} onClose={handleClose} branch={mockBranch} />);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose when clicking on the backdrop overlay", () => {
+    const handleClose = vi.fn();
+    render(<BranchQrModal isOpen={true} onClose={handleClose} branch={mockBranch} />);
+
+    const dialogBackdrop = screen.getByRole("dialog");
+    fireEvent.click(dialogBackdrop);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
 });

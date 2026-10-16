@@ -426,7 +426,7 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("ALL")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ALL"
                 ? "bg-brand-gold text-surface"
                 : "text-zinc-400 hover:text-white"
@@ -438,7 +438,7 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("AVAILABLE")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "AVAILABLE"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -450,7 +450,7 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("PAUSED")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "PAUSED"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -539,7 +539,7 @@ export function AdminCombosPage() {
                     />
 
                     {!hasImage && (
-                      <span className="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-[10px] text-brand-gold px-2 py-0.5 rounded-full font-mono border border-brand-gold/30">
+                      <span className="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-[11px] text-brand-gold px-2 py-0.5 rounded-full font-mono border border-brand-gold/30">
                         Imagen por defecto
                       </span>
                     )}
@@ -547,7 +547,7 @@ export function AdminCombosPage() {
                     <div className="absolute top-2 right-2">
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border",
+                          "px-2 py-0.5 rounded-full text-[11px] font-bold font-mono border",
                           combo.isAvailable
                             ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                             : "bg-amber-500/20 text-amber-300 border-amber-500/40"
@@ -572,7 +572,7 @@ export function AdminCombosPage() {
 
                   {/* Included Items */}
                   <div className="rounded-xl bg-[#111215] border border-white/[0.06] p-3 space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-brand-gold">
                       Contenido ({combo.items.length} productos):
                     </span>
                     <ul className="space-y-1 text-xs text-zinc-300">
@@ -600,7 +600,7 @@ export function AdminCombosPage() {
                 {/* Footer with Price & Actions */}
                 <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] uppercase font-mono text-zinc-400">Precio combo</span>
+                    <span className="text-[11px] uppercase font-mono text-zinc-400">Precio combo</span>
                     <p className="font-headline text-lg font-bold text-brand-gold">
                       {formatPrice(combo.price)}
                     </p>
@@ -710,7 +710,7 @@ export function AdminCombosPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-brand-gold">
                   Sucursal {activeBranch.name}
                 </span>
                 <h2 id="create-combo-title" className="font-headline text-lg font-bold text-white">
@@ -720,7 +720,7 @@ export function AdminCombosPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                 aria-label="Cerrar modal de creación de combo"
               >
                 <X className="size-5" />
@@ -894,7 +894,7 @@ export function AdminCombosPage() {
                                     parseFloat(e.target.value) || 0
                                   )
                                 }
-                                className="w-20 min-h-[36px] rounded-lg border border-white/[0.1] bg-surface px-2 py-1 text-center font-mono text-xs text-white focus:outline-none focus:border-brand-gold"
+                                className="w-20 min-h-[44px] rounded-lg border border-white/[0.1] bg-surface px-2 py-1 text-center font-mono text-xs text-white focus:outline-none focus:border-brand-gold"
                               />
                               <span className="text-[11px] text-zinc-400 font-mono">
                                 {item.saleUnit === "WEIGHT" ? "kg" : "un."}
@@ -903,7 +903,7 @@ export function AdminCombosPage() {
 
                             {/* Subtotal */}
                             <div className="w-24 text-right">
-                              <span className="text-[10px] text-zinc-500 block uppercase">Subtotal</span>
+                              <span className="text-[11px] text-zinc-400 block uppercase">Subtotal</span>
                               <span className="font-mono font-semibold text-brand-gold">
                                 {formatPrice(itemSubtotal)}
                               </span>
@@ -913,7 +913,7 @@ export function AdminCombosPage() {
                             <button
                               type="button"
                               onClick={() => handleRemoveProduct(item.productId)}
-                              className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-white/[0.04]"
+                              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-white/[0.04]"
                               aria-label={`Quitar ${item.productName} del combo`}
                             >
                               <X className="size-4" />
@@ -934,7 +934,7 @@ export function AdminCombosPage() {
                       value={productSearchTerm}
                       onChange={(e) => setProductSearchTerm(e.target.value)}
                       placeholder="Buscar producto de la sucursal para agregar..."
-                      className="w-full min-h-[38px] rounded-lg border border-white/[0.1] bg-surface pl-8 pr-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                      className="w-full min-h-[44px] rounded-lg border border-white/[0.1] bg-surface pl-8 pr-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
                     />
                   </div>
 

@@ -5,6 +5,7 @@ export interface OrderItem {
   name: string;
   quantity: number;
   saleUnit: SaleUnit;
+  portion?: string;
   unitPrice: number;
   lineTotal: number;
 }
@@ -18,8 +19,11 @@ export interface FormatOrderMessageParams {
   notes?: string;
 }
 
-function describeSaleUnit(unit: SaleUnit): string {
-  return unit === "WEIGHT" ? "Granel · 100 g" : "Unidad";
+function describeSaleUnit(unit: SaleUnit, portion?: string): string {
+  if (unit === "WEIGHT") {
+    return portion ? `Granel · ${portion}` : "Granel · 100 g";
+  }
+  return "Unidad";
 }
 
 export function formatWhatsAppOrderMessage({
@@ -33,7 +37,7 @@ export function formatWhatsAppOrderMessage({
   const itemsList = items
     .map(
       (item) =>
-        `• ${item.quantity}x ${item.name} (${describeSaleUnit(item.saleUnit)}) — ${formatPrice(item.lineTotal)}`
+        `• ${item.quantity}x ${item.name} (${describeSaleUnit(item.saleUnit, item.portion)}) — ${formatPrice(item.lineTotal)}`
     )
     .join("\n");
 

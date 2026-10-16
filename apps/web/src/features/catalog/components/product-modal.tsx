@@ -154,7 +154,7 @@ export function ProductModal({
           type="button"
           onClick={onClose}
           aria-label="Cerrar modal de producto"
-          className="absolute right-4 top-4 z-20 flex size-10 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors backdrop-blur-sm active:scale-95 border border-border/60"
+          className="absolute right-4 top-4 z-20 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors backdrop-blur-sm active:scale-95 border border-border/60"
         >
           <X className="size-5" />
         </button>
@@ -291,7 +291,7 @@ export function ProductModal({
                             {option.badge && (
                               <span
                                 className={cn(
-                                  "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full",
+                                  "text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full",
                                   isSelected
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-muted text-muted-foreground"
@@ -328,7 +328,7 @@ export function ProductModal({
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                     aria-label="Disminuir paquetes"
                     disabled={quantity <= 1}
-                    className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 disabled:opacity-40 transition-all"
+                    className="min-h-[44px] min-w-[44px] size-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 disabled:opacity-40 transition-all"
                   >
                     <span className="text-base font-bold leading-none">−</span>
                   </button>
@@ -339,7 +339,7 @@ export function ProductModal({
                     type="button"
                     onClick={() => setQuantity((prev) => prev + 1)}
                     aria-label="Aumentar paquetes"
-                    className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                    className="min-h-[44px] min-w-[44px] size-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
                   >
                     <span className="text-base font-bold leading-none">+</span>
                   </button>

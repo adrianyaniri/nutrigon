@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, MapPin, Menu, Store, X } from "lucide-react";
+import { AlertTriangle, MapPin, Store, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { SearchInput } from "@/components/molecules/search-input";
 import { SortSelect } from "@/components/molecules/sort-select";
 import { useCart, CartDrawer } from "@/features/cart";
+import { BranchPickerModal } from "../components/branch-picker-modal";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
+import { CatalogHero } from "../components/catalog-hero";
+import { CategoryChips } from "../components/category-chips";
 import { CategoryDrawer } from "../components/category-drawer";
 import { CategoryNav } from "../components/category-nav";
 import { ProductModal } from "../components/product-modal";
@@ -30,6 +33,7 @@ export function CatalogPage() {
 
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isBranchPickerOpen, setIsBranchPickerOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
 
   const branchesQuery = useBranches();
@@ -139,6 +143,7 @@ export function CatalogPage() {
         cartItemCount={itemCount}
         onOpenCategories={() => setIsCategoryDrawerOpen(true)}
         onOpenCart={() => setIsCartOpen(true)}
+        onOpenBranchPicker={() => setIsBranchPickerOpen(true)}
       />
 
       <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
@@ -155,6 +160,11 @@ export function CatalogPage() {
 
         {/* Main Catalog View */}
         <section className="min-w-0 flex-1" aria-labelledby="catalog-title">
+          {/* Brand Presentation / Hero Banner (shows on root branch catalog view) */}
+          {!filters.search && !filters.categorySlug && (
+            <CatalogHero branchName={catalog?.branch.name} />
+          )}
+
           {/* Integrated Catalog Toolbar: Search + Sort + Category heading */}
           <div className="mb-6 flex flex-col gap-4 border-b border-border pb-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -164,20 +174,19 @@ export function CatalogPage() {
                 className="w-full sm:max-w-md"
               />
 
-              <div className="flex items-center justify-between sm:justify-end gap-3">
-                {/* Mobile Category Trigger Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCategoryDrawerOpen(true)}
-                  className="min-h-[44px] md:hidden flex items-center gap-1.5 border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10"
-                >
-                  <Menu className="size-4" />
-                  <span>Categorías</span>
-                </Button>
-
+              <div className="flex items-center justify-end gap-3">
                 <SortSelect value={filters.sort} options={SORT_OPTIONS} onChange={setSort} />
               </div>
+            </div>
+
+            {/* Mobile / Tablet Horizontal Category Chips Dock */}
+            <div className="md:hidden pt-0.5">
+              <CategoryChips
+                options={categoryOptions}
+                value={filters.categorySlug}
+                onChange={setCategory}
+                onOpenDrawer={() => setIsCategoryDrawerOpen(true)}
+              />
             </div>
 
             {/* Active Category Heading and Filter Dismiss Tag */}
@@ -268,6 +277,19 @@ export function CatalogPage() {
         product={selectedProduct}
         branch={catalog?.branch}
         categories={catalog?.categories ?? []}
+      />
+
+      {/* Branch Selector Modal */}
+      <BranchPickerModal
+        isOpen={isBranchPickerOpen}
+        onClose={() => setIsBranchPickerOpen(false)}
+        branches={branches}
+        currentBranchSlug={branchSlug ?? ""}
+        onSelectBranch={(newSlug) => {
+          setIsBranchPickerOpen(false);
+          handleBranchChange(newSlug);
+        }}
+        cartItemCount={itemCount}
       />
 
       <CatalogFooter currentBranch={catalog?.branch} branches={branches} />

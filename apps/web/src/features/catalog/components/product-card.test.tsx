@@ -57,4 +57,13 @@ describe("ProductCard", () => {
     render(<ProductCard product={{ ...base, isFeatured: true }} />);
     expect(screen.getByText("Destacado")).toBeInTheDocument();
   });
+
+  it("triggers onSelect when pressing Enter on a selectable product card", () => {
+    const onSelect = vi.fn();
+    render(<ProductCard product={base} onSelect={onSelect} />);
+
+    const card = screen.getByRole("button", { name: "Ver detalle de Almendras Nonpareil" });
+    fireEvent.keyDown(card, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalledWith(base);
+  });
 });

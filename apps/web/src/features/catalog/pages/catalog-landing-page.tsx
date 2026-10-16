@@ -82,10 +82,18 @@ export function CatalogLandingPage() {
         <div className="mx-auto flex w-full max-w-screen-xl items-center justify-between px-4 py-3 md:px-6">
           <Link to="/" className="flex items-center gap-3">
             <span className="relative flex size-11 md:size-12 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/50 shadow-md bg-brand-surface">
-              <img src="/Logo.jpeg" alt="Nutrigon" className="size-full object-cover" />
+              <img
+                src="/Logo.jpeg"
+                alt=""
+                width="48"
+                height="48"
+                loading="eager"
+                decoding="async"
+                className="size-full object-cover"
+              />
             </span>
             <span className="flex flex-col leading-tight">
-              <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-white">
+              <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
                 Nutrigon
               </span>
               <span className="text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
@@ -96,7 +104,7 @@ export function CatalogLandingPage() {
 
           <Link
             to="/admin"
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:border-brand-gold hover:text-white transition-colors"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-card/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:border-brand-gold hover:text-foreground transition-colors"
             title="Acceso al panel de administración"
           >
             <Shield className="size-3.5 text-brand-gold" aria-hidden="true" />
@@ -127,7 +135,7 @@ export function CatalogLandingPage() {
               <span className="font-semibold text-primary">Sucursal {lastBranch.name}</span>
               <Button
                 size="sm"
-                className="ml-2 min-h-[36px] text-xs font-semibold"
+                className="ml-2 min-h-[44px] px-3.5 text-xs font-semibold"
                 onClick={() => handleSelectBranch(lastBranch)}
               >
                 Continuar allí <ArrowRight className="size-3.5 ml-1" />
@@ -142,7 +150,7 @@ export function CatalogLandingPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm animate-pulse min-h-[280px]"
+                className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm animate-pulse motion-reduce:animate-none min-h-[280px]"
               >
                 <div className="space-y-3">
                   <div className="size-10 rounded-xl bg-muted" />
@@ -157,73 +165,72 @@ export function CatalogLandingPage() {
         ) : (
           <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
             {branches.map((branch) => {
-            const details = BRANCH_METADATA[branch.slug] ?? BRANCH_DETAILS[branch.slug] ?? {
-              address: branch.address ?? `Sucursal ${branch.name}`,
-              hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
-              description: "Productos seleccionados de dietética y alimentos naturales.",
-            };
-            const extra = BRANCH_DETAILS[branch.slug];
+              const details = BRANCH_DETAILS[branch.slug] ?? {
+                address: branch.address ?? `Sucursal ${branch.name}`,
+                hours: "Lunes a Viernes 8:30 a 20:00 · Sábados 9:00 a 13:30",
+                description: "Productos seleccionados de dietética y alimentos naturales.",
+              };
 
-            return (
-              <div
-                key={branch.slug}
-                className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:border-brand-gold/50 hover:shadow-md"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-brand-gold/15 text-brand-gold">
-                      <Store className="size-5" />
-                    </span>
-                    {extra?.badge && (
-                      <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold">
-                        {extra.badge}
+              return (
+                <div
+                  key={branch.slug}
+                  className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:border-brand-gold/50 hover:shadow-md"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="flex size-10 items-center justify-center rounded-xl bg-brand-gold/15 text-brand-gold">
+                        <Store className="size-5" />
                       </span>
-                    )}
-                  </div>
+                      {details.badge && (
+                        <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
+                          {details.badge}
+                        </span>
+                      )}
+                    </div>
 
-                  <div>
-                    <h2 className="font-headline text-lg font-bold text-foreground">
-                      Sucursal {branch.name}
-                    </h2>
-                    <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
-                      <MapPin className="size-3.5 shrink-0 text-brand-gold mt-0.5" />
-                      <span>{branch.address ?? details.address}</span>
+                    <div>
+                      <h2 className="font-headline text-lg font-bold text-foreground">
+                        Sucursal {branch.name}
+                      </h2>
+                      <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="size-3.5 shrink-0 text-brand-gold mt-0.5" />
+                        <span>{branch.address ?? details.address}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {details.description}
+                    </p>
+
+                    <div className="flex items-start gap-1.5 pt-2 border-t border-border text-[11px] text-muted-foreground">
+                      <Clock className="size-3 shrink-0 mt-0.5" />
+                      <span>{details.hours}</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground/90 leading-relaxed">
-                    {extra?.description ?? "Variedad en frutos secos, harinas, semillas y productos sin TACC."}
-                  </p>
+                  <div className="mt-6 pt-2 flex items-center gap-2">
+                    <Button
+                      className="flex-1 min-h-[44px] font-semibold"
+                      onClick={() => handleSelectBranch(branch)}
+                    >
+                      Ver Catálogo {branch.name}
+                      <ArrowRight className="size-4 ml-1.5" />
+                    </Button>
 
-                  <div className="flex items-start gap-1.5 pt-2 border-t border-border text-[11px] text-muted-foreground/80">
-                    <Clock className="size-3 shrink-0 mt-0.5" />
-                    <span>{details.hours}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSelectedQrBranch(branch)}
+                      title={`Ver código QR y cartel para mostrador de Sucursal ${branch.name}`}
+                      className="min-h-[44px] px-3 border-border hover:border-brand-gold text-foreground hover:text-brand-gold shrink-0"
+                    >
+                      <QrCode className="size-4.5" aria-hidden="true" />
+                      <span className="sr-only sm:not-sr-only sm:text-xs sm:ml-1 font-medium">QR</span>
+                    </Button>
                   </div>
                 </div>
-
-                <div className="mt-6 pt-2 flex items-center gap-2">
-                  <Button
-                    className="flex-1 min-h-[44px] font-semibold"
-                    onClick={() => handleSelectBranch(branch)}
-                  >
-                    Ver Catálogo {branch.name}
-                    <ArrowRight className="size-4 ml-1.5" />
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedQrBranch(branch)}
-                    title={`Ver código QR y cartel para mostrador de Sucursal ${branch.name}`}
-                    className="min-h-[44px] px-3 border-border hover:border-brand-gold text-foreground hover:text-brand-gold shrink-0"
-                  >
-                    <QrCode className="size-4.5" aria-hidden="true" />
-                    <span className="sr-only sm:not-sr-only sm:text-xs sm:ml-1 font-medium">QR</span>
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
       </main>
@@ -240,31 +247,4 @@ export function CatalogLandingPage() {
     </div>
   );
 }
-
-const BRANCH_METADATA: Record<string, { address: string; hours: string }> = {
-  origone: {
-    address: "Tte. Manuel Origone 196, Villa Tesei",
-    hours: "Lun a Vie 8:30 a 20:30 · Sáb 9:00 a 14:00",
-  },
-  "pedro-diaz": {
-    address: "Av. Gral. Pedro Díaz 1265, Hurlingham",
-    hours: "Lun a Vie 9:00 a 20:00 · Sáb 9:00 a 13:30",
-  },
-  "w-morris": {
-    address: "Gdor. Vergara 4210, William C. Morris",
-    hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
-  },
-  centro: {
-    address: "San Martín 450 (Centro)",
-    hours: "Lun a Vie 8:30 a 20:30 · Sáb 9:00 a 14:00",
-  },
-  norte: {
-    address: "Av. Libertad 1200",
-    hours: "Lun a Vie 9:00 a 20:00 · Sáb 9:00 a 13:30",
-  },
-  sur: {
-    address: "Belgrano 890",
-    hours: "Lun a Vie 8:30 a 20:00 · Sáb 9:00 a 13:30",
-  },
-};
 

@@ -66,6 +66,21 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
     };
   }, [isOpen, branchUrl]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   async function handleCopyLink() {
@@ -191,10 +206,11 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="qr-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in duration-200 motion-reduce:animate-none"
     >
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.12] bg-[#121316] p-6 shadow-2xl sm:p-8 text-white"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-2xl sm:p-8 text-foreground motion-reduce:animate-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -202,9 +218,9 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
           type="button"
           onClick={onClose}
           aria-label="Cerrar ventana de código QR"
-          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/[0.12] hover:text-white transition-colors"
+          className="absolute right-3.5 top-3.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border/40 bg-muted/30 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors"
         >
-          <X className="size-4" />
+          <X className="size-5" />
         </button>
 
         {/* Modal Header */}
@@ -212,10 +228,10 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
           <div className="flex size-11 items-center justify-center rounded-2xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold mb-3">
             <QrCode className="size-6" />
           </div>
-          <h2 id="qr-modal-title" className="font-headline text-lg sm:text-xl font-bold">
+          <h2 id="qr-modal-title" className="font-headline text-lg sm:text-xl font-bold text-foreground">
             QR Catálogo Sucursal {branch.name}
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             Escaneá con la cámara para acceder al catálogo y hacer pedidos en esta sucursal.
           </p>
         </div>
@@ -244,7 +260,7 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
               type="button"
               variant="outline"
               onClick={handleCopyLink}
-              className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white"
+              className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-border bg-muted/30 text-foreground hover:bg-muted/70 hover:text-foreground"
             >
               {copied ? (
                 <>
@@ -264,7 +280,7 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
               variant="outline"
               onClick={handlePrint}
               disabled={!svgContent}
-              className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white"
+              className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-border bg-muted/30 text-foreground hover:bg-muted/70 hover:text-foreground"
             >
               <Printer className="size-4 text-brand-gold" />
               <span>Imprimir cartel</span>
@@ -275,7 +291,7 @@ export function BranchQrModal({ isOpen, onClose, branch }: BranchQrModalProps) {
             <a
               href={pngDataUrl}
               download={`nutrigon-qr-${branch.slug}.png`}
-              className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl bg-brand-gold text-[#121316] text-xs font-bold shadow-md hover:bg-brand-gold/90 transition-colors"
+              className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl bg-brand-gold text-brand-dark text-xs font-bold shadow-md hover:bg-brand-gold-hover transition-colors"
             >
               <Download className="size-4" />
               <span>Descargar QR (Imagen PNG)</span>

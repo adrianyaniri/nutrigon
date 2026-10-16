@@ -1,4 +1,4 @@
-import { MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
+import { ChevronDown, MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
 
@@ -8,11 +8,12 @@ export interface CatalogHeaderProps {
   cartItemCount: number;
   onOpenCategories?: () => void;
   onOpenCart?: () => void;
+  onOpenBranchPicker?: () => void;
 }
 
 /**
  * Editorial header with perfectly centered branding.
- * Left: Mobile category drawer toggle / Desktop branch indicator.
+ * Left: Mobile category drawer toggle / Responsive branch selector pill.
  * Center: Nutrigon Logo and brand identity.
  * Right: Cart button.
  */
@@ -22,30 +23,46 @@ export function CatalogHeader({
   cartItemCount,
   onOpenCategories,
   onOpenCart,
+  onOpenBranchPicker,
 }: CatalogHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 md:px-6">
-        {/* Left Column: Mobile Menu Toggle / Desktop Branch Location */}
-        <div className="flex w-1/4 items-center justify-start">
+        {/* Left Column: Mobile Menu Toggle / Responsive Branch Location */}
+        <div className="flex w-1/3 md:w-1/4 items-center justify-start gap-1.5 sm:gap-2">
           {onOpenCategories && (
             <button
               type="button"
               onClick={onOpenCategories}
               aria-label="Abrir menú de categorías"
-              className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/80 px-3 py-2 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors md:hidden shadow-2xs"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/80 px-2.5 sm:px-3 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors md:hidden shadow-2xs shrink-0"
             >
               <Menu className="size-4 text-brand-gold" aria-hidden="true" />
               <span className="hidden sm:inline">Categorías</span>
             </button>
           )}
 
-          {branchName && (
-            <div className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1 text-xs text-muted-foreground">
-              <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
-              <span className="font-medium text-foreground">Sucursal {branchName}</span>
-            </div>
-          )}
+          {branchName &&
+            (onOpenBranchPicker ? (
+              <button
+                type="button"
+                onClick={onOpenBranchPicker}
+                aria-label={`Sucursal actual: ${branchName}. Tocar para cambiar de sucursal`}
+                className="flex min-h-[44px] items-center gap-1 sm:gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 text-xs text-muted-foreground hover:border-brand-gold hover:text-foreground transition-all group shadow-2xs"
+              >
+                <MapPin className="size-3.5 text-brand-gold shrink-0 transition-transform group-hover:scale-110" aria-hidden="true" />
+                <span className="font-medium text-foreground max-w-[75px] sm:max-w-none truncate">
+                  <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
+                  {branchName}
+                </span>
+                <ChevronDown className="size-3 text-brand-gold/80 shrink-0 transition-transform group-hover:translate-y-0.5" aria-hidden="true" />
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1.5 text-xs text-muted-foreground">
+                <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
+                <span className="font-medium text-foreground">Sucursal {branchName}</span>
+              </div>
+            ))}
         </div>
 
         {/* Center Column: Prominent Centered Brand Logo */}
@@ -61,7 +78,7 @@ export function CatalogHeader({
               <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-foreground">
                 Nutrigon
               </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
+              <span className="text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
                 Dietética &amp; Cerealera
               </span>
             </div>

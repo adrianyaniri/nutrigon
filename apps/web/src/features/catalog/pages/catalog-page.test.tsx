@@ -161,4 +161,58 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.getByText("Ver Catálogo Norte")).toBeInTheDocument();
     expect(screen.getByText("Ver Catálogo Sur")).toBeInTheDocument();
   });
+
+  it("opens BranchPickerModal when clicking the branch pill in header and switches branch", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    // Branch pill is present in header
+    const branchBtn = screen.getByRole("button", { name: /Sucursal actual: Centro/i });
+    expect(branchBtn).toBeInTheDocument();
+
+    // Click branch pill to open modal
+    fireEvent.click(branchBtn);
+
+    // Modal is opened
+    expect(await screen.findByRole("dialog", { name: "Seleccionar Sucursal" })).toBeInTheDocument();
+
+    // Select "Norte" branch
+    const norteOption = screen.getByRole("radio", { name: /Sucursal Norte/i });
+    fireEvent.click(norteOption);
+
+    // Modal closes and user is navigated to Norte branch
+    expect(await screen.findByText(/en Sucursal Norte/)).toBeInTheDocument();
+  });
+
+  it("renders CatalogHero with branch name on root view and hides it when filtering", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    // Hero is visible
+    expect(screen.getByRole("region", { name: "Presentación de Nutrigon" })).toBeInTheDocument();
+    expect(screen.getByText("Comé rico, sano y a tu medida.")).toBeInTheDocument();
+    expect(screen.getByText(/Precios y disponibilidad para Sucursal Centro/)).toBeInTheDocument();
+
+    // When searching, hero collapses
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
+      target: { value: "quinoa" },
+    });
+    expect(screen.queryByRole("region", { name: "Presentación de Nutrigon" })).not.toBeInTheDocument();
+  });
+
+  it("filters category directly via mobile CategoryChips dock without opening drawer", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    // Click the "Suplementos" chip in CategoryChips navigation
+    const categoryNavs = screen.getAllByRole("navigation", { name: "Categorías" });
+    const mobileChipsNav = categoryNavs[1] ?? categoryNavs[0]!;
+    const suplementosChip = within(mobileChipsNav).getByRole("button", { name: /suplementos/i });
+    fireEvent.click(suplementosChip);
+
+    // Filter applied directly without opening modal drawer
+    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Categorías" })).not.toBeInTheDocument();
+  });
 });

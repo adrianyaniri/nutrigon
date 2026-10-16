@@ -511,7 +511,7 @@ export function AdminMasterCatalogPage() {
             type="button"
             onClick={() => setStatusFilter("ALL")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ALL"
                 ? "bg-brand-gold text-surface"
                 : "text-zinc-400 hover:text-white"
@@ -523,7 +523,7 @@ export function AdminMasterCatalogPage() {
             type="button"
             onClick={() => setStatusFilter("ACTIVE")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ACTIVE"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -535,7 +535,7 @@ export function AdminMasterCatalogPage() {
             type="button"
             onClick={() => setStatusFilter("INACTIVE")}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "INACTIVE"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -626,14 +626,14 @@ export function AdminMasterCatalogPage() {
                   {/* Metadata */}
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white/[0.06] text-zinc-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white/[0.06] text-zinc-300">
                         <Layers className="size-3 text-brand-gold" />
                         {categoryLabel}
                       </span>
 
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold font-mono border",
+                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono border",
                           product.saleUnit === "WEIGHT"
                             ? "bg-brand-gold/10 text-brand-gold border-brand-gold/25"
                             : "bg-sky-500/10 text-sky-300 border-sky-500/25"
@@ -647,7 +647,7 @@ export function AdminMasterCatalogPage() {
 
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-md text-[10px] font-bold font-mono",
+                          "px-2 py-0.5 rounded-md text-[11px] font-bold font-mono",
                           product.isActive
                             ? "bg-emerald-500/15 text-emerald-300"
                             : "bg-amber-500/15 text-amber-300"
@@ -767,7 +767,7 @@ export function AdminMasterCatalogPage() {
           <div className="relative z-10 w-full max-w-xl max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-2xl border border-white/[0.1] bg-surface-card shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-brand-gold">
                   Catálogo Maestro
                 </span>
                 <h2
@@ -780,7 +780,7 @@ export function AdminMasterCatalogPage() {
               <button
                 type="button"
                 onClick={() => setIsProductModalOpen(false)}
-                className="p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                 aria-label="Cerrar modal de producto maestro"
               >
                 <X className="size-5" />

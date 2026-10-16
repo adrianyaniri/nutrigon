@@ -136,9 +136,10 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
 
   function handleSendWhatsApp() {
     const orderItems: OrderItem[] = cartItems.map((item) => ({
-      name: item.portion ? `${item.product.name} (${item.portion})` : item.product.name,
+      name: item.product.name,
       quantity: item.quantity,
       saleUnit: item.product.saleUnit,
+      portion: item.portion,
       unitPrice: item.unitPrice,
       lineTotal: item.lineTotal,
     }));
@@ -185,7 +186,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
               type="button"
               onClick={onClose}
               aria-label="Cerrar pedido"
-              className="flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors active:scale-95"
             >
               <ArrowLeft className="size-5 md:hidden" />
               <X className="hidden size-5 md:block" />
@@ -208,7 +209,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
               type="button"
               onClick={clear}
               aria-label="Vaciar carrito"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors active:scale-95"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors active:scale-95"
             >
               <Trash2 className="size-4" />
               <span className="hidden sm:inline">Vaciar</span>
@@ -226,7 +227,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                   <Store className="size-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Punto de despacho
                   </p>
                   <p className="truncate text-xs font-bold text-foreground">
@@ -286,7 +287,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                           <h4 className="font-headline text-xs sm:text-sm font-bold text-foreground truncate">
                             {product.name}
                           </h4>
-                          <span className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <span className="mt-0.5 inline-block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                             {portion
                               ? `Granel · ${portion}`
                               : describeSaleUnit(product.saleUnit)}{" "}
@@ -298,7 +299,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                           type="button"
                           onClick={() => removeProduct(product.id, portion)}
                           aria-label={`Eliminar ${product.name}`}
-                          className="p-1 text-muted-foreground hover:text-destructive transition-colors active:scale-90"
+                          className="flex min-h-[44px] min-w-[44px] items-center justify-center -mr-2 text-muted-foreground hover:text-destructive transition-colors active:scale-90"
                         >
                           <Trash2 className="size-4" />
                         </button>
@@ -306,16 +307,16 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
 
                       <div className="mt-2.5 flex items-center justify-between">
                         {/* Stepper (min 44px touch area) */}
-                        <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-2xs">
+                        <div className="inline-flex items-center rounded-full border border-border bg-card shadow-2xs">
                           <button
                             type="button"
                             onClick={() => decrementProduct(product.id, portion)}
                             aria-label={`Disminuir cantidad de ${product.name}`}
-                            className="flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
                           >
-                            <span className="text-sm font-bold leading-none">−</span>
+                            <span className="text-base font-bold leading-none">−</span>
                           </button>
-                          <span className="w-8 text-center text-xs font-bold tabular-nums text-foreground select-none">
+                          <span className="min-w-6 px-1 text-center text-xs font-bold tabular-nums text-foreground select-none">
                             {quantity}
                           </span>
                           <button
@@ -324,9 +325,9 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                               if (branch?.slug) addProduct(branch.slug, product.id, 1, portion);
                             }}
                             aria-label={`Aumentar cantidad de ${product.name}`}
-                            className="flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
                           >
-                            <span className="text-sm font-bold leading-none">+</span>
+                            <span className="text-base font-bold leading-none">+</span>
                           </button>
                         </div>
 
@@ -361,7 +362,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                   >
                     <Store className="size-4 text-primary" />
                     <span className="text-xs font-semibold leading-tight">Retiro en mostrador</span>
-                    <span className="text-[10px] text-muted-foreground font-normal">Sin costo</span>
+                    <span className="text-[11px] text-muted-foreground font-normal">Sin costo</span>
                   </button>
 
                   <button
@@ -376,7 +377,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                   >
                     <Bike className="size-4 text-primary" />
                     <span className="text-xs font-semibold leading-tight">Envío a domicilio</span>
-                    <span className="text-[10px] text-muted-foreground font-normal">A coordinar</span>
+                    <span className="text-[11px] text-muted-foreground font-normal">A coordinar</span>
                   </button>
                 </div>
               </div>

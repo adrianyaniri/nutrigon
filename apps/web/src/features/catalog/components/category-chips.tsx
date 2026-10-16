@@ -41,7 +41,6 @@ export function CategoryChips({
             <li key={option.value ?? "all"} className="shrink-0">
               <button
                 type="button"
-                role="button"
                 aria-pressed={isSelected}
                 onClick={() => onChange(option.value)}
                 className={cn(
@@ -54,7 +53,7 @@ export function CategoryChips({
                 <span>{option.label}</span>
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+                    "rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums",
                     isSelected
                       ? "bg-brand-gold text-brand-surface font-extrabold"
                       : "bg-muted text-muted-foreground"

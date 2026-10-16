@@ -135,7 +135,7 @@ export function AdminLoginPage() {
           {/* Point of Sale Branch Selector */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white/70">
                 Seleccionar Punto de Venta
               </label>
               <span className="text-[11px] text-brand-gold font-medium flex items-center gap-1 bg-brand-gold/10 px-2 py-0.5 rounded-full border border-brand-gold/20">
@@ -158,7 +158,7 @@ export function AdminLoginPage() {
                     role="radio"
                     aria-checked={isSelected}
                     onClick={() => setSelectedBranchSlug(branch.slug)}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-150 min-h-[38px] ${
+                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-150 min-h-[44px] ${
                       isSelected
                         ? "bg-white/[0.1] text-white border border-brand-gold/50 shadow-sm shadow-black/40 font-semibold"
                         : "text-white/60 hover:text-white border border-transparent"

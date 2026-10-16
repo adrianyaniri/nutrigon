@@ -5,6 +5,7 @@ import { PriceTag } from "@/components/atoms/price-tag";
 import { ProductImage } from "@/components/atoms/product-image";
 import { getEffectivePrice, isOnSale } from "@/features/catalog/lib/filter-products";
 import type { CatalogProduct } from "@/features/catalog/types";
+import { cn } from "@/lib/utils/cn";
 
 interface ProductCardProps {
   product: CatalogProduct;
@@ -29,11 +30,28 @@ function getUnitLabel(product: CatalogProduct): string {
  */
 export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   const onSale = isOnSale(product);
+  const isClickable = Boolean(onSelect);
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter" || e.key === " ") {
+      if ((e.target as HTMLElement).tagName !== "BUTTON") {
+        e.preventDefault();
+        onSelect?.(product);
+      }
+    }
+  }
 
   return (
     <article
-      onClick={() => onSelect?.(product)}
-      className="group relative flex h-full w-full flex-col justify-between rounded-2xl border border-brand-border/70 bg-brand-card/90 p-3 sm:p-4 transition-all duration-200 hover:border-brand-gold/60 hover:shadow-lg hover:shadow-brand-gold/5 cursor-pointer"
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onClick={isClickable ? () => onSelect?.(product) : undefined}
+      onKeyDown={isClickable ? handleKeyDown : undefined}
+      aria-label={isClickable ? `Ver detalle de ${product.name}` : undefined}
+      className={cn(
+        "group relative flex h-full w-full flex-col justify-between rounded-2xl border border-brand-border/70 bg-brand-card/90 p-3 sm:p-4 transition-all duration-200 hover:border-brand-gold/60 hover:shadow-lg hover:shadow-brand-gold/5",
+        isClickable && "cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-gold"
+      )}
     >
       <div className="flex flex-col gap-3">
         <div className="relative">
