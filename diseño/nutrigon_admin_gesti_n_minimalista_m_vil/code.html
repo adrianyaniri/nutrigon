@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#F5B731', 'primary-container': 'rgba(245, 183, 49, 0.15)', 'on-primary': '#1A1303', 'on-primary-container': '#F5B731', surface: '#121214', 'surface-variant': '#1E1E22', 'on-surface': '#F4F4F5', 'on-surface-variant': '#9CA3AF' } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121214;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-sans flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.3)]"><div class="h-16 px-4 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-base font-bold tracking-tight text-on-surface">Nutrigon Admin</span><button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-variant text-[11px] font-semibold text-primary active:scale-95 transition-transform"><span class="material-symbols-outlined text-[14px]">store</span><span>Suc. Centro</span><span class="material-symbols-outlined text-[12px]">expand_more</span></button></div><div class="flex items-center gap-1"><button class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">search</span></button><button class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface relative"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs tracking-wider ml-1">SG</div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full pb-8">
+<!-- System / Branch Status Bar -->
+<div class="px-4 pt-2 pb-3 flex flex-col gap-3">
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="font-medium text-on-surface">Centro &amp; Norte conectadas</span>
+<span class="text-[10px] bg-surface-variant px-1.5 py-0.5 rounded text-on-surface-variant font-mono">18:42</span>
+</div>
+<div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-primary">cloud_done</span>
+<span>Sincronizado</span>
+</div>
+</div>
+<!-- Quick Filter Pills -->
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+<button class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-semibold shadow-sm whitespace-nowrap active:scale-95 transition-transform">
+        Todos
+      </button>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface text-xs font-medium whitespace-nowrap active:scale-95 transition-transform">
+        Granel
+      </button>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface text-xs font-medium whitespace-nowrap active:scale-95 transition-transform">
+        Envasado
+      </button>
+<button class="px-3.5 py-1.5 rounded-full bg-surface-variant text-on-surface-variant hover:text-on-surface text-xs font-medium whitespace-nowrap flex items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Filtros</span>
+</button>
+</div>
+<!-- Action Bar & Search -->
+<div class="flex items-center gap-2 mt-1">
+<div class="flex-1 relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-variant text-on-surface placeholder:text-on-surface-variant text-xs rounded-xl pl-9 pr-3 py-2.5 outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="Buscar por nombre, SKU..." type="text"/>
+</div>
+<button class="px-3 py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-transform shrink-0">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Nuevo</span>
+</button>
+</div>
+<!-- Inventory Subheading -->
+<div class="flex items-center justify-between text-xs px-1 text-on-surface-variant pt-1">
+<span class="font-medium tracking-wide text-on-surface">142 Productos</span>
+<button class="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface font-medium active:scale-95 transition-transform">
+<span>Orden: Recientes</span>
+<span class="material-symbols-outlined text-[14px]">unfold_more</span>
+</button>
+</div>
+</div>
+<!-- Product List -->
+<div class="px-4 flex flex-col gap-3">
+<!-- Card 1 (Active / Focused for editing) -->
+<div class="bg-surface-variant/90 rounded-2xl p-4 shadow-lg relative overflow-hidden transition-all duration-200">
+<div class="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Close-up macro of premium roasted California nonpareil almonds with light golden sea salt dusting against a clean slate background, professional culinary photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqYwAiqRrT6IyTisqZhhAVuW0gLLzeX-FY7y1ukcJg8zDZw_ggL9D0D6JBJmMoZdMXeWDmVOHnhw2dPVSXvVHN5RHrb5khuqY9G9Stnfu0q4fvj8Bzfx-fB7xEUDnxVfNlKL-LvwFzsoXxw_i6IMUPcOjXaoEX3h_KwZzp46dhKHfQCOMETwtNWCrjFJ6tZ7ErN81XfLnuLvL2lkxCrgxP213D1aDGeNGdezBA2U4YDY0WNIptCZBe"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-xs font-semibold text-on-surface truncate">Almendras Nonpareil Tostadas</span>
+<span class="bg-primary-container text-primary text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">Granel</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-mono mt-0.5 truncate">NUT-ALM-01 · 250g/1kg</p>
+</div>
+</div>
+<!-- Quick actions -->
+<div class="flex items-center gap-2 shrink-0">
+<!-- Toggle active -->
+<button aria-label="Visibilidad web" class="w-9 h-5 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none">
+<div class="w-4 h-4 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs"></div>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-primary hover:text-on-surface active:scale-95 transition-transform shadow-sm" onclick="toggleBottomSheet(true)">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+<!-- Pricing & Stock Metrics Grid -->
+<div class="mt-3.5 pt-3 grid grid-cols-2 gap-2 text-xs">
+<div class="bg-surface/80 rounded-xl p-2.5 flex flex-col gap-1 shadow-sm">
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Precios Sucursales</span>
+<div class="flex items-baseline justify-between font-mono">
+<span class="text-on-surface-variant text-[11px]">Centro:</span>
+<span class="font-bold text-on-surface">$2.850</span>
+</div>
+<div class="flex items-baseline justify-between font-mono">
+<span class="text-on-surface-variant text-[11px]">Norte:</span>
+<span class="font-bold text-primary">$2.990</span>
+</div>
+</div>
+<div class="bg-surface/80 rounded-xl p-2.5 flex flex-col justify-between shadow-sm">
+<div>
+<div class="flex items-center justify-between text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">
+<span>Stock Disponible</span>
+<span class="text-primary font-bold">70 kg</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mt-2 overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 68%"></div>
+<div class="bg-amber-600/70 h-full" style="width: 32%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-[10px] font-mono text-on-surface-variant mt-1">
+<span>C: <strong class="text-on-surface">48kg</strong></span>
+<span>N: <strong class="text-on-surface">22kg</strong></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-variant/80 rounded-2xl p-4 shadow-md transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Finely milled whole grain oat flour in a warm ceramic bowl with gentle natural morning sidelight, organic healthy pantry aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNsSrBMZip1LGCCW-NecvhQ8malVMG91lKKuv38LTW5jJ7kOah3Il0DETnRNWa03XMqJ6t17_8kT8IpULhrIua5jJjEm-Fh15Lqom6kN52LuQvnjdXWwIWiZ1HviHS8pVFkZ99N_koioHEqXofB7pALUDXBeT8q3bLEfSojYRfFebXvP7J6lY_33S_MrRjIDAQ_TZ3XnEuE3MXLuHoxyKottUoZ0zEDzS83ibHa0eEXBanyN9ScZ1Z"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-xs font-semibold text-on-surface truncate">Harina de Avena Integral</span>
+<span class="bg-surface text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">Granel</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-mono mt-0.5 truncate">NUT-AVE-04 · 500g/1kg</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button aria-label="Visibilidad web" class="w-9 h-5 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none">
+<div class="w-4 h-4 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs"></div>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-95 transition-transform shadow-sm" onclick="toggleBottomSheet(true)">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="text-[11px] text-on-surface-variant">Precio:</span>
+<span class="font-mono font-semibold text-on-surface">$1.400 <span class="text-[10px] text-on-surface-variant font-normal">(Ambas)</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] text-on-surface-variant">Total:</span>
+<span class="font-mono font-semibold text-on-surface">175 kg <span class="text-[10px] text-on-surface-variant font-normal">(C:85 / N:90)</span></span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-variant/80 rounded-2xl p-4 shadow-md transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Premium Chilean butterfly walnut halves extra light color arranged neatly on dark slate kitchen counter with soft studio light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB90z_f4yajvTtKDfDl4SGZ5SDtRqCGom8qVVJUF4Tu7dWaiDMvCiaDS31xrwHgBkWm9xysVyG_bCSSCumEBSyv_djohdyC2JAsgD0p27uGIps0M5-pjw33-F0G_lVfHY4fmVJqsLKeHTtw3T8WtiOBj54dShfT-4H3VBlplsDZorKN8XagJ3SXbK0YVP7mhzq0nqgekUdiuL4iheY3gxUrDtKQXXzKWKprrgjINX2GHzcZ7Cns101"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-xs font-semibold text-on-surface truncate">Nuez Mariposa Extra Blanca</span>
+<span class="bg-surface text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">Granel</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-mono mt-0.5 truncate">NUT-NUEZ-02 · Granel</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button aria-label="Visibilidad web" class="w-9 h-5 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none">
+<div class="w-4 h-4 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs"></div>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-95 transition-transform shadow-sm" onclick="toggleBottomSheet(true)">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5 font-mono">
+<span class="text-[11px] text-on-surface-variant">C:</span>
+<span class="font-semibold text-on-surface">$3.200</span>
+<span class="text-[10px] text-on-surface-variant">|</span>
+<span class="text-[11px] text-on-surface-variant">N:</span>
+<span class="font-semibold text-primary">$3.450</span>
+</div>
+<div class="flex items-center gap-1 font-mono text-xs">
+<span class="text-[11px] text-on-surface-variant">Stock:</span>
+<span class="font-semibold text-on-surface">33 kg</span>
+<span class="text-[10px] text-on-surface-variant">(15 / 18)</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-variant/80 rounded-2xl p-4 shadow-md transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Artisanal gluten free multi-seed crackers displayed in modern dark craft food packaging, warm commercial studio product shot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkZDT0Mx8VHnXjYqp8LhaQm8M9QqKfaft1lLqlf4Xrj3qBuis6n589XOcJU1LkitrZpYZsNiEZma8nOeceAGRsOQUN-ltFZiZ9o8mdVf5HHgDOEDi90lRzF1-QqsmS7mp-_UDeIev4fxI0-xBEaLK1_fiHZYaSKyr4mgVHUG5Ga01p38krXdVh7ufnrtj_MWTVqJiEH75zt52_zn5h9BUW-OQ85zJGFnJE4v3wtU421FcJvY9OZZCt"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-xs font-semibold text-on-surface truncate">Galletas Sin TACC Semillas</span>
+<span class="bg-surface text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">Unidad</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-mono mt-0.5 truncate">NUT-GAL-11 · Paquete 200g</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button aria-label="Visibilidad web" class="w-9 h-5 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none">
+<div class="w-4 h-4 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs"></div>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-95 transition-transform shadow-sm" onclick="toggleBottomSheet(true)">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2 font-mono">
+<span class="text-[11px] text-on-surface-variant">Precio:</span>
+<span class="font-semibold text-on-surface">$2.800</span>
+<span class="text-[10px] text-on-surface-variant">(Ambas)</span>
+</div>
+<div class="flex items-center gap-1 font-mono text-xs">
+<span class="text-[11px] text-on-surface-variant">Stock:</span>
+<span class="font-semibold text-on-surface">55 un</span>
+<span class="text-[10px] text-on-surface-variant">(C:35 / N:20)</span>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-variant/80 rounded-2xl p-4 shadow-md transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Minimalist matte black doypack pouch of neutral plant protein supplement on clean stone surface with soft ambient warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACLnhsdF8Gd56mt-N8BAmb0P3W34Na7uUngqlJizzdGS9ySX-WYlqhumv390QTBBgJgc3j4t2L7iMEzzcRFOZcbO9w0dB7KwvaMXsuozpaTX6_GMOYJCj6dCZDwc6b14-x06sDZgokk1_8z6MgNxwLTUJFhrFaUYoBUFrn-8TYMznLLTpIty_7OTszJldZwXVLDlQak6uJty5WLvHNdWj4zHY0J5hN0dMWK1OLOnbiiQDQSmiLGNls"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-xs font-semibold text-on-surface truncate">Proteína Vegetal Neutra 500g</span>
+<span class="bg-surface text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">Unidad</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-mono mt-0.5 truncate">NUT-PROT-08 · Doypack</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button aria-label="Visibilidad web" class="w-9 h-5 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none">
+<div class="w-4 h-4 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs"></div>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-95 transition-transform shadow-sm" onclick="toggleBottomSheet(true)">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5 font-mono">
+<span class="text-[11px] text-on-surface-variant">C:</span>
+<span class="font-semibold text-on-surface">$8.900</span>
+<span class="text-[10px] text-on-surface-variant">|</span>
+<span class="text-[11px] text-on-surface-variant">N:</span>
+<span class="font-semibold text-primary">$9.200</span>
+</div>
+<div class="flex items-center gap-1 font-mono text-xs">
+<span class="text-[11px] text-on-surface-variant">Stock:</span>
+<span class="font-semibold text-on-surface">20 un</span>
+<span class="text-[10px] text-on-surface-variant">(12 / 8)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Sheet Drawer Overlay for Editing (NUT-ALM-01) -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-100 flex flex-col justify-end" id="editSheetBackdrop">
+<!-- Sheet Container -->
+<div class="w-full bg-[#18181B] rounded-t-3xl shadow-2xl p-5 flex flex-col gap-4 transform transition-transform duration-300 translate-y-0 max-h-[751px] overflow-y-auto" id="editSheetCard">
+<!-- Drag handle -->
+<div class="w-10 h-1 bg-surface-variant rounded-full mx-auto -mt-1 mb-1"></div>
+<!-- Drawer Header -->
+<div class="flex items-center justify-between pb-1">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="text-sm font-bold text-on-surface">Editar Producto</h2>
+<span class="text-[10px] font-mono bg-surface-variant text-primary px-2 py-0.5 rounded font-semibold">NUT-ALM-01</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5">Gestión de catálogo y asignación dual</span>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform" onclick="toggleBottomSheet(false)">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Product Name Input -->
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Nombre del Producto</label>
+<div class="relative">
+<input class="w-full bg-surface text-on-surface text-xs font-medium rounded-xl px-3.5 py-3 outline-none focus:ring-1 focus:ring-primary shadow-inner" type="text" value="Almendras Nonpareil Tostadas"/>
+</div>
+</div>
+<!-- Dual Branch Prices -->
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Precios por Sucursal</label>
+<div class="grid grid-cols-2 gap-2.5">
+<div class="bg-surface rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+<span class="text-[10px] font-medium text-on-surface-variant">Sucursal Centro</span>
+<div class="flex items-center gap-1 font-mono">
+<span class="text-on-surface-variant text-xs">$</span>
+<input class="w-full bg-transparent text-on-surface font-bold text-sm outline-none" type="text" value="2.850"/>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+<span class="text-[10px] font-medium text-primary">Sucursal Norte</span>
+<div class="flex items-center gap-1 font-mono">
+<span class="text-on-surface-variant text-xs">$</span>
+<input class="w-full bg-transparent text-primary font-bold text-sm outline-none" type="text" value="2.990"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Dual Branch Stocks -->
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Control de Stock (kg)</label>
+<div class="grid grid-cols-2 gap-2.5">
+<div class="bg-surface rounded-xl p-3 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Centro</span>
+<span class="text-xs font-mono font-bold text-on-surface mt-0.5">48 kg</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-on-surface text-xs font-bold active:scale-95 transition-transform">-</button>
+<button class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-primary text-xs font-bold active:scale-95 transition-transform">+</button>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-3 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Norte</span>
+<span class="text-xs font-mono font-bold text-on-surface mt-0.5">22 kg</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-on-surface text-xs font-bold active:scale-95 transition-transform">-</button>
+<button class="w-6 h-6 rounded bg-surface-variant flex items-center justify-center text-primary text-xs font-bold active:scale-95 transition-transform">+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Visibility Toggle row -->
+<div class="bg-surface rounded-xl px-3.5 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary">visibility</span>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-on-surface">Visibilidad Web</span>
+<span class="text-[10px] text-on-surface-variant">Visible en tienda online de ambas sucursales</span>
+</div>
+</div>
+<button class="w-10 h-6 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none" id="modalVisibilityToggle" onclick="toggleWebVisibility()">
+<div class="w-5 h-5 bg-on-primary rounded-full translate-x-4 transition-transform shadow-xs" id="modalVisibilityKnob"></div>
+</button>
+</div>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="w-full py-3 rounded-xl bg-surface-variant text-on-surface font-semibold text-xs active:scale-95 transition-transform text-center shadow-sm" onclick="toggleBottomSheet(false)">
+          Descartar
+        </button>
+<button class="w-full py-3 rounded-xl bg-primary text-on-primary font-bold text-xs active:scale-95 transition-transform text-center shadow-md flex items-center justify-center gap-1.5" onclick="saveAndCloseSheet()">
+<span class="material-symbols-outlined text-[16px]">check</span>
+<span>Guardar Cambios</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function toggleBottomSheet(show) {
+    const backdrop = document.getElementById('editSheetBackdrop');
+    const card = document.getElementById('editSheetCard');
+    if (!backdrop || !card) return;
+
+    if (show) {
+      backdrop.classList.remove('hidden', 'pointer-events-none');
+      requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        card.classList.remove('translate-y-full');
+        card.classList.add('translate-y-0');
+      });
+    } else {
+      backdrop.classList.remove('opacity-100');
+      backdrop.classList.add('opacity-0');
+      card.classList.remove('translate-y-0');
+      card.classList.add('translate-y-full');
+      setTimeout(() => {
+        backdrop.classList.add('hidden', 'pointer-events-none');
+      }, 300);
+    }
+  }
+
+  let isVisibleWeb = true;
+  function toggleWebVisibility() {
+    isVisibleWeb = !isVisibleWeb;
+    const toggle = document.getElementById('modalVisibilityToggle');
+    const knob = document.getElementById('modalVisibilityKnob');
+    if (!toggle || !knob) return;
+
+    if (isVisibleWeb) {
+      toggle.classList.remove('bg-surface-variant');
+      toggle.classList.add('bg-primary');
+      knob.classList.remove('translate-x-0', 'bg-on-surface-variant');
+      knob.classList.add('translate-x-4', 'bg-on-primary');
+    } else {
+      toggle.classList.remove('bg-primary');
+      toggle.classList.add('bg-surface-variant');
+      knob.classList.remove('translate-x-4', 'bg-on-primary');
+      knob.classList.add('translate-x-0', 'bg-on-surface-variant');
+    }
+  }
+
+  function saveAndCloseSheet() {
+    toggleBottomSheet(false);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.35)]" data-active-classes="text-primary font-semibold"><div class="flex justify-around items-center h-16 px-2"><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="catalogo" href="#"><span class="material-symbols-outlined text-[22px]">inventory_2</span><span class="text-[11px]">Catálogo</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pedidos" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px]">Pedidos</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="inventario" href="#"><span class="material-symbols-outlined text-[22px]">warehouse</span><span class="text-[11px]">Inventario</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="sucursales" href="#"><span class="material-symbols-outlined text-[22px]">storefront</span><span class="text-[11px]">Sucursales</span></a></div></nav></body></html>

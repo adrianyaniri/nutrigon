@@ -1,0 +1,244 @@
+<!DOCTYPE html><html class="dark" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nutrigon • Dietética Natural - Selector de Granel</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#121316",
+            "surface-modal": "#16171b",
+            "surface-card": "#1a1b21",
+            "surface-elevated": "#22242a",
+            "outline-variant": "#2e313b",
+            primary: "#F5B731",
+            "on-primary": "#121316",
+            "on-surface": "#F2F3F5",
+            "on-surface-variant": "#9CA3AF"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Public Sans", "sans-serif"],
+            display: ["Public Sans", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen antialiased selection:bg-primary selection:text-on-primary overflow-hidden relative">
+<!-- ======================================================== -->
+<!-- BACKGROUND: DIMMED MINIMALIST DESKTOP CATALOG            -->
+<!-- ======================================================== -->
+<div aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none select-none filter blur-[6px] opacity-35 bg-[#121316]">
+<!-- TopAppBar from JSON Anchors -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-8 py-4 w-full bg-surface border-b border-outline-variant/20 shadow-sm">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-primary font-headline text-xl font-bold tracking-tight">
+<span class="material-symbols-outlined text-2xl" data-icon="storefront">storefront</span>
+<span>Nutrigon</span>
+<span class="text-xs text-on-surface-variant font-normal tracking-normal border-l border-outline-variant/40 pl-3">Dietética Natural &amp; Granel</span>
+</div>
+<nav class="hidden md:flex items-center gap-6 text-sm text-on-surface-variant pl-4">
+<span class="text-primary font-semibold">Catálogo</span>
+<span>Frutos Secos</span>
+<span>Semillas</span>
+<span>Harinas &amp; Legumbres</span>
+<span>Especias</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-72 bg-surface-elevated/60 border border-outline-variant/40 rounded-full px-4 py-1.5 flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+<span>Buscar frutos secos, harinas...</span>
+</div>
+<div class="relative p-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-2xl" data-icon="shopping_bag">shopping_bag</span>
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary"></span>
+</div>
+</div>
+</header>
+<!-- Simulated Catalog Grid -->
+<main class="max-w-7xl mx-auto px-8 py-8">
+<div class="flex items-center justify-between pb-6 border-b border-outline-variant/20 mb-8">
+<div>
+<h1 class="text-2xl font-headline font-bold text-white">Catálogo de Frutos Secos &amp; Granel</h1>
+<p class="text-sm text-on-surface-variant">Fraccionado fresco y seleccionado por kilo o gramaje.</p>
+</div>
+<div class="flex gap-2">
+<div class="px-3 py-1.5 rounded-lg bg-surface-elevated text-xs text-white">Filtros: Todos</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface-elevated text-xs text-white">Ordenar: Destacados</div>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-6">
+<!-- Catalog Item 1 -->
+<div class="bg-surface-card rounded-xl border border-outline-variant/30 p-4">
+<div class="h-44 rounded-lg bg-surface-elevated mb-3"></div>
+<div class="h-4 bg-surface-elevated rounded w-3/4 mb-2"></div>
+<div class="h-3 bg-surface-elevated rounded w-1/2"></div>
+</div>
+<!-- Catalog Item 2 (Active Item in background) -->
+<div class="bg-surface-card rounded-xl border border-primary/40 ring-1 ring-primary/30 p-4">
+<div class="h-44 rounded-lg bg-surface-elevated mb-3"></div>
+<div class="h-4 bg-surface-elevated rounded w-3/4 mb-2"></div>
+<div class="h-3 bg-surface-elevated rounded w-1/2"></div>
+</div>
+<!-- Catalog Item 3 -->
+<div class="bg-surface-card rounded-xl border border-outline-variant/30 p-4">
+<div class="h-44 rounded-lg bg-surface-elevated mb-3"></div>
+<div class="h-4 bg-surface-elevated rounded w-3/4 mb-2"></div>
+<div class="h-3 bg-surface-elevated rounded w-1/2"></div>
+</div>
+<!-- Catalog Item 4 -->
+<div class="bg-surface-card rounded-xl border border-outline-variant/30 p-4">
+<div class="h-44 rounded-lg bg-surface-elevated mb-3"></div>
+<div class="h-4 bg-surface-elevated rounded w-3/4 mb-2"></div>
+<div class="h-3 bg-surface-elevated rounded w-1/2"></div>
+</div>
+</div>
+</main>
+</div>
+<!-- ======================================================== -->
+<!-- MODAL BACKDROP OVERLAY & DESKTOP DIALOG CARD             -->
+<!-- ======================================================== -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/75 backdrop-blur-md overflow-y-auto">
+<!-- Desktop Modal Container (approx 890px wide) -->
+<div aria-labelledby="product-title" aria-modal="true" class="relative w-full max-w-[890px] bg-[#16171b] border border-white/10 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95" role="dialog">
+<!-- Close Button '✕' -->
+<button aria-label="Cerrar modal de producto" class="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 text-on-surface-variant hover:text-white flex items-center justify-center transition-colors duration-150 border border-white/5 active:scale-95" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="close">close</span>
+</button>
+<!-- 2-Column Split Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+<!-- LEFT COLUMN: Product Visual & Authenticity Badges (~45% / 5 cols) -->
+<div class="md:col-span-5 relative bg-[#131418] border-b md:border-b-0 md:border-r border-white/5 flex flex-col justify-between p-6"><div class="flex flex-col justify-between h-full p-2">
+<div class="space-y-4">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-card border border-white/10">
+<img alt="Almendras Nonpareil Tostadas" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYorqtv2Hj8SkxTr8QB74qjiEEGPBd4WlJLp9pQWNL3o7-g5ecsVUb5s4npJCT_cFvhy1GyEZKARjE5g8-a55FXtOKx0yoczyyCwtcLFa83gYe4d5ihoQq_PIWGVZI4rt1h6OqM9NJ5qkoLHog9Imtp0Aqiuzm6EVkmYyL7O70lwTFkM8BNUILbjNGwhmzT9-lYjqELVCkHc_flKV_6aRRF_c2n_gMNEKX5GXUbPsUPmLA2CGcfWXvyPe1_97FlYhce551F4-GpaQ">
+</div>
+<div class="pt-2">
+<p class="text-xs text-on-surface-variant leading-relaxed">
+        Frutos secos tostados seleccionados. Venta a granel fraccionada en bolsa termosellada para máxima frescura.
+      </p>
+</div>
+</div>
+<div class="pt-4 text-[11px] text-on-surface-variant/70 border-t border-white/5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-primary">verified</span>
+<span>Origen Mendoza · Cosecha seleccionada</span>
+</div>
+</div></div>
+<!-- RIGHT COLUMN: Purchase Flow & Granel Customization (~55% / 7 cols) -->
+<div class="md:col-span-7 p-6 md:p-8 flex flex-col justify-between custom-scrollbar overflow-y-auto max-h-[640px]"><div class="flex flex-col justify-between h-full">
+<div class="space-y-6">
+<!-- Category Indicator -->
+<div>
+<span class="text-xs font-medium tracking-wider uppercase text-primary">Frutos Secos</span>
+<h2 class="text-2xl md:text-3xl font-headline font-bold text-white tracking-tight mt-1" id="product-title">
+        Almendras Nonpareil Tostadas
+      </h2>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-2xl font-headline font-bold text-white">$2.850</span>
+<span class="text-xs text-on-surface-variant font-normal">$1.140 / 100g · Sucursal Centro</span>
+</div>
+</div>
+<!-- Weight Selection Section -->
+<div class="space-y-2.5 pt-2">
+<label class="text-xs font-label font-semibold tracking-wider text-on-surface-variant uppercase">
+        Seleccionar gramaje
+      </label>
+<!-- Minimalist Pills Grid -->
+<div aria-label="Opciones de gramaje" class="grid grid-cols-2 gap-2.5" role="radiogroup">
+<!-- Pill 1: 100g -->
+<button class="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-elevated/40 border border-white/5 hover:border-white/20 text-left transition-all active:scale-98 group" type="button">
+<span class="text-sm font-medium text-white group-hover:text-primary transition-colors">100g</span>
+<span class="text-xs text-on-surface-variant font-normal">$1.140</span>
+</button>
+<!-- Pill 2: 250g (Active State) -->
+<button aria-checked="true" class="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/10 border border-primary text-left transition-all shadow-sm" type="button">
+<span class="text-sm font-bold text-white">250g</span>
+<span class="text-xs font-bold text-primary">$2.850</span>
+</button>
+<!-- Pill 3: 500g -->
+<button class="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-elevated/40 border border-white/5 hover:border-white/20 text-left transition-all active:scale-98 group" type="button">
+<span class="text-sm font-medium text-white group-hover:text-primary transition-colors">500g</span>
+<span class="text-xs text-on-surface-variant font-normal">$5.400</span>
+</button>
+<!-- Pill 4: 1kg -->
+<button class="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-elevated/40 border border-white/5 hover:border-white/20 text-left transition-all active:scale-98 group" type="button">
+<span class="text-sm font-medium text-white group-hover:text-primary transition-colors">1 kg</span>
+<span class="text-xs text-on-surface-variant font-normal">$10.200</span>
+</button>
+</div>
+</div>
+<!-- Quantity Stepper Section -->
+<div class="pt-3 border-t border-white/5 flex items-center justify-between">
+<div>
+<p class="text-xs font-label font-semibold text-white uppercase tracking-wider">Cantidad de paquetes</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Bolsas termoselladas de 250g</p>
+</div>
+<!-- Quiet Stepper Component -->
+<div class="flex items-center bg-surface-elevated/60 border border-white/10 rounded-xl p-1 gap-2">
+<button aria-label="Disminuir bolsas" class="w-8 h-8 rounded-lg bg-surface-card hover:bg-white/10 text-on-surface-variant hover:text-white flex items-center justify-center transition-colors active:scale-90" type="button">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<span class="px-3 text-sm font-semibold text-white min-w-[70px] text-center select-none">
+          1 paquete
+        </span>
+<button aria-label="Aumentar bolsas" class="w-8 h-8 rounded-lg bg-surface-card hover:bg-white/10 text-on-surface-variant hover:text-white flex items-center justify-center transition-colors active:scale-90" type="button">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom CTA & Quiet Footer Note -->
+<div class="pt-6 mt-6 border-t border-white/5 space-y-3">
+<button class="w-full py-3.5 px-6 rounded-xl bg-primary hover:bg-[#ffc64b] text-on-primary font-headline font-bold text-base tracking-tight flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(245,183,49,0.25)] transition-all active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-xl">shopping_bag</span>
+<span>Agregar al Pedido · $2.850</span>
+</button>
+<p class="text-center text-xs text-on-surface-variant/70">
+      Fraccionado higiénico con balanza comercial certificada
+    </p>
+</div>
+</div></div>
+</div>
+</div>
+</div>
+</body></html>

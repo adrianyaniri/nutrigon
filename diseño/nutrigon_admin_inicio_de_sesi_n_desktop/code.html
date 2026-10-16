@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nutrigon - Acceso al Panel de Gestión</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Public+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#121316",
+            "surface-card": "#18191E",
+            primary: "#F5B731",
+            "on-primary": "#121316",
+            "on-surface": "#F4F4F5",
+            "on-surface-variant": "#9FA0A5",
+            outline: "rgba(255, 255, 255, 0.08)",
+            "outline-variant": "rgba(255, 255, 255, 0.04)",
+            "wheat-gold": "#F5B731",
+            "charcoal-dark": "#121316",
+            "charcoal-card": "#18191E",
+            "charcoal-input": "#111215"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Public Sans", "sans-serif"],
+            display: ["Public Sans", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #F4F4F5;
+      -webkit-box-shadow: 0 0 0px 1000px #111215 inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+  </style>
+</head>
+<body class="bg-charcoal-dark text-on-surface font-body min-h-screen flex flex-col justify-between antialiased selection:bg-wheat-gold selection:text-charcoal-dark">
+<!-- Ambient Subtle Gradient Backdrop -->
+<div class="fixed inset-0 pointer-events-none opacity-40">
+<div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[400px] bg-gradient-to-b from-wheat-gold/10 via-wheat-gold/5 to-transparent blur-[120px] rounded-full"></div>
+</div>
+<!-- Top Minimalist Utility Bar -->
+<header class="relative z-10 w-full px-8 py-6 flex items-center justify-between border-b border-white/[0.04]">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-wheat-gold text-2xl" data-icon="storefront">storefront</span>
+<span class="font-headline font-bold text-base tracking-tight text-white">Nutrigon</span>
+<span class="text-xs px-2 py-0.5 rounded bg-white/[0.06] text-white/60 font-mono font-medium">POS &amp; Admin</span>
+</div>
+<div class="flex items-center gap-6 text-xs text-on-surface-variant font-medium">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="text-white/70">Red Operativa Conectada</span>
+</div>
+<a class="text-white/60 hover:text-wheat-gold transition-colors flex items-center gap-1" href="#">
+<span>Soporte Técnico</span>
+<span class="material-symbols-outlined text-sm" data-icon="open_in_new">open_in_new</span>
+</a>
+</div>
+</header>
+<!-- Central Canvas -->
+<main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-10">
+<!-- Login Card Container (~440px) -->
+<div class="w-full max-w-[440px] bg-charcoal-card border border-white/[0.08] rounded-2xl shadow-2xl p-8 backdrop-blur-sm transition-all duration-300">
+<!-- Card Header -->
+<div class="text-center mb-8">
+<div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-wheat-gold/10 border border-wheat-gold/20 mb-4 shadow-[0_0_24px_rgba(245,183,49,0.12)]">
+<span class="material-symbols-outlined text-wheat-gold text-3xl" data-icon="storefront" style="font-variation-settings: 'FILL' 1;">storefront</span>
+</div>
+<h1 class="font-headline text-2xl font-bold tracking-tight text-white mb-1.5">
+          Nutrigon <span class="text-wheat-gold font-normal">·</span> Dietética &amp; Cerealera
+        </h1>
+<p class="text-sm text-on-surface-variant font-normal">
+          Acceso al Panel de Gestión
+        </p>
+</div>
+<!-- Point of Sale Branch Selector -->
+<div class="mb-6">
+<div class="flex items-center justify-between mb-2">
+<label class="text-xs font-semibold uppercase tracking-wider text-white/70">
+            Seleccionar Punto de Venta
+          </label>
+<span class="text-[11px] text-wheat-gold font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="sync">sync</span> Sincronizado
+          </span>
+</div>
+<div class="grid grid-cols-2 p-1 bg-charcoal-input border border-white/[0.06] rounded-xl gap-1" id="branchSelector" role="radiogroup">
+<button aria-checked="true" class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 bg-white/[0.08] text-white border border-wheat-gold/40 shadow-sm shadow-black/40" id="branchCentro" onclick="selectBranch('centro')" role="radio" type="button">
+<span class="material-symbols-outlined text-sm text-wheat-gold" data-icon="location_on">location_on</span>
+<span class="font-semibold text-white">Sucursal Centro</span>
+</button>
+<button aria-checked="false" class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 text-white/60 hover:text-white border border-transparent" id="branchNorte" onclick="selectBranch('norte')" role="radio" type="button">
+<span class="material-symbols-outlined text-sm opacity-60" data-icon="store">store</span>
+<span>Sucursal Norte</span>
+</button>
+</div>
+</div>
+<!-- Login Form -->
+<form class="space-y-4" id="adminLoginForm" onsubmit="handleLoginSubmit(event)">
+<!-- Email / User Input -->
+<div>
+<label class="block text-xs font-medium text-white/80 mb-1.5" for="usernameInput">
+            Email o Usuario
+          </label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/35">
+<span class="material-symbols-outlined text-lg" data-icon="person">person</span>
+</div>
+<input autocomplete="username" class="w-full bg-charcoal-input text-white text-sm rounded-xl pl-10 pr-4 py-3 border border-white/[0.08] focus:border-wheat-gold focus:ring-1 focus:ring-wheat-gold outline-none transition-all placeholder:text-white/25" id="usernameInput" placeholder="admin@nutrigon.com" required="" type="text"/>
+</div>
+</div>
+<!-- Password Input -->
+<div>
+<label class="block text-xs font-medium text-white/80 mb-1.5" for="passwordInput">
+            Contraseña
+          </label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/35">
+<span class="material-symbols-outlined text-lg" data-icon="lock">lock</span>
+</div>
+<input autocomplete="current-password" class="w-full bg-charcoal-input text-white text-sm rounded-xl pl-10 pr-11 py-3 border border-white/[0.08] focus:border-wheat-gold focus:ring-1 focus:ring-wheat-gold outline-none transition-all placeholder:text-white/25" id="passwordInput" placeholder="••••••••••••" required="" type="password"/>
+<button aria-label="Alternar visibilidad de contraseña" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/40 hover:text-wheat-gold transition-colors" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="visibility" id="pwdIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Options Row: Remember & Forgot Password -->
+<div class="flex items-center justify-between pt-1 pb-1">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded bg-charcoal-input border-white/20 text-wheat-gold focus:ring-wheat-gold focus:ring-offset-charcoal-card transition-colors" type="checkbox"/>
+<span class="text-xs text-white/70">Recordar sesión</span>
+</label>
+<a class="text-xs text-white/50 hover:text-wheat-gold transition-colors font-medium" href="#">
+            ¿Olvidaste tu contraseña?
+          </a>
+</div>
+<!-- Submit Button -->
+<button class="w-full min-h-[48px] bg-wheat-gold text-charcoal-dark font-headline font-bold text-sm rounded-xl hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg shadow-wheat-gold/20 mt-2" id="submitBtn" type="submit">
+<span>Ingresar al Panel</span>
+<span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Dynamic Feedback Message Container -->
+<div class="hidden text-xs text-center py-2 px-3 rounded-lg border" id="statusMessage"></div>
+</form>
+<!-- Security Trust Line -->
+<div class="mt-7 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2 text-[11px] text-white/45">
+<span class="material-symbols-outlined text-sm text-wheat-gold" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span>Conexión cifrada de extremo a extremo · Sucursales sincronizadas</span>
+</div>
+</div>
+<!-- Discreet Auxiliary Links Outside the Card -->
+<div class="mt-8 flex flex-col sm:flex-row items-center gap-4 sm:gap-8 text-xs text-white/40">
+<a class="hover:text-wheat-gold transition-colors flex items-center gap-1.5 font-medium" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_back">arrow_back</span>
+<span>Volver al Catálogo Público</span>
+</a>
+<span class="hidden sm:inline-block text-white/10">•</span>
+<span class="font-mono">
+        Nutrigon v1.0 · Sistema Seguro
+      </span>
+</div>
+</main>
+<!-- Clean Desktop Footer -->
+<footer class="relative z-10 w-full px-8 py-5 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between text-xs text-white/35 gap-3">
+<div class="flex items-center gap-3">
+<span>© 2025 Nutrigon Dietética &amp; Cerealera. Todos los derechos reservados.</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span> SSL 256-Bit TLS 1.3
+      </span>
+<span>Terminal ID: POS-CENTRO-01</span>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+    let activeBranch = 'centro';
+
+    function selectBranch(branchKey) {
+      activeBranch = branchKey;
+      const btnCentro = document.getElementById('branchCentro');
+      const btnNorte = document.getElementById('branchNorte');
+
+      if (branchKey === 'centro') {
+        btnCentro.setAttribute('aria-checked', 'true');
+        btnCentro.className = "flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 bg-white/[0.08] text-white border border-wheat-gold/40 shadow-sm shadow-black/40";
+        btnCentro.innerHTML = '<span class="material-symbols-outlined text-sm text-wheat-gold" data-icon="location_on">location_on</span><span class="font-semibold text-white">Sucursal Centro</span>';
+
+        btnNorte.setAttribute('aria-checked', 'false');
+        btnNorte.className = "flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 text-white/60 hover:text-white border border-transparent";
+        btnNorte.innerHTML = '<span class="material-symbols-outlined text-sm opacity-60" data-icon="store">store</span><span>Sucursal Norte</span>';
+      } else {
+        btnNorte.setAttribute('aria-checked', 'true');
+        btnNorte.className = "flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 bg-white/[0.08] text-white border border-wheat-gold/40 shadow-sm shadow-black/40";
+        btnNorte.innerHTML = '<span class="material-symbols-outlined text-sm text-wheat-gold" data-icon="location_on">location_on</span><span class="font-semibold text-white">Sucursal Norte</span>';
+
+        btnCentro.setAttribute('aria-checked', 'false');
+        btnCentro.className = "flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-200 text-white/60 hover:text-white border border-transparent";
+        btnCentro.innerHTML = '<span class="material-symbols-outlined text-sm opacity-60" data-icon="store">store</span><span>Sucursal Centro</span>';
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('passwordInput');
+      const pwdIcon = document.getElementById('pwdIcon');
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        pwdIcon.innerText = 'visibility_off';
+      } else {
+        pwdInput.type = 'password';
+        pwdIcon.innerText = 'visibility';
+      }
+    }
+
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      const statusBox = document.getElementById('statusMessage');
+      const username = document.getElementById('usernameInput').value;
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-75', 'cursor-wait');
+      submitBtn.innerHTML = `
+        <span class="material-symbols-outlined animate-spin text-base" data-icon="progress_activity">progress_activity</span>
+        <span>Autenticando en ${activeBranch === 'centro' ? 'Sucursal Centro' : 'Sucursal Norte'}...</span>
+      `;
+
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-75', 'cursor-wait');
+        submitBtn.innerHTML = `
+          <span>Ingresar al Panel</span>
+          <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+        `;
+        
+        statusBox.classList.remove('hidden');
+        statusBox.className = "text-xs text-center py-2 px-3 rounded-lg border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 flex items-center justify-center gap-1.5";
+        statusBox.innerHTML = `
+          <span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+          <span>Acceso concedido. Redirigiendo a panel de ${activeBranch === 'centro' ? 'Sucursal Centro' : 'Sucursal Norte'}...</span>
+        `;
+      }, 900);
+    }
+  </script>
+</body></html>
