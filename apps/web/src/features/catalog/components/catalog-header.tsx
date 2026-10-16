@@ -1,4 +1,4 @@
-import { MapPin, Menu, ShoppingBag } from "lucide-react";
+import { MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
 
@@ -68,8 +68,18 @@ export function CatalogHeader({
           </Link>
         </div>
 
-        {/* Right Column: Cart Button */}
-        <div className="flex w-1/4 items-center justify-end">
+        {/* Right Column: Admin Access & Cart Button */}
+        <div className="flex w-1/4 items-center justify-end gap-2">
+          <Link
+            to="/admin"
+            title="Acceso al panel de administración"
+            aria-label="Acceso al panel de administración"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border/80 bg-brand-surface/60 text-muted-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs"
+          >
+            <Shield className="size-4 text-brand-gold/80" aria-hidden="true" />
+            <span className="sr-only">Acceso Administración</span>
+          </Link>
+
           <IconButton
             onClick={onOpenCart}
             aria-label={

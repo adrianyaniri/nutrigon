@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   CheckCircle2,
-  Image as ImageIcon,
   Loader2,
   Package,
   Plus,
@@ -15,6 +14,7 @@ import {
   Percent,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import { useAuth, Role } from "@/features/auth";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import {
@@ -528,18 +528,20 @@ export function AdminCombosPage() {
                 <div className="space-y-3">
                   {/* Image & Status Badge */}
                   <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-[#111215] border border-white/[0.06] flex items-center justify-center">
-                    {hasImage ? (
-                      <img
-                        src={combo.imageUrls[0]}
-                        alt={combo.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center gap-1.5 text-zinc-600">
-                        <ImageIcon className="size-8" />
-                        <span className="text-[10px] uppercase font-mono">Sin imagen</span>
-                      </div>
+                    <img
+                      src={hasImage ? combo.imageUrls[0] : DEFAULT_PRODUCT_IMAGE}
+                      alt={combo.name}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = "/Logo.jpeg";
+                      }}
+                    />
+
+                    {!hasImage && (
+                      <span className="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-[10px] text-brand-gold px-2 py-0.5 rounded-full font-mono border border-brand-gold/30">
+                        Imagen por defecto
+                      </span>
                     )}
 
                     <div className="absolute top-2 right-2">
@@ -788,11 +790,20 @@ export function AdminCombosPage() {
                         </button>
                       </div>
                     ) : (
-                      <div className="size-16 rounded-xl border border-dashed border-white/[0.15] bg-[#111215] flex items-center justify-center text-zinc-500 shrink-0">
+                      <div className="relative size-16 rounded-xl overflow-hidden border border-white/[0.1] bg-[#111215] shrink-0">
                         {isUploadingImage ? (
-                          <Loader2 className="size-5 animate-spin text-brand-gold" />
+                          <div className="size-full flex items-center justify-center">
+                            <Loader2 className="size-5 animate-spin text-brand-gold" />
+                          </div>
                         ) : (
-                          <ImageIcon className="size-6" />
+                          <img
+                            src={DEFAULT_PRODUCT_IMAGE}
+                            alt="Imagen Nutrigon por defecto"
+                            className="size-full object-cover opacity-85"
+                            onError={(e) => {
+                              e.currentTarget.src = "/Logo.jpeg";
+                            }}
+                          />
                         )}
                       </div>
                     )}
@@ -804,8 +815,8 @@ export function AdminCombosPage() {
                           {isUploadingImage
                             ? "Subiendo a R2..."
                             : uploadedImageUrl
-                            ? "Cambiar imagen"
-                            : "Subir imagen"}
+                            ? "Cambiar imagen personalizada"
+                            : "Subir imagen personalizada"}
                         </span>
                         <input
                           type="file"
@@ -816,7 +827,9 @@ export function AdminCombosPage() {
                         />
                       </label>
                       <p className="mt-1 text-[11px] text-zinc-500">
-                        Formatos soportados: WEBP, JPEG o PNG. Se alojará en Cloudflare R2.
+                        {uploadedImageUrl
+                          ? "Foto personalizada alojada en Cloudflare R2."
+                          : "Usa la imagen oficial de Nutrigon por defecto. Podés subir una foto personalizada a R2."}
                       </p>
                     </div>
                   </div>

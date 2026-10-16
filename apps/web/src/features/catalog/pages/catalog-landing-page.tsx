@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Clock, MapPin, Store } from "lucide-react";
+import { ArrowRight, Clock, MapPin, QrCode, Shield, Store } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { BranchQrModal } from "../components/branch-qr-modal";
 import { CatalogFooter } from "../components/catalog-footer";
 import { useBranches } from "../hooks/use-catalog-queries";
 import type { CatalogBranch } from "../types";
@@ -52,6 +53,7 @@ export function CatalogLandingPage() {
   const branchesQuery = useBranches();
   const branches = branchesQuery.data ?? [];
   const [lastBranchSlug, setLastBranchSlug] = useState<string | null>(null);
+  const [selectedQrBranch, setSelectedQrBranch] = useState<CatalogBranch | null>(null);
 
   useEffect(() => {
     try {
@@ -75,7 +77,7 @@ export function CatalogLandingPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      {/* Top Simple Header */}
+      {/* Top Simple Header with Admin Button */}
       <header className="border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex w-full max-w-screen-xl items-center justify-between px-4 py-3 md:px-6">
           <Link to="/" className="flex items-center gap-3">
@@ -90,6 +92,15 @@ export function CatalogLandingPage() {
                 Dietética &amp; Cerealera
               </span>
             </span>
+          </Link>
+
+          <Link
+            to="/admin"
+            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:border-brand-gold hover:text-white transition-colors"
+            title="Acceso al panel de administración"
+          >
+            <Shield className="size-3.5 text-brand-gold" aria-hidden="true" />
+            <span>Acceso Gestión</span>
           </Link>
         </div>
       </header>
@@ -190,13 +201,24 @@ export function CatalogLandingPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-2">
+                <div className="mt-6 pt-2 flex items-center gap-2">
                   <Button
-                    className="w-full min-h-[44px] font-semibold"
+                    className="flex-1 min-h-[44px] font-semibold"
                     onClick={() => handleSelectBranch(branch)}
                   >
                     Ver Catálogo {branch.name}
                     <ArrowRight className="size-4 ml-1.5" />
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSelectedQrBranch(branch)}
+                    title={`Ver código QR y cartel para mostrador de Sucursal ${branch.name}`}
+                    className="min-h-[44px] px-3 border-border hover:border-brand-gold text-foreground hover:text-brand-gold shrink-0"
+                  >
+                    <QrCode className="size-4.5" aria-hidden="true" />
+                    <span className="sr-only sm:not-sr-only sm:text-xs sm:ml-1 font-medium">QR</span>
                   </Button>
                 </div>
               </div>
@@ -205,6 +227,14 @@ export function CatalogLandingPage() {
         </div>
       )}
       </main>
+
+      {selectedQrBranch && (
+        <BranchQrModal
+          isOpen={!!selectedQrBranch}
+          onClose={() => setSelectedQrBranch(null)}
+          branch={selectedQrBranch}
+        />
+      )}
 
       <CatalogFooter branches={branches} />
     </div>

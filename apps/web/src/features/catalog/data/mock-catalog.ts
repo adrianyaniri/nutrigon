@@ -1,3 +1,4 @@
+import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import type {
   BranchCatalog,
   CatalogBranch,
@@ -92,7 +93,7 @@ export function getMockBranchCatalog(slug: string): BranchCatalog | null {
     ({ unavailableIn: _unavailableIn, ...product }) => ({
       ...product,
       description: null,
-      imageUrl: null,
+      imageUrl: DEFAULT_PRODUCT_IMAGE,
       price: roundToTen(product.price * factor),
       promotionalPrice:
         product.promotionalPrice === null ? null : roundToTen(product.promotionalPrice * factor),

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { CartProvider } from "@/features/cart";
 import { CatalogLandingPage } from "./catalog-landing-page";
 import { CatalogPage } from "./catalog-page";
@@ -23,6 +23,10 @@ function renderPage(initialEntry = "/catalogo/centro") {
 }
 
 describe("CatalogPage & Route-based Branching", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it("renders products of the specified branch route", async () => {
     renderPage("/catalogo/centro");
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();

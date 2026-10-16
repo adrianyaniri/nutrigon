@@ -1,3 +1,4 @@
+import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import type {
   BranchCatalog,
   CatalogBranch,
@@ -85,7 +86,7 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
     name: item.name,
     description: item.description,
     saleUnit: item.saleUnit,
-    imageUrl: item.imageUrls[0] ?? null,
+    imageUrl: item.imageUrls[0] || DEFAULT_PRODUCT_IMAGE,
     price: item.price,
     promotionalPrice: item.isOnSale ? item.promotionalPrice : null,
     isFeatured: item.isFeatured ?? false,
@@ -93,7 +94,7 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
 }
 
 function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
-  const imageUrl = combo.imageUrls?.[0] ?? combo.imageUrl ?? null;
+  const imageUrl = combo.imageUrls?.[0] || combo.imageUrl || DEFAULT_PRODUCT_IMAGE;
   const originalPrice = combo.originalPrice;
   const hasDiscount = originalPrice !== undefined && originalPrice > combo.price;
 
@@ -145,7 +146,7 @@ export function createHttpCatalogRepository(
       const encodedSlug = encodeURIComponent(branchSlug);
       const [catalogRes, combosRes] = await Promise.all([
         fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`),
-        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/combos`),
+        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog/combos`),
       ]);
 
       if (!catalogRes.ok) {

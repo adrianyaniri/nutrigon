@@ -10,7 +10,6 @@ import {
   Edit3,
   FolderPlus,
   Hash,
-  Image as ImageIcon,
   Layers,
   Loader2,
   Package,
@@ -23,6 +22,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import { useAuth, Role } from "@/features/auth";
 import type { SaleUnit } from "@/features/catalog/types";
 import { cn } from "@/lib/utils/cn";
@@ -612,16 +612,15 @@ export function AdminMasterCatalogPage() {
                 <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
                   {/* Thumbnail */}
                   <div className="size-14 sm:size-16 rounded-xl overflow-hidden bg-[#111215] border border-white/[0.08] flex items-center justify-center shrink-0">
-                    {hasImage ? (
-                      <img
-                        src={product.imageUrls[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <ImageIcon className="size-6 text-zinc-600" />
-                    )}
+                    <img
+                      src={hasImage ? product.imageUrls[0] : DEFAULT_PRODUCT_IMAGE}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = "/Logo.jpeg";
+                      }}
+                    />
                   </div>
 
                   {/* Metadata */}
@@ -935,11 +934,15 @@ export function AdminMasterCatalogPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="size-16 rounded-xl border border-dashed border-white/[0.15] bg-[#111215] flex items-center justify-center text-zinc-500 shrink-0">
+                    <div className="relative size-16 rounded-xl border border-dashed border-white/[0.15] bg-[#111215] flex items-center justify-center text-zinc-500 shrink-0 overflow-hidden">
                       {isUploadingImage ? (
                         <Loader2 className="size-5 animate-spin text-brand-gold" />
                       ) : (
-                        <ImageIcon className="size-6" />
+                        <img
+                          src={DEFAULT_PRODUCT_IMAGE}
+                          alt="Imagen por defecto"
+                          className="w-full h-full object-cover opacity-60"
+                        />
                       )}
                     </div>
                   )}

@@ -1,12 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { PublicLayout } from "@/app/layouts/public-layout";
-import { RootLayout } from "@/app/layouts/root-layout";
 import { AdminLayout } from "@/app/layouts/admin-layout";
 import { AdminLoginPage, ProtectedRoute } from "@/features/auth";
 import { AdminProductsPage, CatalogLandingPage, CatalogPage } from "@/features/catalog";
 import { AdminCombosPage } from "@/features/combos";
 import { AdminMasterCatalogPage } from "@/features/master-catalog";
-import { HomePage } from "./home-page";
 import { NotFoundPage } from "./not-found-page";
 
 export const router = createBrowserRouter([
@@ -38,20 +36,16 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/catalogo",
+    path: "/",
     element: <PublicLayout />,
     children: [
       { index: true, element: <CatalogLandingPage /> },
-      { path: ":branchSlug", element: <CatalogPage /> },
-    ],
-  },
-  {
-    path: "/",
-    element: <RootLayout />,
-    children: [
       {
-        index: true,
-        element: <HomePage />,
+        path: "catalogo",
+        children: [
+          { index: true, element: <CatalogLandingPage /> },
+          { path: ":branchSlug", element: <CatalogPage /> },
+        ],
       },
       {
         path: "*",
@@ -60,4 +54,3 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
-

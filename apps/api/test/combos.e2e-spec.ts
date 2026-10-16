@@ -120,15 +120,28 @@ describe('CombosModule (e2e)', () => {
     expect(res.body.items).toHaveLength(2);
   });
 
-  it('lists the combo publicly in GET /api/v1/branches/:slug/combos', async () => {
+  it('lists the combo publicly in GET /api/v1/branches/:slug/catalog/combos', async () => {
     const res = await request(app.getHttpServer())
-      .get(`/api/v1/branches/${branchAdminSlug}/combos`)
+      .get(`/api/v1/branches/${branchAdminSlug}/catalog/combos`)
       .expect(200);
 
     const found = res.body.find((c: any) => c.id === createdComboId);
     expect(found).toBeDefined();
     expect(found.price).toBe(11500);
     expect(found.priceUnitLabel).toBe('combo');
+  });
+
+  it('lists the combo for admin in GET /api/v1/branches/:branchId/combos', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/api/v1/branches/${branchAdminBranchId}/combos`)
+      .set('Authorization', `Bearer ${branchAdminToken}`)
+      .expect(200);
+
+    expect(Array.isArray(res.body)).toBe(true);
+    const found = res.body.find((c: any) => c.id === createdComboId);
+    expect(found).toBeDefined();
+    expect(found.branchId).toBe(branchAdminBranchId);
+    expect(found.isAvailable).toBe(true);
   });
 
   it('updates and soft-deletes the branch combo', async () => {
@@ -151,7 +164,7 @@ describe('CombosModule (e2e)', () => {
     expect(delRes.body.isAvailable).toBe(false);
 
     const publicAfter = await request(app.getHttpServer())
-      .get(`/api/v1/branches/${branchAdminSlug}/combos`)
+      .get(`/api/v1/branches/${branchAdminSlug}/catalog/combos`)
       .expect(200);
     const foundAfter = publicAfter.body.find((c: any) => c.id === createdComboId);
     expect(foundAfter).toBeUndefined();

@@ -45,6 +45,32 @@ describe("createHttpCatalogRepository", () => {
 
   it("merges branch catalog products and active combos from GET /catalog and GET /combos", async () => {
     const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("/combos")) {
+        return {
+          ok: true,
+          json: async () => [
+            {
+              id: "combo-1",
+              name: "Pack Energético",
+              description: "Almendras + Nueces",
+              imageUrls: ["https://cdn.nutrigon.com/combo.webp"],
+              price: 11500,
+              originalPrice: 14500,
+              isActive: true,
+              items: [
+                {
+                  id: "ci-1",
+                  productId: "prod-1",
+                  productName: "Almendras Nonpareil",
+                  saleUnit: "WEIGHT",
+                  quantity: 1,
+                },
+              ],
+            },
+          ],
+        };
+      }
+
       if (url.includes("/catalog")) {
         return {
           ok: true,
@@ -79,32 +105,6 @@ describe("createHttpCatalogRepository", () => {
         };
       }
 
-      if (url.includes("/combos")) {
-        return {
-          ok: true,
-          json: async () => [
-            {
-              id: "combo-1",
-              name: "Pack Energético",
-              description: "Almendras + Nueces",
-              imageUrls: ["https://cdn.nutrigon.com/combo.webp"],
-              price: 11500,
-              originalPrice: 14500,
-              isActive: true,
-              items: [
-                {
-                  id: "ci-1",
-                  productId: "prod-1",
-                  productName: "Almendras Nonpareil",
-                  saleUnit: "WEIGHT",
-                  quantity: 1,
-                },
-              ],
-            },
-          ],
-        };
-      }
-
       return { ok: false, status: 404 };
     });
 
@@ -133,4 +133,73 @@ describe("createHttpCatalogRepository", () => {
       imageUrl: "https://cdn.nutrigon.com/almendras.webp",
     });
   });
+
+  it("falls back to DEFAULT_PRODUCT_IMAGE when products or combos have no images", async () => {
+    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("/combos")) {
+        return {
+          ok: true,
+          json: async () => [
+            {
+              id: "combo-no-img",
+              name: "Combo Simple",
+              description: null,
+              imageUrls: [],
+              price: 5000,
+              isActive: true,
+              items: [],
+            },
+          ],
+        };
+      }
+
+      if (url.includes("/catalog")) {
+        return {
+          ok: true,
+          json: async () => ({
+            branch: {
+              id: "b-origone",
+              name: "Origone",
+              slug: "origone",
+              address: null,
+              phone: null,
+              whatsappNumber: null,
+            },
+            categories: [],
+            items: [
+              {
+                id: "prod-no-img",
+                categoryId: "cat-1",
+                name: "Nueces Chandler",
+                description: null,
+                saleUnit: "WEIGHT",
+                imageUrls: [],
+                price: 8000,
+                promotionalPrice: null,
+                isOnSale: false,
+              },
+            ],
+            total: 1,
+            page: 1,
+            limit: 100,
+            totalPages: 1,
+          }),
+        };
+      }
+
+      return { ok: false, status: 404 };
+    });
+
+    const repo = createHttpCatalogRepository("http://localhost:3000", mockFetch as unknown as typeof fetch);
+    const catalog = await repo.getBranchCatalog("origone");
+
+    const [comboItem, regularItem] = catalog.products;
+    expect(comboItem.imageUrl).toBe(
+      "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
+    );
+    expect(regularItem.imageUrl).toBe(
+      "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
+    );
+  });
 });
+

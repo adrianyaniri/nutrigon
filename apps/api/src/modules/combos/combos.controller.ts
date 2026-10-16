@@ -19,7 +19,7 @@ export class CombosController {
   constructor(private readonly combosService: CombosService) {}
 
   @Public()
-  @Get(':slug/combos')
+  @Get(':slug/catalog/combos')
   async listPublicForBranch(@Param('slug') slug: string) {
     return this.combosService.listPublicForBranch(slug);
   }
