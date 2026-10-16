@@ -62,7 +62,10 @@ export function AdminHeader() {
       <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3">
         {/* Brand Anchor & Operational Status */}
         <div className="flex items-center gap-4 sm:gap-6">
-          <Link to="/admin/productos" className="flex items-center gap-2.5 sm:gap-3">
+          <Link
+            to={isGeneralAdmin ? "/admin/catalogo-maestro" : "/admin/productos"}
+            className="flex items-center gap-2.5 sm:gap-3"
+          >
             <div className="size-8 rounded-lg bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold shadow-xs">
               <Store className="size-4" aria-hidden="true" />
             </div>
@@ -112,35 +115,39 @@ export function AdminHeader() {
               </NavLink>
             )}
 
-            <NavLink
-              to="/admin/productos"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
-                  isActive
-                    ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                    : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
-                )
-              }
-            >
-              <Tag className="size-3.5" aria-hidden="true" />
-              <span>Precios y Ofertas</span>
-            </NavLink>
+            {!isGeneralAdmin && (
+              <NavLink
+                to="/admin/productos"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+                    isActive
+                      ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  )
+                }
+              >
+                <Tag className="size-3.5" aria-hidden="true" />
+                <span>Precios y Ofertas</span>
+              </NavLink>
+            )}
 
-            <NavLink
-              to="/admin/combos"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
-                  isActive
-                    ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                    : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
-                )
-              }
-            >
-              <Package className="size-3.5" aria-hidden="true" />
-              <span>Combos y Packs</span>
-            </NavLink>
+            {!isGeneralAdmin && (
+              <NavLink
+                to="/admin/combos"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+                    isActive
+                      ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  )
+                }
+              >
+                <Package className="size-3.5" aria-hidden="true" />
+                <span>Combos y Packs</span>
+              </NavLink>
+            )}
           </nav>
         </div>
 
@@ -252,35 +259,39 @@ export function AdminHeader() {
           </NavLink>
         )}
 
-        <NavLink
-          to="/admin/productos"
-          className={({ isActive }) =>
-            cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
-              isActive
-                ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                : "text-zinc-400 hover:text-white"
-            )
-          }
-        >
-          <Tag className="size-3.5" aria-hidden="true" />
-          <span>Precios</span>
-        </NavLink>
+        {!isGeneralAdmin && (
+          <NavLink
+            to="/admin/productos"
+            className={({ isActive }) =>
+              cn(
+                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                isActive
+                  ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                  : "text-zinc-400 hover:text-white"
+              )
+            }
+          >
+            <Tag className="size-3.5" aria-hidden="true" />
+            <span>Precios</span>
+          </NavLink>
+        )}
 
-        <NavLink
-          to="/admin/combos"
-          className={({ isActive }) =>
-            cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
-              isActive
-                ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                : "text-zinc-400 hover:text-white"
-            )
-          }
-        >
-          <Package className="size-3.5" aria-hidden="true" />
-          <span>Combos</span>
-        </NavLink>
+        {!isGeneralAdmin && (
+          <NavLink
+            to="/admin/combos"
+            className={({ isActive }) =>
+              cn(
+                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                isActive
+                  ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                  : "text-zinc-400 hover:text-white"
+              )
+            }
+          >
+            <Package className="size-3.5" aria-hidden="true" />
+            <span>Combos</span>
+          </NavLink>
+        )}
       </nav>
     </header>
   );

@@ -1,46 +1,49 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role } from "@/features/auth/types";
 import { AdminBranchesPage } from "./admin-branches-page";
 
-function renderBranchesPage(role: Role = Role.ADMIN_GENERAL) {
+function renderBranchesPage(role: Role = Role.ADMIN_GENERAL, setSelectedBranchSlug = vi.fn()) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
 
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider
-        value={{
-          user: {
-            id: role === Role.ADMIN_GENERAL ? "u-admin-general" : "u-branch-origone",
-            email:
-              role === Role.ADMIN_GENERAL
-                ? "admin@nutrigon.com"
-                : "admin.origone@nutrigon.com",
-            fullName:
-              role === Role.ADMIN_GENERAL ? "Administrador General" : "Encargado Origone",
-            role,
-            branchId: role === Role.ADMIN_GENERAL ? null : "b-origone",
-          },
-          token: "mock-jwt-token",
-          selectedBranchSlug: "origone",
-          setSelectedBranchSlug: () => {},
-          isLoading: false,
-          isAuthenticated: true,
-          login: async () => {},
-          logout: () => {},
-        }}
-      >
-        <MemoryRouter initialEntries={["/admin/sucursales"]}>
-          <AdminBranchesPage />
-        </MemoryRouter>
-      </AuthContext.Provider>
-    </QueryClientProvider>
-  );
+  return {
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <AuthContext.Provider
+          value={{
+            user: {
+              id: role === Role.ADMIN_GENERAL ? "u-admin-general" : "u-branch-origone",
+              email:
+                role === Role.ADMIN_GENERAL
+                  ? "admin@nutrigon.com"
+                  : "admin.origone@nutrigon.com",
+              fullName:
+                role === Role.ADMIN_GENERAL ? "Administrador General" : "Encargado Origone",
+              role,
+              branchId: role === Role.ADMIN_GENERAL ? null : "b-origone",
+            },
+            token: "mock-jwt-token",
+            selectedBranchSlug: "origone",
+            setSelectedBranchSlug,
+            isLoading: false,
+            isAuthenticated: true,
+            login: async () => ({} as any),
+            logout: () => {},
+          }}
+        >
+          <MemoryRouter initialEntries={["/admin/sucursales"]}>
+            <AdminBranchesPage />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    ),
+    setSelectedBranchSlug,
+  };
 }
 
 describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
@@ -154,5 +157,33 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
 
     const statusBanner = await screen.findByRole("status");
     expect(statusBanner).toHaveTextContent(/Sucursal "Origone" pausada/i);
+  });
+
+  it("dismisses create modal when pressing Escape", async () => {
+    renderBranchesPage(Role.ADMIN_GENERAL);
+
+    await screen.findByText(/Sucursal Origone/i);
+
+    const createBtn = screen.getByRole("button", { name: /Nueva Sucursal/i });
+    fireEvent.click(createBtn);
+
+    expect(screen.getByRole("heading", { name: "Nueva Sucursal" })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("heading", { name: "Nueva Sucursal" })).not.toBeInTheDocument();
+  });
+
+  it("navigates to branch products pricing when clicking Precios y Ofertas on a branch card", async () => {
+    const mockSetBranch = vi.fn();
+    renderBranchesPage(Role.ADMIN_GENERAL, mockSetBranch);
+
+    await screen.findByText(/Sucursal Origone/i);
+
+    const pricingButtons = screen.getAllByRole("button", { name: /Precios y Ofertas/i });
+    expect(pricingButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(pricingButtons[0]);
+    expect(mockSetBranch).toHaveBeenCalledWith("origone");
   });
 });

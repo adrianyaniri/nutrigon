@@ -1,12 +1,20 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { PublicLayout } from "@/app/layouts/public-layout";
 import { AdminLayout } from "@/app/layouts/admin-layout";
-import { AdminLoginPage, ProtectedRoute } from "@/features/auth";
+import { AdminLoginPage, ProtectedRoute, useAuth, Role } from "@/features/auth";
 import { AdminProductsPage, CatalogLandingPage, CatalogPage } from "@/features/catalog";
 import { AdminBranchesPage } from "@/features/branches";
 import { AdminCombosPage } from "@/features/combos";
 import { AdminMasterCatalogPage } from "@/features/master-catalog";
 import { NotFoundPage } from "./not-found-page";
+
+function AdminIndexRedirect() {
+  const { user } = useAuth();
+  if (user?.role === Role.ADMIN_GENERAL) {
+    return <Navigate to="/admin/catalogo-maestro" replace />;
+  }
+  return <Navigate to="/admin/productos" replace />;
+}
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +29,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="/admin/productos" replace /> },
+      { index: true, element: <AdminIndexRedirect /> },
       {
         path: "catalogo-maestro",
         element: <AdminMasterCatalogPage />,

@@ -56,6 +56,8 @@ export function AdminLoginPage() {
           (from.includes("catalogo-maestro") || from.includes("sucursales"));
 
         navigate(isRestrictedForBranch ? "/admin/productos" : from, { replace: true });
+      } else if (user.role === Role.ADMIN_GENERAL) {
+        navigate("/admin/catalogo-maestro", { replace: true });
       } else {
         navigate("/admin/productos", { replace: true });
       }

@@ -14,6 +14,10 @@ function renderLoginPage(initialEntry = "/admin/login") {
           <Routes>
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route
+              path="/admin/catalogo-maestro"
+              element={<div data-testid="admin-master-destination">Panel de Catálogo Maestro</div>}
+            />
+            <Route
               path="/admin/productos"
               element={<div data-testid="admin-catalog-destination">Panel de Productos</div>}
             />
@@ -134,7 +138,7 @@ describe("AdminLoginPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("authenticates valid credentials and navigates to the admin products page", async () => {
+  it("authenticates valid credentials and navigates to the master catalog page for general admin", async () => {
     renderLoginPage();
 
     fireEvent.change(screen.getByLabelText("Email o Usuario"), {
@@ -148,7 +152,7 @@ describe("AdminLoginPage", () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByTestId("admin-catalog-destination")).toBeInTheDocument();
+      expect(screen.getByTestId("admin-master-destination")).toBeInTheDocument();
     });
   });
 });

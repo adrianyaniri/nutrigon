@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -15,6 +15,7 @@ import {
   Search,
   ShieldAlert,
   Store,
+  Tag,
   X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,7 +28,7 @@ import { branchesRepository } from "../data/branches-repository";
 import type { BranchAdminItem, CreateBranchInput, UpdateBranchInput } from "../types";
 
 export function AdminBranchesPage() {
-  const { user, token } = useAuth();
+  const { user, token, setSelectedBranchSlug } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -41,6 +42,19 @@ export function AdminBranchesPage() {
   );
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
+
+  // Handle ESC key for modal dismissals
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (isCreateModalOpen) setIsCreateModalOpen(false);
+        if (editingBranch) setEditingBranch(null);
+        if (qrBranch) setQrBranch(null);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCreateModalOpen, editingBranch, qrBranch]);
 
   const branchesQuery = useQuery({
     queryKey: ["admin", "branches"],
@@ -125,30 +139,32 @@ export function AdminBranchesPage() {
   // Access restriction shield for non-general admins
   if (!isGeneralAdmin) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12 text-center text-white">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-4">
-          <ShieldAlert className="size-8" />
-        </div>
-        <h1 className="font-headline text-2xl font-bold tracking-tight">Acceso Restringido</h1>
-        <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
-          Esta sección es exclusiva para el <strong>Administrador General</strong> de la cadena.
-          Como Administrador de Sucursal, podés gestionar los precios, ofertas y combos de tu local
-          asignado.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <Button
-            onClick={() => navigate("/admin/productos")}
-            className="min-h-[44px] font-semibold"
-          >
-            Ir a Precios de mi Sucursal
-          </Button>
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center text-white">
+        <div className="max-w-md">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-4">
+            <ShieldAlert className="size-8" />
+          </div>
+          <h1 className="font-headline text-2xl font-bold tracking-tight">Acceso Restringido</h1>
+          <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
+            Esta sección es exclusiva para el <strong>Administrador General</strong> de la cadena.
+            Como Administrador de Sucursal, podés gestionar los precios, ofertas y combos de tu local
+            asignado.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Button
+              onClick={() => navigate("/admin/productos")}
+              className="min-h-[44px] font-semibold"
+            >
+              Ir a Precios de mi Sucursal
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12 text-white">
+    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-white pb-12">
       {/* Feedback Notification Banner */}
       {feedback && (
         <div
@@ -180,16 +196,12 @@ export function AdminBranchesPage() {
       )}
 
       {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.08] pb-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-3 py-1 text-xs font-semibold text-brand-gold mb-2">
-            <Building2 className="size-3.5" />
-            Gestión Corporativa
-          </div>
-          <h1 className="font-headline text-xl sm:text-2xl font-bold tracking-tight">
+          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Sucursales de la Cadena
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-400 max-w-2xl">
             Administrá los puntos de venta, canales de WhatsApp para pedidos, direcciones y estado
             operativo.
           </p>
@@ -198,51 +210,58 @@ export function AdminBranchesPage() {
         <Button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 font-semibold shadow-sm"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 font-semibold shadow-sm bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs sm:text-sm"
         >
           <Plus className="size-4" />
           <span>Nueva Sucursal</span>
         </Button>
       </div>
 
-      {/* KPI Metrics Strip */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-white/[0.08] bg-[#111215] p-4 shadow-2xs">
-          <span className="text-xs font-medium text-zinc-400">Total de Sucursales</span>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-white">{metrics.total}</span>
-            <span className="text-xs text-zinc-500 font-mono">locales</span>
+      {/* Operational Summary Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-card border border-white/[0.08]">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-zinc-400 font-medium">Total de Sucursales</span>
+            <span className="font-headline text-base font-bold text-white tabular-nums">{metrics.total}</span>
+          </div>
+          <div className="h-4 w-px bg-white/[0.1]" aria-hidden="true" />
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-400 font-medium">Sucursales Activas</span>
+            <span className="font-headline text-base font-bold text-emerald-400 tabular-nums">{metrics.active}</span>
+          </div>
+          <div className="h-4 w-px bg-white/[0.1]" aria-hidden="true" />
+          <div className="flex items-center gap-2">
+            <span className="text-amber-400 font-medium">Pausadas</span>
+            <span className="font-headline text-base font-bold text-amber-400 tabular-nums">{metrics.inactive}</span>
           </div>
         </div>
-
-        <div className="rounded-xl border border-white/[0.08] bg-[#111215] p-4 shadow-2xs">
-          <span className="text-xs font-medium text-zinc-400">Sucursales Activas</span>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-emerald-400">{metrics.active}</span>
-            <span className="text-xs text-emerald-500/70 font-mono">en catálogo público</span>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-white/[0.08] bg-[#111215] p-4 shadow-2xs">
-          <span className="text-xs font-medium text-zinc-400">Sucursales Pausadas</span>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-amber-400">{metrics.inactive}</span>
-            <span className="text-xs text-amber-500/70 font-mono">temporalmente ocultas</span>
-          </div>
+        <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+          <CheckCircle2 className="size-3.5 text-emerald-400" />
+          <span>Red sincronizada en tiempo real</span>
         </div>
       </div>
 
       {/* Search and Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre, dirección o WhatsApp..."
-            className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] pl-9 pr-4 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+            className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] pl-9 pr-9 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
           />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white rounded-md transition-colors"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Status Filter Tabs */}
@@ -251,9 +270,9 @@ export function AdminBranchesPage() {
             type="button"
             onClick={() => setStatusFilter("all")}
             className={cn(
-              "min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "all"
-                ? "bg-brand-gold text-[#121316] shadow-xs"
+                ? "bg-brand-gold text-surface shadow-xs"
                 : "text-zinc-400 hover:text-white"
             )}
           >
@@ -263,9 +282,9 @@ export function AdminBranchesPage() {
             type="button"
             onClick={() => setStatusFilter("active")}
             className={cn(
-              "min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "active"
-                ? "bg-brand-gold text-[#121316] shadow-xs"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-zinc-400 hover:text-white"
             )}
           >
@@ -275,9 +294,9 @@ export function AdminBranchesPage() {
             type="button"
             onClick={() => setStatusFilter("inactive")}
             className={cn(
-              "min-h-[36px] px-3 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "inactive"
-                ? "bg-brand-gold text-[#121316] shadow-xs"
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-zinc-400 hover:text-white"
             )}
           >
@@ -297,16 +316,31 @@ export function AdminBranchesPage() {
           ))}
         </div>
       ) : filteredBranches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111215] p-12 text-center">
-          <Store className="size-12 text-zinc-600 mb-3" />
-          <h2 className="font-headline text-base font-bold text-white">
-            No se encontraron sucursales
-          </h2>
-          <p className="mt-1 text-xs text-zinc-400 max-w-sm">
-            {searchTerm
-              ? `No hay coincidencias para "${searchTerm}".`
-              : "No hay sucursales cargadas con el filtro seleccionado."}
-          </p>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111215] p-12 text-center space-y-4">
+          <Store className="size-12 text-zinc-600 mb-1" />
+          <div>
+            <h2 className="font-headline text-base font-bold text-white">
+              No se encontraron sucursales
+            </h2>
+            <p className="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">
+              {searchTerm
+                ? `No hay coincidencias para "${searchTerm}".`
+                : "No hay sucursales cargadas con el filtro seleccionado."}
+            </p>
+          </div>
+          {(searchTerm || statusFilter !== "all") && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+              }}
+              className="min-h-[44px] text-xs font-semibold border-white/[0.15]"
+            >
+              Restablecer filtros
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -386,57 +420,73 @@ export function AdminBranchesPage() {
               </div>
 
               {/* Card Actions */}
-              <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3">
+              <div className="mt-5 space-y-2.5 border-t border-white/[0.06] pt-3">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setEditingBranch(branch)}
-                  className="flex-1 min-h-[40px] text-xs font-semibold gap-1.5 border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white"
+                  onClick={() => {
+                    setSelectedBranchSlug(branch.slug);
+                    navigate("/admin/productos");
+                  }}
+                  title={`Gestionar precios y ofertas de Sucursal ${branch.name}`}
+                  className="w-full min-h-[44px] text-xs font-semibold gap-1.5 border-brand-gold/30 bg-brand-gold/10 text-brand-gold hover:bg-brand-gold/20 transition-colors"
                 >
-                  <Edit2 className="size-3.5" />
-                  <span>Editar</span>
+                  <Tag className="size-3.5" />
+                  <span>Precios y Ofertas</span>
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setQrBranch(branch)}
-                  title={`Ver y descargar código QR de Sucursal ${branch.name}`}
-                  className="min-h-[40px] px-2.5 border-white/[0.1] bg-white/[0.04] text-brand-gold hover:bg-white/[0.08]"
-                >
-                  <QrCode className="size-4" />
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingBranch(branch)}
+                    className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white"
+                  >
+                    <Edit2 className="size-3.5" />
+                    <span>Editar</span>
+                  </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    toggleStatusMutation.mutate({
-                      id: branch.id,
-                      isActive: !branch.isActive,
-                    })
-                  }
-                  disabled={toggleStatusMutation.isPending}
-                  title={branch.isActive ? "Pausar sucursal" : "Reactivar sucursal"}
-                  className={cn(
-                    "min-h-[40px] px-2.5 border-white/[0.1] transition-colors",
-                    branch.isActive
-                      ? "text-zinc-400 hover:text-amber-400 hover:border-amber-400/40"
-                      : "text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10"
-                  )}
-                >
-                  <Power className="size-4" />
-                </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setQrBranch(branch)}
+                    title={`Ver y descargar código QR de Sucursal ${branch.name}`}
+                    className="min-h-[44px] min-w-[44px] px-3 border-white/[0.1] bg-white/[0.04] text-brand-gold hover:bg-white/[0.08]"
+                  >
+                    <QrCode className="size-4" />
+                  </Button>
 
-                <Link
-                  to={`/catalogo/${branch.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex size-10 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-zinc-400 hover:text-brand-gold hover:border-brand-gold/40 transition-colors"
-                  title="Abrir catálogo público de esta sucursal"
-                >
-                  <ExternalLink className="size-4" />
-                </Link>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      toggleStatusMutation.mutate({
+                        id: branch.id,
+                        isActive: !branch.isActive,
+                      })
+                    }
+                    disabled={toggleStatusMutation.isPending}
+                    title={branch.isActive ? "Pausar sucursal" : "Reactivar sucursal"}
+                    className={cn(
+                      "min-h-[44px] min-w-[44px] px-3 border-white/[0.1] transition-colors",
+                      branch.isActive
+                        ? "text-zinc-400 hover:text-amber-400 hover:border-amber-400/40"
+                        : "text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10"
+                    )}
+                  >
+                    <Power className="size-4" />
+                  </Button>
+
+                  <Link
+                    to={`/catalogo/${branch.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-zinc-400 hover:text-brand-gold hover:border-brand-gold/40 transition-colors"
+                    title="Abrir catálogo público de esta sucursal"
+                  >
+                    <ExternalLink className="size-4" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
@@ -547,6 +597,7 @@ function CreateBranchModal({
       aria-modal="true"
       aria-labelledby="create-branch-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in"
+      onClick={onClose}
     >
       <div
         className="relative w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#121316] p-6 shadow-2xl text-white"
@@ -555,10 +606,10 @@ function CreateBranchModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 text-zinc-400 hover:text-white"
+          className="absolute right-4 top-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
           aria-label="Cerrar modal"
         >
-          <X className="size-4" />
+          <X className="size-5" />
         </button>
 
         <div className="flex items-center gap-2.5 mb-4">
@@ -593,7 +644,7 @@ function CreateBranchModal({
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Ej. Morón, Castelar, Ramos Mejía"
-              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
             />
           </div>
 
@@ -601,7 +652,7 @@ function CreateBranchModal({
             <label htmlFor="create-branch-slug" className="block text-xs font-semibold text-zinc-300 mb-1">
               Slug de URL *
             </label>
-            <div className="flex items-center rounded-xl border border-white/[0.1] bg-[#111215] px-3 focus-within:border-brand-gold">
+            <div className="flex items-center rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 focus-within:border-brand-gold focus-within:ring-1 focus-within:ring-brand-gold">
               <span className="font-mono text-xs text-zinc-500 select-none">/catalogo/</span>
               <input
                 id="create-branch-slug"
@@ -610,7 +661,7 @@ function CreateBranchModal({
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
                 placeholder="moron"
-                className="w-full min-h-[44px] bg-transparent font-mono text-xs text-white focus:outline-none"
+                className="w-full min-h-[44px] bg-transparent font-mono text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:outline-none"
               />
             </div>
             <span className="mt-1 block text-[11px] text-zinc-500">
@@ -628,7 +679,7 @@ function CreateBranchModal({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Ej. Av. Rivadavia 18200"
-              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
             />
           </div>
 
@@ -643,7 +694,7 @@ function CreateBranchModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej. 11-4450-1234"
-                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
 
@@ -657,7 +708,7 @@ function CreateBranchModal({
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 placeholder="5491144501234"
-                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 font-mono text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 font-mono text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
           </div>
@@ -678,7 +729,7 @@ function CreateBranchModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="min-h-[44px] font-semibold"
+              className="min-h-[44px] font-semibold bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs"
             >
               {isSubmitting ? "Creando..." : "Crear Sucursal"}
             </Button>
@@ -741,6 +792,7 @@ function EditBranchModal({
       aria-modal="true"
       aria-labelledby="edit-branch-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in"
+      onClick={onClose}
     >
       <div
         className="relative w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#121316] p-6 shadow-2xl text-white"
@@ -749,10 +801,10 @@ function EditBranchModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 text-zinc-400 hover:text-white"
+          className="absolute right-4 top-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white"
           aria-label="Cerrar modal"
         >
-          <X className="size-4" />
+          <X className="size-5" />
         </button>
 
         <div className="flex items-center gap-2.5 mb-4">
@@ -784,7 +836,7 @@ function EditBranchModal({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
             />
           </div>
 
@@ -798,7 +850,7 @@ function EditBranchModal({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Ej. Tte. Manuel Origone 196, Villa Tesei"
-              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+              className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
             />
           </div>
 
@@ -813,7 +865,7 @@ function EditBranchModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej. 11-4450-1001"
-                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
 
@@ -827,7 +879,7 @@ function EditBranchModal({
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 placeholder="5491144501001"
-                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3 font-mono text-xs text-white placeholder:text-zinc-500 focus:border-brand-gold focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-white/[0.1] bg-[#111215] px-3.5 font-mono text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
           </div>
@@ -866,7 +918,7 @@ function EditBranchModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="min-h-[44px] font-semibold"
+              className="min-h-[44px] font-semibold bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs"
             >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </Button>
