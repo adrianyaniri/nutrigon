@@ -10,6 +10,7 @@ import { BranchesModule } from './modules/branches/branches.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
 import { BranchProductsModule } from './modules/branch-products/branch-products.module.js';
+import { MediaModule } from './modules/media/media.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { BranchProductsModule } from './modules/branch-products/branch-products.
     CategoriesModule,
     ProductsModule,
     BranchProductsModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [
