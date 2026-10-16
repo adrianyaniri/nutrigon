@@ -1,4 +1,5 @@
-import { Plus, Star } from "lucide-react";
+import { useState } from "react";
+import { Check, Plus, Star } from "lucide-react";
 import { Badge } from "@/components/atoms/badge";
 import { IconButton } from "@/components/atoms/icon-button";
 import { PriceTag } from "@/components/atoms/price-tag";
@@ -29,8 +30,16 @@ function getUnitLabel(product: CatalogProduct): string {
  * and aligned price/actions across any screen resolution.
  */
 export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
+  const [isAddedFeedback, setIsAddedFeedback] = useState(false);
   const onSale = isOnSale(product);
   const isClickable = Boolean(onSelect);
+
+  function handleAdd(e: React.MouseEvent) {
+    e.stopPropagation();
+    onAdd?.(product);
+    setIsAddedFeedback(true);
+    setTimeout(() => setIsAddedFeedback(false), 1200);
+  }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" || e.key === " ") {
@@ -97,14 +106,24 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
         />
         {onAdd && (
           <IconButton
-            aria-label={`Agregar ${product.name} al pedido`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdd(product);
-            }}
-            className="hover:scale-105 active:scale-95"
+            aria-label={
+              isAddedFeedback
+                ? `${product.name} agregado al pedido`
+                : `Agregar ${product.name} al pedido`
+            }
+            onClick={handleAdd}
+            className={cn(
+              "transition-all duration-200 active:scale-95",
+              isAddedFeedback
+                ? "bg-emerald-600 text-white hover:bg-emerald-600 scale-105"
+                : "hover:scale-105"
+            )}
           >
-            <Plus className="size-5" aria-hidden="true" />
+            {isAddedFeedback ? (
+              <Check className="size-5 animate-in zoom-in-50 duration-150" aria-hidden="true" />
+            ) : (
+              <Plus className="size-5" aria-hidden="true" />
+            )}
           </IconButton>
         )}
       </div>

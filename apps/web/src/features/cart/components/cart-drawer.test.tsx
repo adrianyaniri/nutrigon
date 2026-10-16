@@ -86,7 +86,7 @@ describe("CartDrawer", () => {
 
     // Item rendered
     expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
-    expect(screen.getByText(/Sucursal Centro/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Sucursal Centro/).length).toBeGreaterThan(0);
     expect(screen.getByText("Total Estimado")).toBeInTheDocument();
 
     // Increase quantity with stepper
@@ -103,7 +103,7 @@ describe("CartDrawer", () => {
     fireEvent.change(nameInput, { target: { value: "Carlos Pérez" } });
 
     // Submit WhatsApp
-    const submitBtn = screen.getByRole("button", { name: "Enviar Pedido por WhatsApp" });
+    const submitBtn = screen.getByRole("button", { name: /Enviar Pedido por WhatsApp/i });
     fireEvent.click(submitBtn);
 
     expect(openSpy).toHaveBeenCalled();

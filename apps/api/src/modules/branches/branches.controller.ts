@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -25,7 +26,10 @@ export class BranchesController {
 
   @Public()
   @Get()
-  async findAll() {
+  async findAll(@Query('includeInactive') includeInactive?: string) {
+    if (includeInactive === 'true') {
+      return this.branchesService.findAll();
+    }
     return this.branchesService.findAllActive();
   }
 

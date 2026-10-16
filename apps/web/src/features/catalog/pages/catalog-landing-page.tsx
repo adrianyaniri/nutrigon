@@ -181,11 +181,25 @@ export function CatalogLandingPage() {
                       <span className="flex size-10 items-center justify-center rounded-xl bg-brand-gold/15 text-brand-gold">
                         <Store className="size-5" />
                       </span>
-                      {details.badge && (
-                        <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
-                          {details.badge}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {details.badge && (
+                          <span className="rounded-full bg-brand-gold/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
+                            {details.badge}
+                          </span>
+                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedQrBranch(branch)}
+                          title={`Ver código QR y cartel para mostrador de Sucursal ${branch.name}`}
+                          aria-label={`Ver código QR de Sucursal ${branch.name}`}
+                          className="min-h-[44px] px-3 gap-1.5 rounded-xl border-border hover:border-brand-gold text-foreground hover:text-brand-gold hover:bg-brand-gold/10 transition-colors"
+                        >
+                          <QrCode className="size-4 shrink-0 text-brand-gold" aria-hidden="true" />
+                          <span className="text-xs font-semibold">QR</span>
+                        </Button>
+                      </div>
                     </div>
 
                     <div>
@@ -208,24 +222,13 @@ export function CatalogLandingPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-2 flex items-center gap-2">
+                  <div className="mt-6 pt-2">
                     <Button
-                      className="flex-1 min-h-[44px] font-semibold"
+                      className="w-full min-h-[44px] font-semibold text-sm"
                       onClick={() => handleSelectBranch(branch)}
                     >
                       Ver Catálogo {branch.name}
                       <ArrowRight className="size-4 ml-1.5" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setSelectedQrBranch(branch)}
-                      title={`Ver código QR y cartel para mostrador de Sucursal ${branch.name}`}
-                      className="min-h-[44px] px-3 border-border hover:border-brand-gold text-foreground hover:text-brand-gold shrink-0"
-                    >
-                      <QrCode className="size-4.5" aria-hidden="true" />
-                      <span className="sr-only sm:not-sr-only sm:text-xs sm:ml-1 font-medium">QR</span>
                     </Button>
                   </div>
                 </div>

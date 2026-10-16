@@ -11,6 +11,8 @@ interface ProductGridProps {
   onAdd: (product: CatalogProduct) => void;
   onSelect?: (product: CatalogProduct) => void;
   onClearFilters: () => void;
+  suggestedCategories?: readonly { slug: string; label: string }[];
+  onSelectCategory?: (slug: string) => void;
 }
 
 const SKELETON_COUNT = 8;
@@ -21,6 +23,8 @@ export function ProductGrid({
   onAdd,
   onSelect,
   onClearFilters,
+  suggestedCategories,
+  onSelectCategory,
 }: ProductGridProps) {
   if (isLoading) {
     return (
@@ -39,13 +43,29 @@ export function ProductGrid({
   if (products.length === 0) {
     return (
       <EmptyState
-        icon={<SearchX className="size-10" />}
+        icon={<SearchX className="size-10 text-brand-gold/70" />}
         title="No encontramos productos"
-        description="Probá con otra búsqueda o quitá los filtros para ver todo el catálogo."
+        description="Probá con otra búsqueda o seleccioná una categoría para explorar el catálogo:"
         action={
-          <Button variant="outline" className="mt-2 min-h-[44px]" onClick={onClearFilters}>
-            Quitar filtros
-          </Button>
+          <div className="flex flex-col items-center gap-3 mt-2 w-full max-w-md">
+            {suggestedCategories && suggestedCategories.length > 0 && onSelectCategory && (
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {suggestedCategories.slice(0, 4).map((cat) => (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    onClick={() => onSelectCategory(cat.slug)}
+                    className="inline-flex min-h-[44px] items-center rounded-xl border border-border/80 bg-brand-surface/70 px-3 py-1.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors"
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto" onClick={onClearFilters}>
+              Quitar filtros
+            </Button>
+          </div>
         }
       />
     );

@@ -248,6 +248,10 @@ export function CatalogPage() {
               onAdd={handleAdd}
               onSelect={setSelectedProduct}
               onClearFilters={clearFilters}
+              suggestedCategories={categoryOptions
+                .filter((c) => Boolean(c.value))
+                .map((c) => ({ slug: c.value!, label: c.label }))}
+              onSelectCategory={setCategory}
             />
           )}
         </section>

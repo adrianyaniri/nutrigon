@@ -42,6 +42,15 @@ describe('BranchesController (TDD)', () => {
       expect(mockService.findAllActive).toHaveBeenCalled();
       expect(result).toEqual([mockBranch]);
     });
+
+    it('should return all branches including inactive when includeInactive is true', async () => {
+      mockService.findAll = vi.fn().mockResolvedValue([mockBranch, { ...mockBranch, isActive: false }]);
+
+      const result = await controller.findAll('true');
+
+      expect(mockService.findAll).toHaveBeenCalled();
+      expect(result.length).toBe(2);
+    });
   });
 
   describe('findBySlug', () => {

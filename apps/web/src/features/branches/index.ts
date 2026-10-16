@@ -1,3 +1,3 @@
-// Branches feature module boundary
-// Manages the 3 distinct store locations and branch-specific metadata
-export {};
+export * from "./types";
+export * from "./data/branches-repository";
+export * from "./pages/admin-branches-page";

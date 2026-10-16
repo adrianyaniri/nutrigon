@@ -471,10 +471,11 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
             >
               <Send className="size-4" />
               <span>Enviar Pedido por WhatsApp</span>
+              <span className="text-xs font-normal opacity-90 hidden sm:inline">· Sucursal {branchName}</span>
             </Button>
 
             <p className="text-[11px] text-center text-muted-foreground">
-              Se abrirá WhatsApp con el pedido listo para confirmar con la sucursal.
+              Se abrirá WhatsApp directo con <strong className="font-semibold text-foreground">Sucursal {branchName}</strong> para confirmar tu pedido.
             </p>
           </footer>
         )}

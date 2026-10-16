@@ -6,6 +6,7 @@ import {
   Eye,
   EyeOff,
   Headphones,
+  Info,
   Loader2,
   Lock,
   MapPin,
@@ -39,6 +40,7 @@ export function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showRecoveryHint, setShowRecoveryHint] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

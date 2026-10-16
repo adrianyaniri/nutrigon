@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes } from "lucide-react";
+import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes, Building2 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
@@ -92,6 +92,23 @@ export function AdminHeader() {
               >
                 <Boxes className="size-3.5" aria-hidden="true" />
                 <span>Catálogo Maestro</span>
+              </NavLink>
+            )}
+
+            {isGeneralAdmin && (
+              <NavLink
+                to="/admin/sucursales"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+                    isActive
+                      ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  )
+                }
+              >
+                <Building2 className="size-3.5" aria-hidden="true" />
+                <span>Sucursales</span>
               </NavLink>
             )}
 
@@ -215,6 +232,23 @@ export function AdminHeader() {
           >
             <Boxes className="size-3.5" aria-hidden="true" />
             <span>Maestro</span>
+          </NavLink>
+        )}
+
+        {isGeneralAdmin && (
+          <NavLink
+            to="/admin/sucursales"
+            className={({ isActive }) =>
+              cn(
+                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                isActive
+                  ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                  : "text-zinc-400 hover:text-white"
+              )
+            }
+          >
+            <Building2 className="size-3.5" aria-hidden="true" />
+            <span>Sucursales</span>
           </NavLink>
         )}
 

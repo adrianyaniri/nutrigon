@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
+import { cn } from "@/lib/utils/cn";
 
 export interface CatalogHeaderProps {
   branchSlug?: string;
@@ -25,6 +27,17 @@ export function CatalogHeader({
   onOpenCart,
   onOpenBranchPicker,
 }: CatalogHeaderProps) {
+  const [animateBadge, setAnimateBadge] = useState(false);
+  const prevCountRef = useRef(cartItemCount);
+
+  useEffect(() => {
+    if (cartItemCount > prevCountRef.current) {
+      setAnimateBadge(true);
+      const timer = setTimeout(() => setAnimateBadge(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevCountRef.current = cartItemCount;
+  }, [cartItemCount]);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 md:px-6">
@@ -104,12 +117,19 @@ export function CatalogHeader({
                 ? "Mi pedido, vacío"
                 : `Mi pedido, ${cartItemCount} ${cartItemCount === 1 ? "producto" : "productos"}`
             }
+            className={cn(
+              "transition-transform duration-200",
+              animateBadge && "scale-110"
+            )}
           >
             <ShoppingBag className="size-5" aria-hidden="true" />
             {cartItemCount > 0 && (
               <span
                 aria-hidden="true"
-                className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
+                className={cn(
+                  "absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow-xs transition-all duration-200",
+                  animateBadge && "scale-125 bg-emerald-500 text-white ring-2 ring-emerald-400/40"
+                )}
               >
                 {cartItemCount}
               </span>

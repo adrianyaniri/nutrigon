@@ -66,4 +66,13 @@ describe("ProductCard", () => {
     fireEvent.keyDown(card, { key: "Enter" });
     expect(onSelect).toHaveBeenCalledWith(base);
   });
+
+  it("displays transient check feedback when adding to cart", () => {
+    const onAdd = vi.fn();
+    render(<ProductCard product={base} onAdd={onAdd} />);
+    const addBtn = screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" });
+    fireEvent.click(addBtn);
+    expect(onAdd).toHaveBeenCalledWith(base);
+    expect(screen.getByRole("button", { name: "Almendras Nonpareil agregado al pedido" })).toBeInTheDocument();
+  });
 });
