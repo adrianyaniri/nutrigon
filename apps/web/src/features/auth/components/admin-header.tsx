@@ -1,11 +1,44 @@
-import { LogOut, MapPin, Store, ExternalLink } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { LogOut, MapPin, Store, ExternalLink, Tag, Package } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
+import { cn } from "@/lib/utils/cn";
 import { useAuth } from "../context/auth-context";
 import { Role } from "../types";
+
+const FALLBACK_BRANCHES = [
+  { id: "b-origone", slug: "origone", name: "Origone" },
+  { id: "b-pedrodiaz", slug: "pedro-diaz", name: "Pedro Díaz" },
+  { id: "b-wmorris", slug: "w-morris", name: "William Morris" },
+] as const;
 
 export function AdminHeader() {
   const { user, logout, selectedBranchSlug, setSelectedBranchSlug } = useAuth();
   const navigate = useNavigate();
+  const branchesQuery = useBranches();
+  const branches =
+    branchesQuery.data && branchesQuery.data.length > 0
+      ? branchesQuery.data
+      : FALLBACK_BRANCHES;
+
+  const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
+
+  useEffect(() => {
+    if (!branches || branches.length === 0) return;
+
+    if (!isGeneralAdmin && user?.branchId) {
+      const assigned = branches.find((b) => b.id === user.branchId);
+      if (assigned && assigned.slug !== selectedBranchSlug) {
+        setSelectedBranchSlug(assigned.slug);
+        return;
+      }
+    }
+
+    const exists = branches.some((b) => b.slug === selectedBranchSlug);
+    if (!exists && branches[0]) {
+      setSelectedBranchSlug(branches[0].slug);
+    }
+  }, [branches, isGeneralAdmin, selectedBranchSlug, setSelectedBranchSlug, user?.branchId]);
 
   function handleLogout() {
     logout();
@@ -22,33 +55,60 @@ export function AdminHeader() {
         .toUpperCase()
     : "AD";
 
-  const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
+  const activeBranch = branches.find((b) => b.slug === selectedBranchSlug) ?? branches[0];
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 py-3 w-full bg-surface border-b border-white/[0.08] shadow-sm">
-      {/* Brand Anchor & Operational Status */}
-      <div className="flex items-center gap-4 sm:gap-6">
-        <Link to="/admin/productos" className="flex items-center gap-2.5 sm:gap-3">
-          <div className="size-8 rounded-lg bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold shadow-xs">
-            <Store className="size-4" aria-hidden="true" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-headline text-sm font-semibold tracking-tight text-white">
-              Nutrigon
-            </span>
-            <span className="text-[10px] sm:text-[11px] font-medium text-white/50 px-1.5 py-0.5 rounded bg-white/[0.05] font-mono">
-              Admin
-            </span>
-          </div>
-        </Link>
+    <header className="sticky top-0 z-40 w-full bg-surface border-b border-white/[0.08] shadow-sm">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3">
+        {/* Brand Anchor & Operational Status */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link to="/admin/productos" className="flex items-center gap-2.5 sm:gap-3">
+            <div className="size-8 rounded-lg bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold shadow-xs">
+              <Store className="size-4" aria-hidden="true" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-headline text-sm font-semibold tracking-tight text-white">
+                Nutrigon
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-medium text-white/50 px-1.5 py-0.5 rounded bg-white/[0.05] font-mono">
+                Admin
+              </span>
+            </div>
+          </Link>
 
-        <div className="hidden sm:block h-4 w-[1px] bg-white/[0.08]" aria-hidden="true" />
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1.5 ml-2">
+            <NavLink
+              to="/admin/productos"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                  isActive
+                    ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                    : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                )
+              }
+            >
+              <Tag className="size-3.5" aria-hidden="true" />
+              <span>Precios y Ofertas</span>
+            </NavLink>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
-          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-white/80 font-medium">Sucursales Conectadas</span>
+            <NavLink
+              to="/admin/combos"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                  isActive
+                    ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                    : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                )
+              }
+            >
+              <Package className="size-3.5" aria-hidden="true" />
+              <span>Combos y Packs</span>
+            </NavLink>
+          </nav>
         </div>
-      </div>
 
       {/* Branch Selector + User Profile + Logout */}
       <div className="flex items-center gap-3 sm:gap-4">
@@ -57,24 +117,20 @@ export function AdminHeader() {
           <MapPin className="size-3.5 text-brand-gold" aria-hidden="true" />
           {isGeneralAdmin ? (
             <select
-              value={selectedBranchSlug}
+              value={activeBranch?.slug ?? selectedBranchSlug}
               onChange={(e) => setSelectedBranchSlug(e.target.value)}
               className="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer pr-1"
               aria-label="Seleccionar sucursal activa para gestionar"
             >
-              <option value="origone" className="bg-surface text-white">
-                Sucursal Origone
-              </option>
-              <option value="pedro-diaz" className="bg-surface text-white">
-                Sucursal Pedro Díaz
-              </option>
-              <option value="w-morris" className="bg-surface text-white">
-                Sucursal William Morris
-              </option>
+              {branches.map((b) => (
+                <option key={b.slug} value={b.slug} className="bg-surface text-white">
+                  Sucursal {b.name}
+                </option>
+              ))}
             </select>
           ) : (
-            <span className="text-white text-xs font-medium uppercase">
-              {selectedBranchSlug}
+            <span className="text-white text-xs font-medium">
+              Sucursal {activeBranch?.name ?? selectedBranchSlug}
             </span>
           )}
         </div>
@@ -124,6 +180,40 @@ export function AdminHeader() {
           </button>
         </div>
       </div>
+      </div>
+
+      {/* Mobile Navigation Row */}
+      <nav className="flex md:hidden items-center border-t border-white/[0.08] px-4 py-1.5 bg-[#111215]/60 gap-2">
+        <NavLink
+          to="/admin/productos"
+          className={({ isActive }) =>
+            cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              isActive
+                ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                : "text-zinc-400 hover:text-white"
+            )
+          }
+        >
+          <Tag className="size-3.5" aria-hidden="true" />
+          <span>Precios y Ofertas</span>
+        </NavLink>
+
+        <NavLink
+          to="/admin/combos"
+          className={({ isActive }) =>
+            cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              isActive
+                ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                : "text-zinc-400 hover:text-white"
+            )
+          }
+        >
+          <Package className="size-3.5" aria-hidden="true" />
+          <span>Combos</span>
+        </NavLink>
+      </nav>
     </header>
   );
 }
