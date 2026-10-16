@@ -11,6 +11,7 @@ import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
 import { BranchProductsModule } from './modules/branch-products/branch-products.module.js';
 import { MediaModule } from './modules/media/media.module.js';
+import { CombosModule } from './modules/combos/combos.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MediaModule } from './modules/media/media.module.js';
     ProductsModule,
     BranchProductsModule,
     MediaModule,
+    CombosModule,
   ],
   controllers: [AppController],
   providers: [

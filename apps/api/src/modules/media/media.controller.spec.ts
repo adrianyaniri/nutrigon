@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ForbiddenException } from '@nestjs/common';
+import { Role } from '@nutrigon/contracts';
 import { MediaController } from './media.controller.js';
 import type { MediaService } from './media.service.js';
 import type { GetUploadUrlDto } from './dto/get-upload-url.dto.js';
@@ -31,5 +33,34 @@ describe('MediaController (TDD)', () => {
 
     expect(mockService.generateUploadUrl).toHaveBeenCalledWith(dto);
     expect(result).toEqual(expected);
+  });
+
+  it('allows BRANCH_ADMIN to upload to the combos folder but forbids products folder', async () => {
+    const branchAdmin = {
+      id: 'u-1',
+      email: 'branch@nutrigon.com',
+      fullName: 'Branch Admin',
+      role: Role.BRANCH_ADMIN,
+      branchId: 'b-1',
+    };
+
+    await expect(
+      controller.generateUploadUrl(
+        { fileName: 'prod.webp', contentType: 'image/webp', folder: 'products' },
+        branchAdmin,
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+
+    mockService.generateUploadUrl.mockResolvedValue({
+      uploadUrl: 'https://r2/combos/1.webp',
+      publicUrl: 'https://pub/combos/1.webp',
+      key: 'combos/1.webp',
+    });
+
+    const res = await controller.generateUploadUrl(
+      { fileName: 'combo.webp', contentType: 'image/webp', folder: 'combos' },
+      branchAdmin,
+    );
+    expect(res.key).toBe('combos/1.webp');
   });
 });

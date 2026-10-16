@@ -64,7 +64,7 @@ describe('BranchProductsModule (e2e)', () => {
       .set('Authorization', `Bearer ${adminGeneralToken}`)
       .send({
         categoryId: firstCategoryId,
-        name: 'Producto E2E Branch Config',
+        name: 'Producto BranchSpec Config',
         saleUnit: SaleUnit.WEIGHT,
         imageUrls: [],
       });
@@ -104,7 +104,7 @@ describe('BranchProductsModule (e2e)', () => {
     it('returns paginated branch products with UNCONFIGURED status for new master product', async () => {
       const res = await request(app.getHttpServer())
         .get(
-          `/api/v1/branches/${branchAdminBranchId}/products?search=Producto%20E2E%20Branch%20Config`,
+          `/api/v1/branches/${branchAdminBranchId}/products?search=Producto%20BranchSpec%20Config`,
         )
         .set('Authorization', `Bearer ${branchAdminToken}`)
         .expect(200);
@@ -162,12 +162,17 @@ describe('BranchProductsModule (e2e)', () => {
   });
 
   describe('GET /api/v1/branches/:slug/catalog', () => {
-    it('publicly lists the newly activated product in the branch catalog', async () => {
+    it('publicly lists the newly activated product along with branch metadata and categories', async () => {
       const res = await request(app.getHttpServer())
         .get(
-          `/api/v1/branches/${branchAdminSlug}/catalog?search=Producto%20E2E%20Branch%20Config`,
+          `/api/v1/branches/${branchAdminSlug}/catalog?search=Producto%20BranchSpec%20Config`,
         )
         .expect(200);
+
+      expect(res.body.branch.id).toBe(branchAdminBranchId);
+      expect(res.body.branch.slug).toBe(branchAdminSlug);
+      expect(Array.isArray(res.body.categories)).toBe(true);
+      expect(res.body.categories.length).toBeGreaterThan(0);
 
       const found = res.body.items.find((i: any) => i.id === testProductId);
       expect(found).toBeDefined();

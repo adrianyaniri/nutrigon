@@ -1,4 +1,8 @@
-import type { BranchProductStatus, SaleUnit } from '@nutrigon/contracts';
+import type {
+  BranchProductStatus,
+  SaleUnit,
+  BranchCatalogCategory,
+} from '@nutrigon/contracts';
 import type { BranchProductEntity } from '../../core/database/schema/branch-products.js';
 import type { PaginatedResult } from '../products/products.repository.interface.js';
 import type { BranchProductQueryDto } from './dto/branch-product.dto.js';
@@ -56,4 +60,5 @@ export interface IBranchProductsRepository {
     branchId: string,
     query: BranchProductQueryDto,
   ): Promise<PaginatedResult<BranchCatalogRow>>;
+  findPublishedCategories(branchId: string): Promise<BranchCatalogCategory[]>;
 }

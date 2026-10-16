@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
+import { eq, count } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import argon2 from 'argon2';
 import { env } from '../config/env.js';
@@ -8,6 +9,7 @@ import {
   branches,
   categories,
   products,
+  branchProducts,
   users,
 } from './schema/index.js';
 
@@ -102,43 +104,51 @@ async function runSeed() {
     const fallbackCategoryId =
       categoryMap.get('sin-departamento') || allCategories[0]!.id;
 
-    // 3. Seed Products
-    console.log('📦 Seeding products (2,257 items)...');
-    const productsCsvPath = path.resolve(dataDir, 'products.csv');
-    const productsContent = fs.readFileSync(productsCsvPath, 'utf8');
-    const productRows = parseCsv(productsContent).slice(1);
+    // 3. Seed Products (idempotent check)
+    const existingProductCountRes = await db
+      .select({ total: count() })
+      .from(products);
+    const existingProductCount = Number(existingProductCountRes[0]?.total ?? 0);
 
-    const productValues = productRows
-      .filter(([, name]) => Boolean(name && name.trim()))
-      .map(([code, name, categorySlug, saleUnit, isActive, description]) => {
-        const categoryId = categoryMap.get(categorySlug!) || fallbackCategoryId;
-        return {
-          code: code || null,
-          name: name!,
-          categoryId,
-          saleUnit: saleUnit === 'WEIGHT' ? 'WEIGHT' : 'UNIT',
-          description: description || null,
-          isActive: isActive === 'true',
-          imageUrls: [],
-        };
-      });
+    let insertedCount = existingProductCount;
+    if (existingProductCount === 0) {
+      console.log('📦 Seeding products (2,257 items)...');
+      const productsCsvPath = path.resolve(dataDir, 'products.csv');
+      const productsContent = fs.readFileSync(productsCsvPath, 'utf8');
+      const productRows = parseCsv(productsContent).slice(1);
 
-    // Batch insert 200 items per chunk
-    const batchSize = 200;
-    let insertedCount = 0;
-    for (let i = 0; i < productValues.length; i += batchSize) {
-      const chunk = productValues.slice(i, i + batchSize);
-      await db.insert(products).values(chunk);
-      insertedCount += chunk.length;
+      const productValues = productRows
+        .filter(([, name]) => Boolean(name && name.trim()))
+        .map(([code, name, categorySlug, saleUnit, isActive, description]) => {
+          const categoryId = categoryMap.get(categorySlug!) || fallbackCategoryId;
+          return {
+            code: code || null,
+            name: name!,
+            categoryId,
+            saleUnit: saleUnit === 'WEIGHT' ? 'WEIGHT' : 'UNIT',
+            description: description || null,
+            isActive: isActive === 'true',
+            imageUrls: [],
+          };
+        });
+
+      const batchSize = 200;
+      insertedCount = 0;
+      for (let i = 0; i < productValues.length; i += batchSize) {
+        const chunk = productValues.slice(i, i + batchSize);
+        await db.insert(products).values(chunk);
+        insertedCount += chunk.length;
+      }
+      console.log(`✅ Products seeded: ${insertedCount}`);
+    } else {
+      console.log(`✅ Products already present: ${existingProductCount}`);
     }
-    console.log(`✅ Products seeded: ${insertedCount}`);
 
     // 4. Seed Initial Users
     console.log('📦 Seeding initial admin users...');
     const generalAdminPasswordHash = await argon2.hash('AdminNutrigon2026!');
     const branchAdminPasswordHash = await argon2.hash('BranchAdmin2026!');
 
-    // Admin General
     await db
       .insert(users)
       .values({
@@ -151,7 +161,6 @@ async function runSeed() {
       })
       .onConflictDoNothing({ target: users.email });
 
-    // Branch Admins
     const branchAdmins = [
       {
         email: 'admin.origone@nutrigon.com',
@@ -189,11 +198,66 @@ async function runSeed() {
     const allUsers = await db.select().from(users);
     console.log(`✅ Users seeded: ${allUsers.length}`);
 
+    // 5. Seed Initial Branch Products (Commercial configuration per branch)
+    console.log('📦 Seeding initial branch products...');
+    const sampleProducts = await db
+      .select()
+      .from(products)
+      .where(eq(products.isActive, true))
+      .limit(40);
+
+    const priceFactors: Record<string, number> = {
+      origone: 1.0,
+      'pedro-diaz': 1.05,
+      'w-morris': 0.98,
+    };
+
+    const branchProductValues = [];
+    for (const branch of allBranches) {
+      const factor = priceFactors[branch.slug] ?? 1.0;
+
+      for (let idx = 0; idx < sampleProducts.length; idx++) {
+        const prod = sampleProducts[idx]!;
+        const basePrice = prod.saleUnit === 'WEIGHT' ? 6500 + (idx % 10) * 800 : 1800 + (idx % 8) * 350;
+        const finalPrice = Math.round((basePrice * factor) / 50) * 50;
+        const isAvailable = idx % 7 !== 0; // ~85% active, ~15% hidden/inactive
+        const isOnSale = isAvailable && idx % 5 === 0;
+        const promotionalPrice = isOnSale
+          ? (Math.round((finalPrice * 0.85) / 50) * 50).toFixed(2)
+          : null;
+
+        branchProductValues.push({
+          branchId: branch.id,
+          productId: prod.id,
+          price: finalPrice.toFixed(2),
+          promotionalPrice,
+          isOnSale,
+          isAvailable,
+        });
+      }
+    }
+
+    if (branchProductValues.length > 0) {
+      await db
+        .insert(branchProducts)
+        .values(branchProductValues)
+        .onConflictDoNothing({
+          target: [branchProducts.branchId, branchProducts.productId],
+        });
+    }
+
+    const totalBranchProductsRes = await db
+      .select({ total: count() })
+      .from(branchProducts);
+    const totalBranchProducts = Number(totalBranchProductsRes[0]?.total ?? 0);
+    console.log(`✅ Branch products configured: ${totalBranchProducts}`);
+
     console.log('\n🎉 Database seeding completed successfully!');
     console.log('--------------------------------------------------');
     console.log('📌 Sucursales: Origone, Pedro Diaz, W Morris');
     console.log(`📌 Categorías: ${allCategories.length}`);
-    console.log(`📌 Productos: ${insertedCount}`);
+    console.log(`📌 Productos Maestros: ${insertedCount}`);
+    console.log(`📌 Productos por Sucursal: ${totalBranchProducts}`);
     console.log('📌 Usuarios Admin iniciales:');
     console.log('   - admin@nutrigon.com (Pass: AdminNutrigon2026!) -> ADMIN_GENERAL');
     console.log('   - admin.origone@nutrigon.com (Pass: BranchAdmin2026!) -> Sucursal Origone');
@@ -209,3 +273,4 @@ async function runSeed() {
 }
 
 runSeed();
+

@@ -11,7 +11,10 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { BranchProductStatus } from '@nutrigon/contracts';
+import {
+  BranchProductStatus,
+  type BranchCatalogCategory,
+} from '@nutrigon/contracts';
 import { DRIZZLE_CLIENT } from '../../core/database/database.constants.js';
 import * as schema from '../../core/database/schema/index.js';
 import type { BranchProductEntity } from '../../core/database/schema/branch-products.js';
@@ -50,6 +53,10 @@ export class BranchProductsRepository implements IBranchProductsRepository {
 
     if (query.categoryId) {
       conditions.push(eq(schema.products.categoryId, query.categoryId));
+    }
+
+    if (query.categorySlug && query.categorySlug.trim()) {
+      conditions.push(eq(schema.categories.slug, query.categorySlug.trim()));
     }
 
     if (query.barcode && query.barcode.trim()) {
@@ -208,6 +215,10 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       conditions.push(eq(schema.products.categoryId, query.categoryId));
     }
 
+    if (query.categorySlug && query.categorySlug.trim()) {
+      conditions.push(eq(schema.categories.slug, query.categorySlug.trim()));
+    }
+
     if (query.barcode && query.barcode.trim()) {
       conditions.push(eq(schema.products.barcode, query.barcode.trim()));
     }
@@ -263,5 +274,36 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       limit,
       totalPages: Math.ceil(total / limit) || 1,
     };
+  }
+
+  async findPublishedCategories(
+    branchId: string,
+  ): Promise<BranchCatalogCategory[]> {
+    const rows = await this.db
+      .selectDistinctOn([schema.categories.orderIndex, schema.categories.name], {
+        id: schema.categories.id,
+        name: schema.categories.name,
+        slug: schema.categories.slug,
+      })
+      .from(schema.branchProducts)
+      .innerJoin(
+        schema.products,
+        eq(schema.branchProducts.productId, schema.products.id),
+      )
+      .innerJoin(
+        schema.categories,
+        eq(schema.products.categoryId, schema.categories.id),
+      )
+      .where(
+        and(
+          eq(schema.branchProducts.branchId, branchId),
+          eq(schema.branchProducts.isAvailable, true),
+          eq(schema.products.isActive, true),
+          eq(schema.categories.isActive, true),
+        ),
+      )
+      .orderBy(asc(schema.categories.orderIndex), asc(schema.categories.name));
+
+    return rows;
   }
 }

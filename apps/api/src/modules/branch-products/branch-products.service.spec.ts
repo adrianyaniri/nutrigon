@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { BranchProductStatus, SaleUnit } from '@nutrigon/contracts';
+import {
+  BranchProductStatus,
+  SaleUnit,
+  type BranchCatalogCategory,
+} from '@nutrigon/contracts';
 import { BranchProductsService } from './branch-products.service.js';
 import type {
   IBranchProductsRepository,
@@ -24,9 +28,9 @@ const makeBranch = (overrides: Partial<BranchEntity> = {}): BranchEntity => ({
   id: BRANCH_ID,
   name: 'Centro',
   slug: 'centro',
-  address: null,
-  phone: null,
-  whatsappNumber: null,
+  address: 'Av. Principal 123',
+  phone: '11-1234-5678',
+  whatsappNumber: '5491112345678',
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -59,6 +63,9 @@ const emptyPage = <T>(): PaginatedResult<T> => ({
 class FakeBranchProductsRepository implements IBranchProductsRepository {
   public adminPage: PaginatedResult<BranchProductAdminRow> = emptyPage();
   public catalogPage: PaginatedResult<BranchCatalogRow> = emptyPage();
+  public publishedCategories: BranchCatalogCategory[] = [
+    { id: CATEGORY_ID, name: 'Frutos secos', slug: 'frutos-secos' },
+  ];
   public counts: Record<BranchProductStatus, number> = {
     [BranchProductStatus.ACTIVE]: 0,
     [BranchProductStatus.INACTIVE]: 0,
@@ -66,8 +73,11 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
   };
   public lastAdminQuery: BranchProductQueryDto | null = null;
   public lastCatalogQuery: BranchProductQueryDto | null = null;
-  public lastUpsert: { branchId: string; productId: string; data: UpsertBranchProductData } | null =
-    null;
+  public lastUpsert: {
+    branchId: string;
+    productId: string;
+    data: UpsertBranchProductData;
+  } | null = null;
 
   async findAdminList(_branchId: string, query: BranchProductQueryDto) {
     this.lastAdminQuery = query;
@@ -101,6 +111,10 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
     this.lastCatalogQuery = query;
     return this.catalogPage;
   }
+
+  async findPublishedCategories(_branchId: string) {
+    return this.publishedCategories;
+  }
 }
 
 describe('BranchProductsService', () => {
@@ -128,7 +142,9 @@ describe('BranchProductsService', () => {
 
   describe('listForBranch', () => {
     it('throws NotFound when the branch does not exist', async () => {
-      await expect(service.listForBranch('missing', {})).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.listForBranch('missing', {})).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('derives status and converts numeric strings to numbers', async () => {
@@ -193,7 +209,10 @@ describe('BranchProductsService', () => {
     });
 
     it('forwards the query to the repository', async () => {
-      const query: BranchProductQueryDto = { status: BranchProductStatus.INACTIVE, search: 'x' };
+      const query: BranchProductQueryDto = {
+        status: BranchProductStatus.INACTIVE,
+        search: 'x',
+      };
       await service.listForBranch(BRANCH_ID, query);
       expect(repo.lastAdminQuery).toEqual(query);
     });
@@ -201,7 +220,9 @@ describe('BranchProductsService', () => {
 
   describe('countByStatus', () => {
     it('throws NotFound when the branch does not exist', async () => {
-      await expect(service.countByStatus('missing')).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.countByStatus('missing')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('returns counts per status', async () => {
@@ -285,7 +306,9 @@ describe('BranchProductsService', () => {
 
   describe('getPublicCatalog', () => {
     it('throws NotFound for an unknown slug', async () => {
-      await expect(service.getPublicCatalog('nope', {})).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.getPublicCatalog('nope', {})).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('throws NotFound for an inactive branch', async () => {
@@ -295,7 +318,7 @@ describe('BranchProductsService', () => {
       );
     });
 
-    it('maps rows to public items with unit labels and numeric prices', async () => {
+    it('returns branch metadata, active categories, and mapped items with numeric prices', async () => {
       const base = {
         description: null,
         categoryId: CATEGORY_ID,
@@ -307,7 +330,13 @@ describe('BranchProductsService', () => {
       repo.catalogPage = {
         ...emptyPage(),
         items: [
-          { ...base, id: 'w', name: 'Almendras', saleUnit: SaleUnit.WEIGHT, price: '5000.00' },
+          {
+            ...base,
+            id: 'w',
+            name: 'Almendras',
+            saleUnit: SaleUnit.WEIGHT,
+            price: '5000.00',
+          },
           {
             ...base,
             id: 'u',
@@ -323,6 +352,17 @@ describe('BranchProductsService', () => {
 
       const result = await service.getPublicCatalog('centro', {});
 
+      expect(result.branch).toEqual({
+        id: BRANCH_ID,
+        name: 'Centro',
+        slug: 'centro',
+        address: 'Av. Principal 123',
+        phone: '11-1234-5678',
+        whatsappNumber: '5491112345678',
+      });
+      expect(result.categories).toEqual([
+        { id: CATEGORY_ID, name: 'Frutos secos', slug: 'frutos-secos' },
+      ]);
       expect(result.items[0]).toMatchObject({ price: 5000, priceUnitLabel: 'kg' });
       expect(result.items[1]).toMatchObject({
         price: 800,
@@ -332,18 +372,18 @@ describe('BranchProductsService', () => {
       });
     });
 
-    it('ignores the admin-only status filter on the public catalog', async () => {
+    it('ignores the admin-only status filter and forwards categorySlug on the public catalog', async () => {
       await service.getPublicCatalog('centro', {
         status: BranchProductStatus.INACTIVE,
         search: 'alm',
-        categoryId: CATEGORY_ID,
+        categorySlug: 'frutos-secos',
         page: 2,
         limit: 10,
       });
 
       expect(repo.lastCatalogQuery).toEqual({
         search: 'alm',
-        categoryId: CATEGORY_ID,
+        categorySlug: 'frutos-secos',
         page: 2,
         limit: 10,
       });

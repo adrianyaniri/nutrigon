@@ -10,6 +10,7 @@ import {
   type BranchProduct,
   type BranchProductAdminItem,
   type BranchCatalogItem,
+  type BranchPublicCatalogResponse,
 } from '@nutrigon/contracts';
 import {
   BRANCH_PRODUCTS_REPOSITORY,
@@ -145,17 +146,17 @@ export class BranchProductsService {
   async getPublicCatalog(
     slug: string,
     query: BranchProductQueryDto,
-  ): Promise<PaginatedResult<BranchCatalogItem>> {
+  ): Promise<BranchPublicCatalogResponse> {
     const branch = await this.branchesRepository.findBySlug(slug);
     if (!branch || !branch.isActive) {
       throw new NotFoundException(`Branch "${slug}" was not found or is inactive`);
     }
 
     const { status: _ignoredStatus, ...sanitizedQuery } = query;
-    const result = await this.branchProductsRepository.findPublished(
-      branch.id,
-      sanitizedQuery,
-    );
+    const [result, categories] = await Promise.all([
+      this.branchProductsRepository.findPublished(branch.id, sanitizedQuery),
+      this.branchProductsRepository.findPublishedCategories(branch.id),
+    ]);
 
     const items: BranchCatalogItem[] = result.items.map((row) => ({
       id: row.id,
@@ -173,8 +174,20 @@ export class BranchProductsService {
     }));
 
     return {
-      ...result,
+      branch: {
+        id: branch.id,
+        name: branch.name,
+        slug: branch.slug,
+        address: branch.address,
+        phone: branch.phone,
+        whatsappNumber: branch.whatsappNumber,
+      },
+      categories,
       items,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     };
   }
 }

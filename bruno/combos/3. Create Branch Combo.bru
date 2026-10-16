@@ -1,0 +1,39 @@
+meta {
+  name: 3. Create Branch Combo
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/branches/{{branchId}}/combos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Mix Desayuno Saludable",
+    "description": "500g Almendras + 500g Nueces",
+    "price": 12500,
+    "isAvailable": true,
+    "imageUrls": [],
+    "items": [
+      {
+        "productId": "{{productId}}",
+        "quantity": 0.5
+      },
+      {
+        "productId": "{{secondProductId}}",
+        "quantity": 0.5
+      }
+    ]
+  }
+}
+
+vars:post-response {
+  comboId: res.body.id
+}

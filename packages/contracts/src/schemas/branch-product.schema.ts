@@ -58,9 +58,10 @@ export const branchProductQuerySchema = z
     status: z.nativeEnum(BranchProductStatus).optional(),
     search: z.string().trim().optional(),
     categoryId: z.string().uuid().optional(),
+    categorySlug: z.string().trim().optional(),
     barcode: z.string().trim().optional(),
     page: z.coerce.number().int().min(1).default(1).optional(),
-    limit: z.coerce.number().int().min(1).max(100).default(50).optional(),
+    limit: z.coerce.number().int().min(1).max(500).default(50).optional(),
   })
   .strict();
 
@@ -103,3 +104,41 @@ export const branchCatalogItemSchema = z
   .strict();
 
 export type BranchCatalogItem = z.infer<typeof branchCatalogItemSchema>;
+
+export const branchCatalogCategorySchema = z
+  .object({
+    id: z.string().uuid(),
+    name: z.string(),
+    slug: z.string(),
+  })
+  .strict();
+
+export type BranchCatalogCategory = z.infer<typeof branchCatalogCategorySchema>;
+
+export const branchCatalogBranchSchema = z
+  .object({
+    id: z.string().uuid(),
+    name: z.string(),
+    slug: z.string(),
+    address: z.string().nullable(),
+    phone: z.string().nullable(),
+    whatsappNumber: z.string().nullable(),
+  })
+  .strict();
+
+export type BranchCatalogBranch = z.infer<typeof branchCatalogBranchSchema>;
+
+export const branchPublicCatalogResponseSchema = z
+  .object({
+    branch: branchCatalogBranchSchema,
+    categories: z.array(branchCatalogCategorySchema),
+    items: z.array(branchCatalogItemSchema),
+    total: z.number().int().nonnegative(),
+    page: z.number().int().min(1),
+    limit: z.number().int().min(1),
+    totalPages: z.number().int().min(1),
+  })
+  .strict();
+
+export type BranchPublicCatalogResponse = z.infer<typeof branchPublicCatalogResponseSchema>;
+

@@ -1,0 +1,22 @@
+meta {
+  name: 4. Update Branch Combo
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/branches/{{branchId}}/combos/{{comboId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "price": 11900,
+    "isAvailable": true
+  }
+}
