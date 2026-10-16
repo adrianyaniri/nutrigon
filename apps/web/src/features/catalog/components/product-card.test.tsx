@@ -52,4 +52,9 @@ describe("ProductCard", () => {
     expect(onSelect).toHaveBeenCalledWith(base);
     expect(onAdd).not.toHaveBeenCalled();
   });
+
+  it("shows 'Destacado' badge when product is marked as featured", () => {
+    render(<ProductCard product={{ ...base, isFeatured: true }} />);
+    expect(screen.getByText("Destacado")).toBeInTheDocument();
+  });
 });

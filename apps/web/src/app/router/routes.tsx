@@ -5,6 +5,7 @@ import { AdminLayout } from "@/app/layouts/admin-layout";
 import { AdminLoginPage, ProtectedRoute } from "@/features/auth";
 import { AdminProductsPage, CatalogLandingPage, CatalogPage } from "@/features/catalog";
 import { AdminCombosPage } from "@/features/combos";
+import { AdminMasterCatalogPage } from "@/features/master-catalog";
 import { HomePage } from "./home-page";
 import { NotFoundPage } from "./not-found-page";
 
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="/admin/productos" replace /> },
+      {
+        path: "catalogo-maestro",
+        element: <AdminMasterCatalogPage />,
+      },
       {
         path: "productos",
         element: <AdminProductsPage />,

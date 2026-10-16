@@ -255,7 +255,7 @@ export function createHttpCombosRepository(
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          filename: file.name,
+          fileName: file.name,
           contentType: file.type || "image/jpeg",
           folder: "combos",
         }),

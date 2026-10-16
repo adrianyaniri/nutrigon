@@ -37,6 +37,7 @@ export interface CatalogProduct {
   imageUrl: string | null;
   price: number;
   promotionalPrice: number | null;
+  isFeatured?: boolean;
   isCombo?: boolean;
   comboItems?: ComboItemSummary[];
 }

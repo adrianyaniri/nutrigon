@@ -113,4 +113,18 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
 
     expect(await screen.findByText("Nueces Mariposa Extra Light")).toBeInTheDocument();
   });
+
+  it("toggles product featured status when clicking Destacar button", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Nueces Mariposa Extra Light");
+
+    // Click Destacar button for Nueces Mariposa
+    const destacarButtons = screen.getAllByRole("button", { name: /^Destacar$/i });
+    fireEvent.click(destacarButtons[0]!);
+
+    expect(
+      await screen.findByText(/Precio y estado actualizados para "Nueces Mariposa Extra Light"/i)
+    ).toBeInTheDocument();
+  });
 });

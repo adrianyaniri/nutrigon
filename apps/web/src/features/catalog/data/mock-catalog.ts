@@ -59,13 +59,13 @@ interface SeedProduct extends Omit<CatalogProduct, "imageUrl" | "description"> {
 }
 
 const SEED: SeedProduct[] = [
-  { id: "p-almendras", categoryId: "c-frutos-secos", name: "Almendras Nonpareil", saleUnit: "WEIGHT", price: 1450, promotionalPrice: null },
+  { id: "p-almendras", categoryId: "c-frutos-secos", name: "Almendras Nonpareil", saleUnit: "WEIGHT", price: 1450, promotionalPrice: null, isFeatured: true },
   { id: "p-nueces", categoryId: "c-frutos-secos", name: "Nueces Mariposa", saleUnit: "WEIGHT", price: 1900, promotionalPrice: 1600 },
   { id: "p-castanas", categoryId: "c-frutos-secos", name: "Castañas de Cajú", saleUnit: "WEIGHT", price: 2100, promotionalPrice: null },
   { id: "p-pistachos", categoryId: "c-frutos-secos", name: "Pistachos Tostados", saleUnit: "WEIGHT", price: 2600, promotionalPrice: null, unavailableIn: ["sur"] },
   { id: "p-avena", categoryId: "c-harinas-granos", name: "Avena Tradicional Arrollada", saleUnit: "WEIGHT", price: 380, promotionalPrice: null },
   { id: "p-harina-integral", categoryId: "c-harinas-granos", name: "Harina Integral Orgánica", saleUnit: "WEIGHT", price: 320, promotionalPrice: null },
-  { id: "p-quinoa", categoryId: "c-harinas-granos", name: "Quinoa Real", saleUnit: "WEIGHT", price: 950, promotionalPrice: 800 },
+  { id: "p-quinoa", categoryId: "c-harinas-granos", name: "Quinoa Real", saleUnit: "WEIGHT", price: 950, promotionalPrice: 800, isFeatured: true },
   { id: "p-galletas-arroz", categoryId: "c-sin-tacc", name: "Galletas de Arroz", saleUnit: "UNIT", price: 2400, promotionalPrice: null },
   { id: "p-premezcla", categoryId: "c-sin-tacc", name: "Premezcla Sin TACC", saleUnit: "UNIT", price: 3900, promotionalPrice: null },
   { id: "p-proteina", categoryId: "c-suplementos", name: "Proteína Vegetal 500 g", saleUnit: "UNIT", price: 12500, promotionalPrice: null, unavailableIn: ["norte"] },
@@ -96,6 +96,7 @@ export function getMockBranchCatalog(slug: string): BranchCatalog | null {
       price: roundToTen(product.price * factor),
       promotionalPrice:
         product.promotionalPrice === null ? null : roundToTen(product.promotionalPrice * factor),
+      isFeatured: product.isFeatured ?? false,
     })
   );
 

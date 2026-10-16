@@ -61,7 +61,13 @@ export function filterAndSortProducts(
     case "name-asc":
       return filtered.sort((a, b) => nameCollator.compare(a.name, b.name));
     default:
-      return filtered;
+      return filtered.sort((a, b) => {
+        const comboDiff = (b.isCombo ? 1 : 0) - (a.isCombo ? 1 : 0);
+        if (comboDiff !== 0) return comboDiff;
+        const featuredDiff = (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
+        if (featuredDiff !== 0) return featuredDiff;
+        return 0;
+      });
   }
 }
 

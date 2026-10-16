@@ -13,6 +13,7 @@ import {
   Percent,
   Search,
   Sparkles,
+  Star,
   Store,
   Tag,
   X,
@@ -135,11 +136,13 @@ export function AdminProductsPage() {
       productId: string;
       price: number;
       isAvailable: boolean;
+      isFeatured?: boolean;
       productName: string;
     }) =>
       branchPricingRepository.upsertProduct(branchId, vars.productId, authToken, {
         price: vars.price,
         isAvailable: vars.isAvailable,
+        ...(vars.isFeatured !== undefined ? { isFeatured: vars.isFeatured } : {}),
       }),
     onSuccess: async (_data, vars) => {
       await invalidateBranchQueries();
@@ -219,6 +222,21 @@ export function AdminProductsPage() {
       productId: item.productId,
       price: numericPrice,
       isAvailable,
+      isFeatured: item.isFeatured,
+      productName: item.name,
+    });
+  }
+
+  function handleToggleFeatured(item: BranchProductAdminItem) {
+    if (item.price === null || item.price <= 0) {
+      showFeedback("error", `Configurá primero el precio de "${item.name}" antes de destacarlo.`);
+      return;
+    }
+    upsertMutation.mutate({
+      productId: item.productId,
+      price: item.price,
+      isAvailable: item.isAvailable,
+      isFeatured: !item.isFeatured,
       productName: item.name,
     });
   }
@@ -503,6 +521,11 @@ export function AdminProductsPage() {
                             {formatPrice(item.promotionalPrice)} {unitSuffix}
                           </span>
                         )}
+                        {item.isFeatured && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                            <Star className="size-3 fill-brand-gold" /> Destacado
+                          </span>
+                        )}
                       </div>
 
                       <h2 className="font-headline text-sm sm:text-base font-bold text-white truncate">
@@ -555,8 +578,33 @@ export function AdminProductsPage() {
                       </Button>
                     </div>
 
-                    {/* Offer & Availability Actions */}
+                    {/* Featured, Offer & Availability Actions */}
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={!isConfigured || upsertMutation.isPending}
+                        onClick={() => handleToggleFeatured(item)}
+                        title={
+                          isConfigured
+                            ? item.isFeatured
+                              ? "Quitar de destacados en esta sucursal"
+                              : "Marcar como destacado en esta sucursal"
+                            : "Guardá primero un precio base para destacar"
+                        }
+                        className={cn(
+                          "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer",
+                          item.isFeatured
+                            ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
+                            : "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-brand-gold/50 hover:text-white"
+                        )}
+                      >
+                        <Star
+                          className={cn("size-3.5", item.isFeatured && "fill-brand-gold")}
+                          aria-hidden="true"
+                        />
+                        <span>{item.isFeatured ? "Destacado" : "Destacar"}</span>
+                      </button>
+
                       <button
                         type="button"
                         disabled={!isConfigured}

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { Badge } from "@/components/atoms/badge";
 import { IconButton } from "@/components/atoms/icon-button";
 import { PriceTag } from "@/components/atoms/price-tag";
@@ -38,17 +38,27 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
       <div className="flex flex-col gap-3">
         <div className="relative">
           <ProductImage src={product.imageUrl} alt={product.name} />
-          {product.isCombo ? (
-            <Badge variant="sale" className="absolute left-2.5 top-2.5 shadow-sm">
-              Combo
-            </Badge>
-          ) : (
-            onSale && (
-              <Badge variant="sale" className="absolute left-2.5 top-2.5 shadow-sm">
-                Oferta
+          <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
+            {product.isCombo ? (
+              <Badge variant="sale" className="shadow-sm">
+                Combo
               </Badge>
-            )
-          )}
+            ) : (
+              <>
+                {product.isFeatured && (
+                  <Badge variant="featured" className="shadow-sm flex items-center gap-1">
+                    <Star className="size-3 fill-stone-950" aria-hidden="true" />
+                    <span>Destacado</span>
+                  </Badge>
+                )}
+                {onSale && (
+                  <Badge variant="sale" className="shadow-sm">
+                    Oferta
+                  </Badge>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">

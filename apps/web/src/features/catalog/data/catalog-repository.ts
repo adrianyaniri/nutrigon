@@ -32,6 +32,7 @@ interface ApiCatalogProductItem {
   price: number;
   promotionalPrice: number | null;
   isOnSale: boolean;
+  isFeatured?: boolean;
 }
 
 interface ApiPublicCatalogResponse {
@@ -87,6 +88,7 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
     imageUrl: item.imageUrls[0] ?? null,
     price: item.price,
     promotionalPrice: item.isOnSale ? item.promotionalPrice : null,
+    isFeatured: item.isFeatured ?? false,
   };
 }
 

@@ -55,6 +55,17 @@ describe("filterAndSortProducts", () => {
     expect(result.map((p) => p.id)).toEqual(["p1", "p2", "p3", "p4"]);
   });
 
+  it("prioritizes combos and featured products under popular sort", () => {
+    const mixedProducts: CatalogProduct[] = [
+      product({ id: "p1", name: "Almendras", isFeatured: false }),
+      product({ id: "p2", name: "Avena", isFeatured: true }),
+      product({ id: "p3", name: "Nueces", isFeatured: false }),
+      product({ id: "p4", name: "Combo Desayuno", isCombo: true }),
+    ];
+    const result = filterAndSortProducts(mixedProducts, categories, base);
+    expect(result.map((p) => p.id)).toEqual(["p4", "p2", "p1", "p3"]);
+  });
+
   it("filters by category slug", () => {
     const result = filterAndSortProducts(products, categories, {
       ...base,

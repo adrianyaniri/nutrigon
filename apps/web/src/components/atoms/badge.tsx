@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 
-type BadgeVariant = "sale" | "neutral";
+type BadgeVariant = "sale" | "neutral" | "featured";
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -10,6 +10,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   sale: "bg-primary text-primary-foreground",
   neutral: "bg-secondary text-secondary-foreground",
+  featured: "bg-brand-gold text-stone-950 font-bold",
 };
 
 export function Badge({ variant = "neutral", className, ...props }: BadgeProps) {

@@ -16,6 +16,7 @@ export interface BranchProductAdminItem {
   promotionalPrice: number | null;
   isOnSale: boolean;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 export interface PaginatedBranchProducts {
@@ -36,6 +37,7 @@ export interface BranchProductCounts {
 export interface BranchPricingQuery {
   status?: BranchProductStatus;
   isOnSale?: boolean;
+  isFeatured?: boolean;
   search?: string;
   categoryId?: string;
   page?: number;
@@ -47,6 +49,7 @@ export interface UpsertBranchProductInput {
   isAvailable: boolean;
   isOnSale?: boolean;
   promotionalPrice?: number | null;
+  isFeatured?: boolean;
 }
 
 export interface UpdateBranchOfferInput {
@@ -62,6 +65,7 @@ export interface BranchProductRecord {
   promotionalPrice: number | null;
   isOnSale: boolean;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 export interface BranchPricingRepository {
@@ -100,6 +104,7 @@ const INITIAL_MOCK_ITEMS: BranchProductAdminItem[] = [
     promotionalPrice: null,
     isOnSale: false,
     isAvailable: true,
+    isFeatured: true,
   },
   {
     productId: "p-nueces",
@@ -115,6 +120,7 @@ const INITIAL_MOCK_ITEMS: BranchProductAdminItem[] = [
     promotionalPrice: 16500,
     isOnSale: true,
     isAvailable: true,
+    isFeatured: false,
   },
   {
     productId: "p-galletas-arroz",
@@ -130,6 +136,7 @@ const INITIAL_MOCK_ITEMS: BranchProductAdminItem[] = [
     promotionalPrice: null,
     isOnSale: false,
     isAvailable: false,
+    isFeatured: false,
   },
   {
     productId: "p-pistachos",
@@ -145,6 +152,7 @@ const INITIAL_MOCK_ITEMS: BranchProductAdminItem[] = [
     promotionalPrice: null,
     isOnSale: false,
     isAvailable: false,
+    isFeatured: false,
   },
 ];
 
@@ -231,6 +239,9 @@ export function createInMemoryBranchPricingRepository(
             ? current.promotionalPrice
             : null;
 
+      const nextIsFeatured =
+        input.isFeatured !== undefined ? input.isFeatured : (current.isFeatured ?? false);
+
       const updated: BranchProductAdminItem = {
         ...current,
         price: input.price,
@@ -238,6 +249,7 @@ export function createInMemoryBranchPricingRepository(
         status: input.isAvailable ? "ACTIVE" : "INACTIVE",
         isOnSale: nextIsOnSale,
         promotionalPrice: nextPromo,
+        isFeatured: nextIsFeatured,
       };
       items[idx] = updated;
 
@@ -249,6 +261,7 @@ export function createInMemoryBranchPricingRepository(
         promotionalPrice: updated.promotionalPrice,
         isOnSale: updated.isOnSale,
         isAvailable: updated.isAvailable,
+        isFeatured: updated.isFeatured,
       };
     },
 
@@ -288,6 +301,7 @@ export function createInMemoryBranchPricingRepository(
         promotionalPrice: updated.promotionalPrice,
         isOnSale: updated.isOnSale,
         isAvailable: updated.isAvailable,
+        isFeatured: updated.isFeatured,
       };
     },
   };

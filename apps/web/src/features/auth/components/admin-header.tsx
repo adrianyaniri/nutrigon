@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LogOut, MapPin, Store, ExternalLink, Tag, Package } from "lucide-react";
+import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
@@ -78,6 +78,23 @@ export function AdminHeader() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1.5 ml-2">
+            {isGeneralAdmin && (
+              <NavLink
+                to="/admin/catalogo-maestro"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px]",
+                    isActive
+                      ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  )
+                }
+              >
+                <Boxes className="size-3.5" aria-hidden="true" />
+                <span>Catálogo Maestro</span>
+              </NavLink>
+            )}
+
             <NavLink
               to="/admin/productos"
               className={({ isActive }) =>
@@ -183,12 +200,29 @@ export function AdminHeader() {
       </div>
 
       {/* Mobile Navigation Row */}
-      <nav className="flex md:hidden items-center border-t border-white/[0.08] px-4 py-1.5 bg-[#111215]/60 gap-2">
+      <nav className="flex md:hidden items-center border-t border-white/[0.08] px-3 py-1.5 bg-[#111215]/60 gap-1.5 overflow-x-auto">
+        {isGeneralAdmin && (
+          <NavLink
+            to="/admin/catalogo-maestro"
+            className={({ isActive }) =>
+              cn(
+                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                isActive
+                  ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+                  : "text-zinc-400 hover:text-white"
+              )
+            }
+          >
+            <Boxes className="size-3.5" aria-hidden="true" />
+            <span>Maestro</span>
+          </NavLink>
+        )}
+
         <NavLink
           to="/admin/productos"
           className={({ isActive }) =>
             cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                 : "text-zinc-400 hover:text-white"
@@ -196,14 +230,14 @@ export function AdminHeader() {
           }
         >
           <Tag className="size-3.5" aria-hidden="true" />
-          <span>Precios y Ofertas</span>
+          <span>Precios</span>
         </NavLink>
 
         <NavLink
           to="/admin/combos"
           className={({ isActive }) =>
             cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                 : "text-zinc-400 hover:text-white"
