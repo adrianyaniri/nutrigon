@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { AuthContext } from "@/features/auth/context/auth-context";
-import { Role } from "@/features/auth/types";
+import { Role, type AuthUser } from "@/features/auth/types";
 import { AdminBranchesPage } from "./admin-branches-page";
 
 function renderBranchesPage(role: Role = Role.ADMIN_GENERAL, setSelectedBranchSlug = vi.fn()) {
@@ -32,7 +32,7 @@ function renderBranchesPage(role: Role = Role.ADMIN_GENERAL, setSelectedBranchSl
             setSelectedBranchSlug,
             isLoading: false,
             isAuthenticated: true,
-            login: async () => ({} as any),
+            login: async () => ({} as unknown as AuthUser),
             logout: () => {},
           }}
         >
