@@ -45,7 +45,7 @@ interface ApiPublicCatalogResponse {
 }
 
 interface ApiComboItem {
-  id: string;
+  id?: string;
   productId: string;
   productName: string;
   saleUnit: SaleUnit;
@@ -56,17 +56,12 @@ interface ApiComboResponse {
   id: string;
   name: string;
   description: string | null;
-  imageUrl: string | null;
+  imageUrls?: string[];
+  imageUrl?: string | null;
   price: number;
-  originalPrice: number;
-  isActive: boolean;
+  originalPrice?: number;
+  isActive?: boolean;
   items: ApiComboItem[];
-}
-
-interface ApiPublicOffersResponse {
-  branch: CatalogBranch;
-  products: ApiCatalogProductItem[];
-  combos: ApiComboResponse[];
 }
 
 export const mockCatalogRepository: CatalogRepository = {
@@ -96,15 +91,18 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
 }
 
 function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
-  const hasDiscount = combo.originalPrice > combo.price;
+  const imageUrl = combo.imageUrls?.[0] ?? combo.imageUrl ?? null;
+  const originalPrice = combo.originalPrice;
+  const hasDiscount = originalPrice !== undefined && originalPrice > combo.price;
+
   return {
     id: combo.id,
     categoryId: "__combos__",
     name: combo.name,
     description: combo.description,
     saleUnit: "UNIT",
-    imageUrl: combo.imageUrl,
-    price: hasDiscount ? combo.originalPrice : combo.price,
+    imageUrl,
+    price: hasDiscount ? originalPrice : combo.price,
     promotionalPrice: hasDiscount ? combo.price : null,
     isCombo: true,
     comboItems: combo.items.map((item) => ({
@@ -143,9 +141,9 @@ export function createHttpCatalogRepository(
 
     async getBranchCatalog(branchSlug: string): Promise<BranchCatalog> {
       const encodedSlug = encodeURIComponent(branchSlug);
-      const [catalogRes, offersRes] = await Promise.all([
+      const [catalogRes, combosRes] = await Promise.all([
         fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`),
-        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/offers`),
+        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/combos`),
       ]);
 
       if (!catalogRes.ok) {
@@ -176,11 +174,24 @@ export function createHttpCatalogRepository(
       }
 
       let comboProducts: CatalogProduct[] = [];
-      if (offersRes.ok) {
-        const offersData = (await offersRes.json()) as ApiPublicOffersResponse;
-        comboProducts = offersData.combos
-          .filter((combo) => combo.isActive)
-          .map(mapApiComboToCatalogProduct);
+      if (combosRes.ok) {
+        try {
+          const rawCombos = (await combosRes.json()) as unknown;
+          const comboList: ApiComboResponse[] = Array.isArray(rawCombos)
+            ? (rawCombos as ApiComboResponse[])
+            : rawCombos &&
+              typeof rawCombos === "object" &&
+              "combos" in rawCombos &&
+              Array.isArray((rawCombos as { combos: unknown[] }).combos)
+            ? (rawCombos as { combos: ApiComboResponse[] }).combos
+            : [];
+
+          comboProducts = comboList
+            .filter((combo) => combo.isActive !== false)
+            .map(mapApiComboToCatalogProduct);
+        } catch {
+          // Ignore JSON parse errors for combos
+        }
       }
 
       const regularProducts = allItems.map(mapApiProductToCatalogProduct);

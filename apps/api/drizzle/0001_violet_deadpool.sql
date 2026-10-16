@@ -1,0 +1,2 @@
+ALTER TABLE "branch_products" ADD COLUMN "is_featured" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_branch_products_is_featured" ON "branch_products" USING btree ("branch_id","is_featured");

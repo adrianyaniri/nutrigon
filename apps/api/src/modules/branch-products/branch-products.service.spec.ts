@@ -111,6 +111,7 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
       promotionalPrice: data.promotionalPrice,
       isOnSale: data.isOnSale,
       isAvailable: data.isAvailable,
+      isFeatured: data.isFeatured ?? false,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       updatedAt: new Date('2026-01-02T00:00:00.000Z'),
     };
@@ -341,6 +342,7 @@ describe('BranchProductsService', () => {
         promotionalPrice: null,
         isOnSale: false,
         isAvailable: true,
+        isFeatured: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -362,6 +364,7 @@ describe('BranchProductsService', () => {
         promotionalPrice: null,
         isOnSale: false,
         isAvailable: true,
+        isFeatured: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -403,6 +406,7 @@ describe('BranchProductsService', () => {
         categoryName: 'Frutos secos',
         imageUrls: [],
         isOnSale: false,
+        isFeatured: false,
         promotionalPrice: null,
       };
       repo.catalogPage = {
@@ -464,6 +468,7 @@ describe('BranchProductsService', () => {
             price: '5000.00',
             promotionalPrice: '4200.00',
             isOnSale: true,
+            isFeatured: false,
             imageUrls: [],
           },
         ],
@@ -489,6 +494,31 @@ describe('BranchProductsService', () => {
       expect(offers.products[0]!.promotionalPrice).toBe(4200);
       expect(offers.combos).toHaveLength(1);
       expect(offers.combos[0]!.name).toBe('Mix Energía');
+    });
+
+    it('maps isFeatured correctly in public catalog', async () => {
+      repo.catalogPage = {
+        ...emptyPage(),
+        items: [
+          {
+            id: PRODUCT_ID,
+            name: 'Almendras Destacadas',
+            description: null,
+            categoryId: CATEGORY_ID,
+            categoryName: 'Frutos secos',
+            saleUnit: SaleUnit.WEIGHT,
+            price: '5000.00',
+            promotionalPrice: null,
+            isOnSale: false,
+            isFeatured: true,
+            imageUrls: [],
+          },
+        ],
+        total: 1,
+      };
+
+      const result = await service.getPublicCatalog('centro', {});
+      expect(result.items[0]!.isFeatured).toBe(true);
     });
   });
 });

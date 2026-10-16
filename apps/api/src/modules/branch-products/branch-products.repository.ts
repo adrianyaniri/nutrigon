@@ -7,6 +7,7 @@ import {
   isNotNull,
   count,
   asc,
+  desc,
   sql,
   type SQL,
 } from 'drizzle-orm';
@@ -117,6 +118,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         promotionalPrice: schema.branchProducts.promotionalPrice,
         isOnSale: schema.branchProducts.isOnSale,
         isAvailable: schema.branchProducts.isAvailable,
+        isFeatured: schema.branchProducts.isFeatured,
       })
       .from(schema.products)
       .innerJoin(
@@ -205,6 +207,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         promotionalPrice: data.promotionalPrice,
         isOnSale: data.isOnSale,
         isAvailable: data.isAvailable,
+        isFeatured: data.isFeatured ?? false,
       })
       .onConflictDoUpdate({
         target: [schema.branchProducts.branchId, schema.branchProducts.productId],
@@ -213,6 +216,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
           promotionalPrice: data.promotionalPrice,
           isOnSale: data.isOnSale,
           isAvailable: data.isAvailable,
+          ...(data.isFeatured !== undefined ? { isFeatured: data.isFeatured } : {}),
           updatedAt: new Date(),
         },
       })
@@ -256,6 +260,10 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       conditions.push(eq(schema.branchProducts.isOnSale, query.isOnSale));
     }
 
+    if (typeof query.isFeatured === 'boolean') {
+      conditions.push(eq(schema.branchProducts.isFeatured, query.isFeatured));
+    }
+
     const whereClause = and(...conditions);
 
     const totalResult = await this.db
@@ -284,6 +292,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         price: schema.branchProducts.price,
         promotionalPrice: schema.branchProducts.promotionalPrice,
         isOnSale: schema.branchProducts.isOnSale,
+        isFeatured: schema.branchProducts.isFeatured,
         imageUrls: schema.products.imageUrls,
       })
       .from(schema.branchProducts)
@@ -296,7 +305,11 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         eq(schema.products.categoryId, schema.categories.id),
       )
       .where(whereClause)
-      .orderBy(asc(schema.categories.orderIndex), asc(schema.products.name))
+      .orderBy(
+        desc(schema.branchProducts.isFeatured),
+        asc(schema.categories.orderIndex),
+        asc(schema.products.name),
+      )
       .limit(limit)
       .offset(offset);
 

@@ -16,6 +16,7 @@ export const branchProducts = pgTable(
     promotionalPrice: numeric('promotional_price', { precision: 12, scale: 2 }),
     isOnSale: boolean('is_on_sale').notNull().default(false),
     isAvailable: boolean('is_available').notNull().default(false),
+    isFeatured: boolean('is_featured').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -23,6 +24,7 @@ export const branchProducts = pgTable(
     uniqueIndex('idx_branch_products_unique').on(table.branchId, table.productId),
     index('idx_branch_products_branch_id').on(table.branchId),
     index('idx_branch_products_product_id').on(table.productId),
+    index('idx_branch_products_is_featured').on(table.branchId, table.isFeatured),
   ],
 );
 

@@ -82,6 +82,7 @@ export class BranchProductsService {
           row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
         isOnSale: row.isOnSale ?? false,
         isAvailable: row.isAvailable ?? false,
+        isFeatured: row.isFeatured ?? false,
       };
     });
 
@@ -134,6 +135,7 @@ export class BranchProductsService {
       promotionalPrice,
       isOnSale,
       isAvailable: dto.isAvailable ?? false,
+      ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
     });
 
     return {
@@ -145,6 +147,7 @@ export class BranchProductsService {
         entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
       isOnSale: entity.isOnSale,
       isAvailable: entity.isAvailable,
+      isFeatured: entity.isFeatured,
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
     };
@@ -203,6 +206,7 @@ export class BranchProductsService {
         entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
       isOnSale: entity.isOnSale,
       isAvailable: entity.isAvailable,
+      isFeatured: entity.isFeatured,
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
     };
@@ -234,6 +238,7 @@ export class BranchProductsService {
       promotionalPrice:
         row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
       isOnSale: row.isOnSale,
+      isFeatured: row.isFeatured,
       priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
       imageUrls: row.imageUrls ?? [],
     }));
@@ -283,6 +288,7 @@ export class BranchProductsService {
       promotionalPrice:
         row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
       isOnSale: row.isOnSale,
+      isFeatured: row.isFeatured,
       priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
       imageUrls: row.imageUrls ?? [],
     }));

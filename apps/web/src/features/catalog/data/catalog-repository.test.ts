@@ -43,7 +43,7 @@ describe("createHttpCatalogRepository", () => {
     ]);
   });
 
-  it("merges branch catalog products and active combos from GET /catalog and GET /offers", async () => {
+  it("merges branch catalog products and active combos from GET /catalog and GET /combos", async () => {
     const mockFetch = vi.fn().mockImplementation(async (url: string) => {
       if (url.includes("/catalog")) {
         return {
@@ -79,24 +79,15 @@ describe("createHttpCatalogRepository", () => {
         };
       }
 
-      return {
-        ok: true,
-        json: async () => ({
-          branch: {
-            id: "b-origone",
-            name: "Origone",
-            slug: "origone",
-            address: "Tte. Manuel Origone 196",
-            phone: "11-1111-1111",
-            whatsappNumber: "5491111111111",
-          },
-          products: [],
-          combos: [
+      if (url.includes("/combos")) {
+        return {
+          ok: true,
+          json: async () => [
             {
               id: "combo-1",
               name: "Pack Energético",
               description: "Almendras + Nueces",
-              imageUrl: "https://cdn.nutrigon.com/combo.webp",
+              imageUrls: ["https://cdn.nutrigon.com/combo.webp"],
               price: 11500,
               originalPrice: 14500,
               isActive: true,
@@ -111,8 +102,10 @@ describe("createHttpCatalogRepository", () => {
               ],
             },
           ],
-        }),
-      };
+        };
+      }
+
+      return { ok: false, status: 404 };
     });
 
     const repo = createHttpCatalogRepository("http://localhost:3000", mockFetch as unknown as typeof fetch);

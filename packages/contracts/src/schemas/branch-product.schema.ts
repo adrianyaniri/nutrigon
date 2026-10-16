@@ -12,6 +12,7 @@ export const branchProductSchema = z
     promotionalPrice: z.number().nonnegative().nullable(),
     isOnSale: z.boolean(),
     isAvailable: z.boolean(),
+    isFeatured: z.boolean().default(false),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
@@ -29,6 +30,7 @@ export const upsertBranchProductSchema = z
       .optional(),
     isOnSale: z.boolean().default(false).optional(),
     isAvailable: z.boolean().default(false),
+    isFeatured: z.boolean().default(false).optional(),
   })
   .strict()
   .refine(
@@ -100,6 +102,11 @@ export const branchProductQuerySchema = z
       if (val === 'false' || val === false) return false;
       return undefined;
     }, z.boolean().optional()),
+    isFeatured: z.preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional()),
     page: z.coerce.number().int().min(1).default(1).optional(),
     limit: z.coerce.number().int().min(1).max(500).default(50).optional(),
   })
@@ -133,6 +140,7 @@ export const branchProductAdminItemSchema = z
     promotionalPrice: z.number().nullable(),
     isOnSale: z.boolean(),
     isAvailable: z.boolean(),
+    isFeatured: z.boolean().default(false),
   })
   .strict();
 
@@ -149,6 +157,7 @@ export const branchCatalogItemSchema = z
     price: z.number(),
     promotionalPrice: z.number().nullable(),
     isOnSale: z.boolean(),
+    isFeatured: z.boolean().default(false),
     priceUnitLabel: z.string(),
     imageUrls: z.array(z.string()),
   })

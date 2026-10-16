@@ -23,6 +23,7 @@ export interface BranchProductAdminRow {
   promotionalPrice: string | null;
   isOnSale: boolean | null;
   isAvailable: boolean | null;
+  isFeatured: boolean | null;
 }
 
 export interface BranchCatalogRow {
@@ -35,6 +36,7 @@ export interface BranchCatalogRow {
   price: string;
   promotionalPrice: string | null;
   isOnSale: boolean;
+  isFeatured: boolean;
   imageUrls: string[];
 }
 
@@ -43,6 +45,7 @@ export interface UpsertBranchProductData {
   promotionalPrice: string | null;
   isOnSale: boolean;
   isAvailable: boolean;
+  isFeatured?: boolean;
 }
 
 export interface IBranchProductsRepository {
