@@ -16,6 +16,33 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - nutrigon-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: nutrigon-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nutrigon
+      JWT_SECRET: ${JWT_SECRET:-nutrigon_default_development_secret_key_12345}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,https://nutrigon.pages.dev}
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nutrigon-network
+
+networks:
+  nutrigon-network:
+    driver: bridge
 
 volumes:
   postgres_data:
