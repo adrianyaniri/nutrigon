@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
 import { AlertCircle, Check, MapPin, Store, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogFocusTrap } from "@/hooks";
 import { cn } from "@/lib/utils/cn";
 import type { CatalogBranch } from "../types";
 
@@ -36,27 +36,10 @@ export function BranchPickerModal({
   onSelectBranch,
   cartItemCount,
 }: BranchPickerModalProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  // Close on Escape key and prevent background scrolling
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [isOpen, onClose]);
+  const modalRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -76,7 +59,7 @@ export function BranchPickerModal({
 
       {/* Modal Dialog */}
       <div
-        ref={dialogRef}
+        ref={modalRef}
         className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150"
       >
         <div className="flex items-center justify-between pb-4 border-b border-border">
@@ -97,7 +80,7 @@ export function BranchPickerModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar ventana"
-            className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="size-4" />
           </button>

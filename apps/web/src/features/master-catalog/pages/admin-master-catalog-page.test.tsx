@@ -130,21 +130,25 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     await screen.findByText("Almendras Nonpareil");
 
     const categoryModalBtn = screen.getByRole("button", {
-      name: /Nueva Categoría/i,
+      name: /Nueva Categoría|Gestionar Categorías/i,
     });
     fireEvent.click(categoryModalBtn);
 
-    const modeSelect = await screen.findByLabelText(/Acción sobre Categorías/i);
-    fireEvent.change(modeSelect, { target: { value: "c-frutos-secos" } });
+    const dialog = await screen.findByRole("dialog");
+    const listTab = within(dialog).getByRole("tab", { name: /Lista de Categorías/i });
+    fireEvent.click(listTab);
+
+    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Frutos Secos" });
+    fireEvent.click(editBtn);
 
     expect(
       await screen.findByRole("heading", { name: /Editar Categoría Maestra/i })
     ).toBeInTheDocument();
 
-    const catNameInput = screen.getByLabelText(/Nombre de la Categoría \*/i);
+    const catNameInput = within(dialog).getByLabelText(/Nombre de la Categoría \*/i);
     fireEvent.change(catNameInput, { target: { value: "Frutos Secos Premium" } });
 
-    const saveCatBtn = screen.getByRole("button", { name: "Guardar Categoría" });
+    const saveCatBtn = within(dialog).getByRole("button", { name: "Guardar Categoría" });
     fireEvent.click(saveCatBtn);
 
     expect(

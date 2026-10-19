@@ -55,58 +55,65 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
     }
   }
 
+  const cardBody = (
+    <>
+      <div className="relative">
+        <ProductImage src={product.imageUrl} alt={product.name} />
+        <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
+          {product.isCombo ? (
+            <Badge variant="sale" className="shadow-sm">
+              Combo
+            </Badge>
+          ) : (
+            <>
+              {product.isFeatured && (
+                <Badge variant="featured" className="shadow-sm flex items-center gap-1">
+                  <Star className="size-3 fill-brand-dark text-brand-dark" aria-hidden="true" />
+                  <span>Destacado</span>
+                </Badge>
+              )}
+              {onSale && (
+                <Badge variant="sale" className="shadow-sm">
+                  Oferta
+                </Badge>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {describeSaleUnit(product)}
+        </span>
+        <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
+          {product.name}
+        </h3>
+      </div>
+    </>
+  );
+
   return (
     <article
       className={cn(
         "group relative flex h-full w-full flex-col justify-between rounded-2xl border border-brand-border/70 bg-brand-card/90 p-3 sm:p-4 transition-all duration-200 hover:border-brand-gold/60 hover:shadow-lg hover:shadow-brand-gold/5"
       )}
     >
-      <div
-        role={isClickable ? "button" : undefined}
-        tabIndex={isClickable ? 0 : undefined}
-        onClick={isClickable ? () => onSelect?.(product) : undefined}
-        onKeyDown={isClickable ? handleKeyDown : undefined}
-        aria-label={isClickable ? `Ver detalle de ${product.name}` : undefined}
-        className={cn(
-          "flex flex-col gap-3 rounded-xl",
-          isClickable &&
-            "cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-gold"
-        )}
-      >
-        <div className="relative">
-          <ProductImage src={product.imageUrl} alt={product.name} />
-          <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
-            {product.isCombo ? (
-              <Badge variant="sale" className="shadow-sm">
-                Combo
-              </Badge>
-            ) : (
-              <>
-                {product.isFeatured && (
-                  <Badge variant="featured" className="shadow-sm flex items-center gap-1">
-                    <Star className="size-3 fill-brand-dark text-brand-dark" aria-hidden="true" />
-                    <span>Destacado</span>
-                  </Badge>
-                )}
-                {onSale && (
-                  <Badge variant="sale" className="shadow-sm">
-                    Oferta
-                  </Badge>
-                )}
-              </>
-            )}
-          </div>
+      {isClickable ? (
+        <button
+          type="button"
+          onClick={() => onSelect?.(product)}
+          onKeyDown={handleKeyDown}
+          aria-label={`Ver detalle de ${product.name}`}
+          className="flex w-full flex-col gap-3 rounded-xl text-left cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-gold"
+        >
+          {cardBody}
+        </button>
+      ) : (
+        <div className="flex w-full flex-col gap-3 rounded-xl text-left">
+          {cardBody}
         </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {describeSaleUnit(product)}
-          </span>
-          <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
-            {product.name}
-          </h3>
-        </div>
-      </div>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand-border/40 pt-3">
         <div className="flex flex-col">

@@ -239,39 +239,24 @@ export function MasterCategoryModal({
               </div>
             )}
 
-            {/* Quick selector for action / category (maintains compatibility with existing tests & power users) */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label
-                  htmlFor="category-mode-select"
-                  className="block text-xs font-semibold text-zinc-300"
+            {/* Active editing mode banner */}
+            {editingCategoryId && (
+              <div className="flex items-center justify-between p-3 rounded-xl border border-brand-gold/30 bg-brand-gold/10 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Pencil className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+                  <span className="text-zinc-200 truncate">
+                    Editando: <strong className="text-white">{currentCategory?.name ?? categoryName}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectCategoryMode("")}
+                  className="text-xs text-brand-gold hover:underline shrink-0 font-medium cursor-pointer ml-2"
                 >
-                  Acción sobre Categorías
-                </label>
-                {editingCategoryId && (
-                  <button
-                    type="button"
-                    onClick={() => onSelectCategoryMode("")}
-                    className="text-[11px] text-brand-gold hover:underline cursor-pointer"
-                  >
-                    + Cambiar a nueva categoría
-                  </button>
-                )}
+                  Cambiar a nueva
+                </button>
               </div>
-              <select
-                id="category-mode-select"
-                value={editingCategoryId}
-                onChange={(e) => onSelectCategoryMode(e.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-              >
-                <option value="">+ Crear nueva categoría</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    Editar: {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            )}
 
             <div>
               <label
