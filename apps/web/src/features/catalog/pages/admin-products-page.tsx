@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
+  Building2,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -11,6 +12,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth, Role } from "@/features/auth";
 import {
@@ -31,21 +33,12 @@ import { BranchProductRow } from "../components/branch-product-row";
 
 type FilterTab = "ALL" | BranchProductStatus | "ON_SALE";
 
-const FALLBACK_BRANCHES = [
-  { id: "b-origone", slug: "origone", name: "Origone" },
-  { id: "b-pedrodiaz", slug: "pedro-diaz", name: "Pedro Díaz" },
-  { id: "b-wmorris", slug: "w-morris", name: "William Morris" },
-] as const;
-
 export function AdminProductsPage() {
   const { user, token, selectedBranchSlug } = useAuth();
   const queryClient = useQueryClient();
 
   const branchesQuery = useBranches();
-  const branches =
-    branchesQuery.data && branchesQuery.data.length > 0
-      ? branchesQuery.data
-      : FALLBACK_BRANCHES;
+  const branches = branchesQuery.data ?? [];
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
 
@@ -54,10 +47,10 @@ export function AdminProductsPage() {
       const byId = branches.find((b) => b.id === user.branchId);
       if (byId) return byId;
     }
-    return branches.find((b) => b.slug === selectedBranchSlug) ?? branches[0]!;
+    return branches.find((b) => b.slug === selectedBranchSlug) ?? branches[0];
   }, [branches, isGeneralAdmin, selectedBranchSlug, user?.branchId]);
 
-  const branchId = activeBranch.id;
+  const branchId = activeBranch?.id ?? "";
   const authToken = token ?? "mock-jwt-token";
 
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
@@ -387,6 +380,37 @@ export function AdminProductsPage() {
     { id: "UNCONFIGURED", label: "Sin precio", count: counts.UNCONFIGURED },
   ];
 
+  if (!branchesQuery.isLoading && branches.length === 0) {
+    return (
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-16 text-center">
+        <div className="rounded-2xl border border-outline bg-surface-card p-8 shadow-xl flex flex-col items-center">
+          <div className="size-16 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold mb-4">
+            <Building2 className="size-8" aria-hidden="true" />
+          </div>
+          <h2 className="font-headline text-xl font-bold text-foreground">
+            No hay sucursales registradas
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
+            Para fijar precios y ofertas, primero debés registrar al menos una sucursal en el sistema.
+          </p>
+          {isGeneralAdmin ? (
+            <Link
+              to="/admin/sucursales"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-gold px-5 py-2.5 text-xs font-bold text-brand-dark hover:bg-brand-gold/90 transition-colors shadow-sm"
+            >
+              <Building2 className="size-4" aria-hidden="true" />
+              <span>Ir a Gestión de Sucursales</span>
+            </Link>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-4 font-mono">
+              Contactá a un Administrador General para asignar tu sucursal.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-foreground pb-12">
       {/* Top Operational Header */}
@@ -399,7 +423,7 @@ export function AdminProductsPage() {
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
             Configurá el precio por kilogramo o por unidad, habilitá productos
             en el mostrador online y activá ofertas exclusivas para{" "}
-            <strong className="text-foreground">Sucursal {activeBranch.name}</strong>
+            <strong className="text-foreground">Sucursal {activeBranch?.name ?? ""}</strong>
             .
           </p>
         </div>

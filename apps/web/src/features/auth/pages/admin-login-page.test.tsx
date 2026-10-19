@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../context/auth-provider";
+import { authRepository } from "../data/auth-repository";
+import { Role } from "../types";
 import { AdminLoginPage } from "./admin-login-page";
 
 function renderLoginPage(initialEntry = "/admin/login") {
@@ -57,6 +59,17 @@ describe("AdminLoginPage", () => {
   });
 
   it("authenticates branch admin and safely redirects to products page even if coming from restricted master catalog", async () => {
+    vi.spyOn(authRepository, "login").mockResolvedValueOnce({
+      accessToken: "mock-jwt-token-u-branch-admin-origone-123",
+      user: {
+        id: "u-branch-admin-origone",
+        email: "admin.origone@nutrigon.com",
+        fullName: "Encargado Sucursal Origone",
+        role: Role.BRANCH_ADMIN,
+        branchId: "b-origone",
+      },
+    });
+
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={client}>

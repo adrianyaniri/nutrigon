@@ -1,5 +1,17 @@
-import { useEffect, useState } from "react";
-import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes, Building2, KeyRound, CheckCircle2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ChevronDown,
+  LogOut,
+  MapPin,
+  Store,
+  ExternalLink,
+  Tag,
+  Package,
+  Boxes,
+  Building2,
+  KeyRound,
+  CheckCircle2,
+} from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
@@ -7,24 +19,39 @@ import { useAuth } from "../context/auth-context";
 import { Role } from "../types";
 import { ChangePasswordModal } from "./change-password-modal";
 
-const FALLBACK_BRANCHES = [
-  { id: "b-origone", slug: "origone", name: "Origone" },
-  { id: "b-pedrodiaz", slug: "pedro-diaz", name: "Pedro Díaz" },
-  { id: "b-wmorris", slug: "w-morris", name: "William Morris" },
-] as const;
-
 export function AdminHeader() {
   const { user, logout, selectedBranchSlug, setSelectedBranchSlug } = useAuth();
   const navigate = useNavigate();
   const branchesQuery = useBranches();
-  const branches =
-    branchesQuery.data && branchesQuery.data.length > 0
-      ? branchesQuery.data
-      : FALLBACK_BRANCHES;
+  const branches = branchesQuery.data ?? [];
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [passwordNotification, setPasswordNotification] = useState<string | null>(null);
+
+  // Close dropdown menu on click outside or Escape
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsUserMenuOpen(false);
+      }
+    }
+    if (isUserMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isUserMenuOpen]);
 
   useEffect(() => {
     if (!branches || branches.length === 0) return;
@@ -150,12 +177,26 @@ export function AdminHeader() {
           </nav>
         </div>
 
-      {/* Branch Selector + User Profile + Logout */}
+      {/* Branch Selector + User Account Dropdown */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Branch Context Switcher (available to General Admin or displays branch for Branch Admin) */}
         <div className="flex items-center gap-1.5 bg-surface-card border border-outline px-2.5 py-1.5 rounded-lg text-xs">
-          <MapPin className="size-3.5 text-brand-gold" aria-hidden="true" />
-          {isGeneralAdmin ? (
+          <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+          {branches.length === 0 ? (
+            isGeneralAdmin ? (
+              <Link
+                to="/admin/sucursales"
+                className="text-brand-gold hover:underline text-xs font-semibold whitespace-nowrap"
+                title="Registrar primera sucursal"
+              >
+                Sin sucursales (+ Crear)
+              </Link>
+            ) : (
+              <span className="text-muted-foreground text-xs font-medium whitespace-nowrap">
+                Sin sucursal asignada
+              </span>
+            )
+          ) : isGeneralAdmin ? (
             <select
               value={activeBranch?.slug ?? selectedBranchSlug}
               onChange={(e) => setSelectedBranchSlug(e.target.value)}
@@ -175,61 +216,117 @@ export function AdminHeader() {
           )}
         </div>
 
-        {/* View Public Storefront Link */}
-        <Link
-          to={`/catalogo/${selectedBranchSlug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors"
-          title="Ver cómo lo ve el cliente en esta sucursal"
-        >
-          <span>Ver Tienda</span>
-          <ExternalLink className="size-3" aria-hidden="true" />
-        </Link>
+        {/* View Public Storefront Link (only if branches exist) */}
+        {branches.length > 0 && selectedBranchSlug && (
+          <Link
+            to={`/catalogo/${selectedBranchSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors"
+            title="Ver cómo lo ve el cliente en esta sucursal"
+          >
+            <span>Ver Tienda</span>
+            <ExternalLink className="size-3" aria-hidden="true" />
+          </Link>
+        )}
 
         <div className="h-4 w-[1px] bg-outline" aria-hidden="true" />
 
-        {/* User Pill & Role */}
-        <div className="flex items-center gap-2.5">
-          <div
-            className="size-8 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-bold text-xs flex items-center justify-center select-none shadow-xs"
-            title={user?.fullName || "Administrador"}
-          >
-            {initials}
-          </div>
-
-          <div className="hidden lg:flex flex-col text-left">
-            <span className="text-xs font-semibold text-foreground leading-tight">
-              {user?.fullName || "Administrador"}
-            </span>
-            <span className="text-[11px] text-muted-foreground font-mono">
-              {user?.role === Role.ADMIN_GENERAL ? "Admin General" : "Admin Sucursal"}
-            </span>
-          </div>
-
-          {/* Change Password Button */}
+        {/* User Account Dropdown */}
+        <div className="relative" ref={userMenuRef}>
           <button
             type="button"
-            onClick={() => setIsChangePasswordOpen(true)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-brand-gold p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
-            title="Cambiar mi contraseña"
-            aria-label="Cambiar mi contraseña"
+            onClick={() => setIsUserMenuOpen((prev) => !prev)}
+            aria-expanded={isUserMenuOpen}
+            aria-haspopup="true"
+            aria-label="Menú de cuenta de usuario"
+            className={cn(
+              "flex items-center gap-2 rounded-xl p-1 sm:px-2 sm:py-1.5 transition-colors cursor-pointer min-h-[44px]",
+              isUserMenuOpen
+                ? "bg-surface-hover border border-outline"
+                : "hover:bg-surface-hover border border-transparent hover:border-outline"
+            )}
           >
-            <KeyRound className="size-4" aria-hidden="true" />
-            <span className="hidden xl:inline">Clave</span>
+            <div
+              className="size-8 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-bold text-xs flex items-center justify-center select-none shadow-xs shrink-0"
+              aria-hidden="true"
+            >
+              {initials}
+            </div>
+
+            <div className="hidden sm:flex flex-col text-left leading-tight">
+              <span className="text-xs font-semibold text-foreground truncate max-w-[120px] md:max-w-[160px]">
+                {user?.fullName || "Administrador"}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                {user?.role === Role.ADMIN_GENERAL ? "Admin General" : "Admin Sucursal"}
+              </span>
+            </div>
+
+            <ChevronDown
+              className={cn(
+                "size-3.5 text-muted-foreground transition-transform duration-200",
+                isUserMenuOpen && "rotate-180 text-brand-gold"
+              )}
+              aria-hidden="true"
+            />
           </button>
 
-          {/* Logout Action Button */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-status-destructive p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Salir</span>
-          </button>
+          {/* Floating Dropdown Card */}
+          {isUserMenuOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-outline bg-surface-card p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
+            >
+              {/* User Identity Header */}
+              <div className="px-3 py-2.5 border-b border-outline/70">
+                <p className="text-xs font-bold text-foreground truncate">
+                  {user?.fullName || "Administrador"}
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate font-mono">
+                  {user?.email}
+                </p>
+                <div className="mt-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-gold/15 text-brand-gold border border-brand-gold/25 font-mono">
+                    {user?.role === Role.ADMIN_GENERAL ? "ADMIN GENERAL" : "ADMIN SUCURSAL"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Menu Actions */}
+              <div className="py-1">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    setIsChangePasswordOpen(true);
+                  }}
+                  className="flex w-full min-h-[44px] items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-surface-hover rounded-xl transition-colors cursor-pointer text-left"
+                >
+                  <KeyRound className="size-4 text-muted-foreground shrink-0" aria-hidden="true" />
+                  <span>Cambiar mi contraseña</span>
+                </button>
+              </div>
+
+              <div className="h-[1px] bg-outline/70 my-1" />
+
+              <div className="py-1">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex w-full min-h-[44px] items-center gap-2.5 px-3 py-2 text-xs font-semibold text-status-destructive hover:bg-status-destructive/10 rounded-xl transition-colors cursor-pointer text-left"
+                >
+                  <LogOut className="size-4 shrink-0" aria-hidden="true" />
+                  <span>Cerrar sesión</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       </div>

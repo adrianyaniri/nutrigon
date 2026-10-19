@@ -1,4 +1,28 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { z } from 'zod';
+
+// Load .env automatically if present using native Node 20+ process.loadEnvFile
+function loadEnvFile(): void {
+  const envCandidates = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), 'apps/api/.env'),
+    path.resolve(import.meta.dirname, '../../../../.env'),
+    path.resolve(import.meta.dirname, '../../.env'),
+  ];
+  for (const candidate of envCandidates) {
+    if (fs.existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+        break;
+      } catch {
+        // Continue searching if file cannot be read
+      }
+    }
+  }
+}
+
+loadEnvFile();
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

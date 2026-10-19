@@ -105,15 +105,21 @@ export const authRepository: AuthRepository = {
       if (res.ok) {
         return (await res.json()) as AuthUser;
       }
-    } catch {
-      // Fall back on network error
+      if (res.status === 401) {
+        throw new Error("UNAUTHORIZED");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "UNAUTHORIZED") {
+        throw err;
+      }
+      // If network failure occurs (e.g. offline unit testing in jsdom), fall back to mock
+      const matched = Object.values(MOCK_USERS).find((entry) =>
+        token.includes(entry.user.id)
+      );
+      if (matched) return matched.user;
+      throw new Error("SESSION_INVALID");
     }
 
-    const matched = Object.values(MOCK_USERS).find((entry) =>
-      token.includes(entry.user.id)
-    );
-    if (matched) return matched.user;
-
-    return MOCK_USERS["admin@nutrigon.com"]!.user;
+    throw new Error("SESSION_INVALID");
   },
 };

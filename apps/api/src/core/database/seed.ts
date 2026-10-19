@@ -162,7 +162,16 @@ async function runSeed() {
         branchId: null,
         isActive: true,
       })
-      .onConflictDoNothing({ target: users.email });
+      .onConflictDoUpdate({
+        target: users.email,
+        set: {
+          passwordHash,
+          fullName: 'Administrador General',
+          role: 'ADMIN_GENERAL',
+          isActive: true,
+          updatedAt: new Date(),
+        },
+      });
 
     console.log(`✅ General Admin user ready: ${adminEmail}`);
 

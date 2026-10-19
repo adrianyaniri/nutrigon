@@ -30,32 +30,79 @@ export function AuthProvider({ children }: AuthProviderProps) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Rehydrate session from storage on mount
-  useEffect(() => {
+  const logout = useCallback(() => {
     try {
-      const storedToken =
-        localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-      const storedUserJson =
-        localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(USER_KEY);
+    } catch {
+      // Ignore
+    }
+    setToken(null);
+    setUser(null);
+  }, []);
 
-      if (storedToken && storedUserJson) {
+  // Rehydrate session from storage on mount and verify with backend
+  useEffect(() => {
+    let isMounted = true;
+
+    async function rehydrateSession() {
+      try {
+        const storedToken =
+          localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+        const storedUserJson =
+          localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
+
+        if (!storedToken || !storedUserJson) {
+          if (isMounted) setIsLoading(false);
+          return;
+        }
+
         const parsedUser = JSON.parse(storedUserJson) as AuthUser;
-        setToken(storedToken);
-        setUser(parsedUser);
+        if (isMounted) {
+          setToken(storedToken);
+          setUser(parsedUser);
 
-        if (parsedUser.role === Role.BRANCH_ADMIN && parsedUser.branchId) {
-          const branchSlug = BRANCH_ID_TO_SLUG[parsedUser.branchId];
-          if (branchSlug) {
-            setSelectedBranchSlugState(branchSlug);
+          if (parsedUser.role === Role.BRANCH_ADMIN && parsedUser.branchId) {
+            const branchSlug = BRANCH_ID_TO_SLUG[parsedUser.branchId];
+            if (branchSlug) {
+              setSelectedBranchSlugState(branchSlug);
+            }
           }
         }
+
+        // Verify session integrity with the backend
+        try {
+          const freshUser = await authRepository.getMe(storedToken);
+          if (isMounted) {
+            setUser(freshUser);
+            const storage = localStorage.getItem(TOKEN_KEY) ? localStorage : sessionStorage;
+            storage.setItem(USER_KEY, JSON.stringify(freshUser));
+          }
+        } catch {
+          // Token is rejected (e.g. database wiped / user deleted / 401)
+          if (isMounted) {
+            logout();
+          }
+        }
+      } catch {
+        if (isMounted) {
+          logout();
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    } catch {
-      // Storage access failed, keep unauthenticated
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+
+    void rehydrateSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [logout]);
 
   const setSelectedBranchSlug = useCallback((slug: string) => {
     setSelectedBranchSlugState(slug);
@@ -103,19 +150,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
     []
   );
-
-  const logout = useCallback(() => {
-    try {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem(USER_KEY);
-    } catch {
-      // Ignore
-    }
-    setToken(null);
-    setUser(null);
-  }, []);
 
   const value = {
     user,

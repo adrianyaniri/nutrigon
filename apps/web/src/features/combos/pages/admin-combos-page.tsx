@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import {
   AlertCircle,
+  Building2,
   CheckCircle2,
   Info,
   Loader2,
@@ -28,12 +30,6 @@ import {
 import { combosRepository } from "../data/combos-repository";
 import type { BranchComboAdminItem, CreateComboInput } from "../types";
 
-const FALLBACK_BRANCHES = [
-  { id: "b-origone", slug: "origone", name: "Origone" },
-  { id: "b-pedrodiaz", slug: "pedro-diaz", name: "Pedro Díaz" },
-  { id: "b-wmorris", slug: "w-morris", name: "William Morris" },
-] as const;
-
 type ComboStatusFilter = "ALL" | "AVAILABLE" | "PAUSED";
 
 export function AdminCombosPage() {
@@ -41,10 +37,7 @@ export function AdminCombosPage() {
   const queryClient = useQueryClient();
 
   const branchesQuery = useBranches();
-  const branches =
-    branchesQuery.data && branchesQuery.data.length > 0
-      ? branchesQuery.data
-      : FALLBACK_BRANCHES;
+  const branches = branchesQuery.data ?? [];
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
 
@@ -53,10 +46,10 @@ export function AdminCombosPage() {
       const byId = branches.find((b) => b.id === user.branchId);
       if (byId) return byId;
     }
-    return branches.find((b) => b.slug === selectedBranchSlug) ?? branches[0]!;
+    return branches.find((b) => b.slug === selectedBranchSlug) ?? branches[0];
   }, [branches, isGeneralAdmin, selectedBranchSlug, user?.branchId]);
 
-  const branchId = activeBranch.id;
+  const branchId = activeBranch?.id ?? "";
   const authToken = token ?? "mock-jwt-token";
 
   // Filter & Search states
@@ -103,6 +96,7 @@ export function AdminCombosPage() {
   const combosQuery = useQuery({
     queryKey: ["combos", "branch", branchId],
     queryFn: () => combosRepository.listForBranch(branchId, authToken),
+    enabled: Boolean(branchId),
   });
 
   // Available Products Query for Modal Picker
@@ -113,7 +107,7 @@ export function AdminCombosPage() {
         search: debouncedProductSearchTerm.trim() || undefined,
         limit: 50,
       }),
-    enabled: isCreateModalOpen,
+    enabled: isCreateModalOpen && Boolean(branchId),
   });
 
   // Toggle Availability Mutation
@@ -380,6 +374,37 @@ export function AdminCombosPage() {
     combosQuery.data?.filter((c) => c.isAvailable).length ?? 0;
   const pausedCount = totalCount - availableCount;
 
+  if (!branchesQuery.isLoading && branches.length === 0) {
+    return (
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-16 text-center">
+        <div className="rounded-2xl border border-outline bg-surface-card p-8 shadow-xl flex flex-col items-center">
+          <div className="size-16 rounded-2xl bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold mb-4">
+            <Building2 className="size-8" aria-hidden="true" />
+          </div>
+          <h2 className="font-headline text-xl font-bold text-foreground">
+            No hay sucursales registradas
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
+            Para crear combos y promociones, primero debés registrar al menos una sucursal en el sistema.
+          </p>
+          {isGeneralAdmin ? (
+            <Link
+              to="/admin/sucursales"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand-gold px-5 py-2.5 text-xs font-bold text-brand-dark hover:bg-brand-gold/90 transition-colors shadow-sm"
+            >
+              <Building2 className="size-4" aria-hidden="true" />
+              <span>Ir a Gestión de Sucursales</span>
+            </Link>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-4 font-mono">
+              Contactá a un Administrador General para asignar tu sucursal.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-12">
       {/* Feedback Toast / Floating Notification */}
@@ -438,7 +463,7 @@ export function AdminCombosPage() {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-gold/15 text-brand-gold border border-brand-gold/20">
               <Sparkles className="size-3.5" aria-hidden="true" />
-              Sucursal {activeBranch.name}
+              Sucursal {activeBranch?.name ?? ""}
             </span>
           </div>
           <h1 className="mt-2 font-headline text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
@@ -682,7 +707,7 @@ export function AdminCombosPage() {
       {/* Create Combo Modal */}
       <ComboFormModal
         isOpen={isCreateModalOpen}
-        branchName={activeBranch.name}
+        branchName={activeBranch?.name ?? ""}
         comboName={comboName}
         onComboNameChange={setComboName}
         comboDescription={comboDescription}
