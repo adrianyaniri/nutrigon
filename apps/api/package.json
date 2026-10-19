@@ -27,6 +27,7 @@
     "db:migrate:prod": "node dist/core/database/migrate.js",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/core/database/seed.ts",
+    "db:seed:prod": "node dist/core/database/seed.js",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

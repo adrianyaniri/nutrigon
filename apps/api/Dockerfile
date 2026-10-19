@@ -35,6 +35,7 @@ COPY --from=builder --chown=node:node /app/packages ./packages
 COPY --from=builder --chown=node:node /app/apps/api ./apps/api
 COPY --from=builder --chown=node:node /app/package.json ./package.json
 COPY --from=builder --chown=node:node /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=pruner --chown=node:node /app/data ./data
 
 USER node
 
