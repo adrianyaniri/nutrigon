@@ -154,7 +154,7 @@ export function createHttpMasterCatalogRepository(
   };
 }
 
-const isTestEnv = import.meta.env.MODE === "test" && !import.meta.env.VITE_API_URL;
+const isTestEnv = import.meta.env.MODE === "test" || !import.meta.env.VITE_API_URL;
 const httpMasterRepo = createHttpMasterCatalogRepository(import.meta.env.VITE_API_URL ?? "");
 const mockMasterRepo = createInMemoryMasterCatalogRepository();
 

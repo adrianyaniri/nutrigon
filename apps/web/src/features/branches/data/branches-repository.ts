@@ -202,7 +202,7 @@ export function createHttpBranchesRepository(baseUrl: string): BranchesRepositor
   };
 }
 
-const isTestEnv = import.meta.env.MODE === "test" && !import.meta.env.VITE_API_URL;
+const isTestEnv = import.meta.env.MODE === "test" || !import.meta.env.VITE_API_URL;
 const inMemoryRepo = createInMemoryBranchesRepository();
 const httpRepo = createHttpBranchesRepository(import.meta.env.VITE_API_URL ?? "");
 

@@ -60,4 +60,28 @@ export class AuthService {
       branchId: user.branchId,
     };
   }
+
+  async changePassword(
+    userId: string,
+    dto: { currentPassword: string; newPassword: string },
+  ): Promise<{ success: boolean; message: string }> {
+    const user = await this.usersRepository.findById(userId);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Usuario no encontrado o inactivo');
+    }
+
+    const isCurrentValid = await argon2.verify(user.passwordHash, dto.currentPassword);
+    if (!isCurrentValid) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta');
+    }
+
+    const newHash = await argon2.hash(dto.newPassword);
+    await this.usersRepository.updatePassword(userId, newHash);
+
+    return {
+      success: true,
+      message: 'Contraseña actualizada correctamente',
+    };
+  }
 }
+

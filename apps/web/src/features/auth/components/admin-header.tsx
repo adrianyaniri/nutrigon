@@ -1,10 +1,11 @@
-import { useEffect } from "react";
-import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes, Building2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, MapPin, Store, ExternalLink, Tag, Package, Boxes, Building2, KeyRound, CheckCircle2 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "../context/auth-context";
 import { Role } from "../types";
+import { ChangePasswordModal } from "./change-password-modal";
 
 const FALLBACK_BRANCHES = [
   { id: "b-origone", slug: "origone", name: "Origone" },
@@ -22,6 +23,8 @@ export function AdminHeader() {
       : FALLBACK_BRANCHES;
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [passwordNotification, setPasswordNotification] = useState<string | null>(null);
 
   useEffect(() => {
     if (!branches || branches.length === 0) return;
@@ -204,11 +207,23 @@ export function AdminHeader() {
             </span>
           </div>
 
+          {/* Change Password Button */}
+          <button
+            type="button"
+            onClick={() => setIsChangePasswordOpen(true)}
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/60 hover:text-brand-gold p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
+            title="Cambiar mi contraseña"
+            aria-label="Cambiar mi contraseña"
+          >
+            <KeyRound className="size-4" aria-hidden="true" />
+            <span className="hidden xl:inline">Clave</span>
+          </button>
+
           {/* Logout Action Button */}
           <button
             type="button"
             onClick={handleLogout}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/50 hover:text-red-400 p-2 rounded-lg hover:bg-surface-hover transition-colors"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/50 hover:text-red-400 p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
@@ -218,6 +233,32 @@ export function AdminHeader() {
         </div>
       </div>
       </div>
+
+      {/* Floating Password Changed Feedback Toast */}
+      {passwordNotification && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-xl border border-emerald-500/40 bg-surface-card p-4 text-xs font-semibold text-emerald-300 shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="size-4.5 text-emerald-400 shrink-0" />
+          <span>{passwordNotification}</span>
+          <button
+            type="button"
+            onClick={() => setPasswordNotification(null)}
+            className="ml-2 text-muted-foreground hover:text-foreground text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        onSuccessNotification={(msg) => {
+          setPasswordNotification(msg);
+          setTimeout(() => setPasswordNotification(null), 4000);
+        }}
+      />
+
 
       {/* Mobile Navigation Row */}
       <nav className="flex md:hidden items-center border-t border-outline px-3 py-1.5 bg-surface-card/60 gap-1.5 overflow-x-auto">

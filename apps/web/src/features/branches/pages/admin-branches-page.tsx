@@ -20,6 +20,7 @@ import {
   CreateBranchModal,
   EditBranchModal,
 } from "../components/branch-form-modal";
+import { BranchUsersModal } from "../components/branch-users-modal";
 import { branchesRepository } from "../data/branches-repository";
 import type {
   BranchAdminItem,
@@ -41,6 +42,8 @@ export function AdminBranchesPage() {
     null
   );
   const [qrBranch, setQrBranch] = useState<BranchAdminItem | null>(null);
+  const [usersModalBranch, setUsersModalBranch] =
+    useState<BranchAdminItem | null>(null);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -376,6 +379,7 @@ export function AdminBranchesPage() {
               }}
               onEdit={setEditingBranch}
               onShowQr={setQrBranch}
+              onManageUsers={setUsersModalBranch}
               onToggleStatus={(target) =>
                 toggleStatusMutation.mutate({
                   id: target.id,
@@ -419,6 +423,16 @@ export function AdminBranchesPage() {
           isOpen={!!qrBranch}
           onClose={() => setQrBranch(null)}
           branch={qrBranch}
+        />
+      )}
+
+      {/* Modal: Branch Users / Encargados */}
+      {usersModalBranch && (
+        <BranchUsersModal
+          branch={usersModalBranch}
+          isOpen={!!usersModalBranch}
+          onClose={() => setUsersModalBranch(null)}
+          onNotification={(msg) => showFeedback("success", msg)}
         />
       )}
     </div>

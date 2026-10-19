@@ -9,6 +9,7 @@ import {
   QrCode,
   Store,
   Tag,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
@@ -22,6 +23,7 @@ export interface BranchAdminCardProps {
   onEdit: (branch: BranchAdminItem) => void;
   onShowQr: (branch: BranchAdminItem) => void;
   onToggleStatus: (branch: BranchAdminItem) => void;
+  onManageUsers?: (branch: BranchAdminItem) => void;
 }
 
 export function BranchAdminCard({
@@ -31,6 +33,7 @@ export function BranchAdminCard({
   onEdit,
   onShowQr,
   onToggleStatus,
+  onManageUsers,
 }: BranchAdminCardProps) {
   return (
     <div
@@ -132,12 +135,23 @@ export function BranchAdminCard({
           <Button
             type="button"
             variant="outline"
+            onClick={() => onManageUsers?.(branch)}
+            title={`Gestionar encargados de Sucursal ${branch.name}`}
+            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-foreground/85 hover:bg-surface-hover hover:text-foreground cursor-pointer"
+          >
+            <Users className="size-3.5 text-brand-gold" />
+            <span>Encargados</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => onNavigatePricing(branch)}
             title={`Ver precios y ofertas de Sucursal ${branch.name}`}
-            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-zinc-300 hover:bg-surface-hover hover:text-white"
+            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-foreground/85 hover:bg-surface-hover hover:text-foreground cursor-pointer"
           >
             <Tag className="size-3.5 text-brand-gold" />
-            <span>Precios y Ofertas</span>
+            <span>Precios</span>
           </Button>
 
           <Button
@@ -145,7 +159,7 @@ export function BranchAdminCard({
             variant="outline"
             onClick={() => onShowQr(branch)}
             title={`Ver y descargar código QR de Sucursal ${branch.name}`}
-            className="min-h-[44px] min-w-[44px] px-3 border-outline bg-surface-elevated/40 text-brand-gold hover:bg-surface-hover"
+            className="min-h-[44px] min-w-[44px] px-3 border-outline bg-surface-elevated/40 text-brand-gold hover:bg-surface-hover cursor-pointer"
           >
             <QrCode className="size-4" />
           </Button>
@@ -157,9 +171,9 @@ export function BranchAdminCard({
             disabled={isTogglingStatus}
             title={branch.isActive ? "Pausar sucursal" : "Reactivar sucursal"}
             className={cn(
-              "min-h-[44px] min-w-[44px] px-3 border-outline transition-colors",
+              "min-h-[44px] min-w-[44px] px-3 border-outline transition-colors cursor-pointer",
               branch.isActive
-                ? "text-zinc-400 hover:text-amber-400 hover:border-amber-400/40"
+                ? "text-muted-foreground hover:text-amber-400 hover:border-amber-400/40"
                 : "text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10"
             )}
           >

@@ -16,7 +16,36 @@ class InMemoryUsersRepository implements IUsersRepository {
   async findById(id: string): Promise<UserEntity | null> {
     return this.users.find((u) => u.id === id) ?? null;
   }
+
+  async listByBranch(branchId: string): Promise<UserEntity[]> {
+    return this.users.filter((u) => u.branchId === branchId);
+  }
+
+  async create(user: any): Promise<UserEntity> {
+    const created: UserEntity = {
+      id: user.id || 'new-uuid',
+      email: user.email,
+      fullName: user.fullName,
+      passwordHash: user.passwordHash,
+      role: user.role,
+      branchId: user.branchId ?? null,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.push(created);
+    return created;
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) {
+      user.passwordHash = passwordHash;
+      user.updatedAt = new Date();
+    }
+  }
 }
+
 
 describe('AuthService (Unit Tests with InMemory Fake Repository)', () => {
   let authService: AuthService;
@@ -175,4 +204,67 @@ describe('AuthService (Unit Tests with InMemory Fake Repository)', () => {
     const user = await authService.validateUserById('nonexistent-id');
     expect(user).toBeNull();
   });
+
+  describe('changePassword', () => {
+    it('should successfully change password when current password is valid', async () => {
+      const oldHash = await argon2.hash('OldPassword123!');
+      const mockUser: UserEntity = {
+        id: '22222222-2222-2222-2222-222222222222',
+        email: 'manager@nutrigon.com',
+        passwordHash: oldHash,
+        fullName: 'Encargado Origone',
+        role: 'BRANCH_ADMIN',
+        branchId: 'b-origone',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      usersRepo.users.push(mockUser);
+
+      const res = await authService.changePassword(mockUser.id, {
+        currentPassword: 'OldPassword123!',
+        newPassword: 'NewPassword456!',
+      });
+
+      expect(res.success).toBe(true);
+
+      // Verify that the new password is now verified and old password fails
+      const updatedUser = await usersRepo.findById(mockUser.id);
+      expect(await argon2.verify(updatedUser!.passwordHash, 'NewPassword456!')).toBe(true);
+      expect(await argon2.verify(updatedUser!.passwordHash, 'OldPassword123!')).toBe(false);
+    });
+
+    it('should throw UnauthorizedException when current password is wrong', async () => {
+      const oldHash = await argon2.hash('OldPassword123!');
+      const mockUser: UserEntity = {
+        id: '33333333-3333-3333-3333-333333333333',
+        email: 'wrong@nutrigon.com',
+        passwordHash: oldHash,
+        fullName: 'Encargado Pedro Diaz',
+        role: 'BRANCH_ADMIN',
+        branchId: 'b-pedrodiaz',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      usersRepo.users.push(mockUser);
+
+      await expect(
+        authService.changePassword(mockUser.id, {
+          currentPassword: 'WrongPassword!',
+          newPassword: 'NewPassword456!',
+        })
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when user does not exist', async () => {
+      await expect(
+        authService.changePassword('non-existent-user-id', {
+          currentPassword: 'AnyPassword123!',
+          newPassword: 'NewPassword456!',
+        })
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
 });
+

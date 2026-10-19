@@ -52,4 +52,30 @@ describe('AuthController', () => {
       expect(result).toEqual(mockUser);
     });
   });
+
+  describe('changePassword', () => {
+    it('should call authService.changePassword with current user id and dto', async () => {
+      const changePasswordDto = {
+        currentPassword: 'CurrentPassword123!',
+        newPassword: 'NewPassword123!',
+      };
+
+      mockAuthService.changePassword = vi.fn().mockResolvedValue({
+        success: true,
+        message: 'Contraseña actualizada correctamente',
+      });
+
+      const result = await controller.changePassword(mockUser, changePasswordDto);
+
+      expect(mockAuthService.changePassword).toHaveBeenCalledWith(
+        mockUser.id,
+        changePasswordDto,
+      );
+      expect(result).toEqual({
+        success: true,
+        message: 'Contraseña actualizada correctamente',
+      });
+    });
+  });
 });
+

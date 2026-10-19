@@ -208,7 +208,7 @@ export function createHttpCatalogRepository(
   };
 }
 
-const isTestEnv = import.meta.env.MODE === "test" && !import.meta.env.VITE_API_URL;
+const isTestEnv = import.meta.env.MODE === "test" || !import.meta.env.VITE_API_URL;
 const httpRepository = createHttpCatalogRepository(import.meta.env.VITE_API_URL ?? "");
 
 export const catalogRepository: CatalogRepository = isTestEnv

@@ -6,3 +6,4 @@ export * from './branch-product.schema.js';
 export * from './combo.schema.js';
 export * from './media.schema.js';
 export * from './csv.schema.js';
+export * from './user.schema.js';

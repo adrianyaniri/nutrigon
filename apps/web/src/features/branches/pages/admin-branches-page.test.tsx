@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role, type AuthUser } from "@/features/auth/types";
+import { resetMockUsersRepository } from "@/features/users/data/users-repository";
 import { AdminBranchesPage } from "./admin-branches-page";
 
 function renderBranchesPage(role: Role = Role.ADMIN_GENERAL, setSelectedBranchSlug = vi.fn()) {
@@ -47,6 +48,10 @@ function renderBranchesPage(role: Role = Role.ADMIN_GENERAL, setSelectedBranchSl
 }
 
 describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
+  beforeEach(() => {
+    resetMockUsersRepository();
+  });
+
   it("restricts access for non-general admins (BRANCH_ADMIN)", async () => {
     renderBranchesPage(Role.BRANCH_ADMIN);
 
@@ -184,16 +189,62 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     expect(screen.queryByRole("heading", { name: "Nueva Sucursal" })).not.toBeInTheDocument();
   });
 
-  it("navigates to branch products pricing when clicking Precios y Ofertas on a branch card", async () => {
+  it("navigates to branch products pricing when clicking Precios on a branch card", async () => {
     const mockSetBranch = vi.fn();
     renderBranchesPage(Role.ADMIN_GENERAL, mockSetBranch);
 
     await screen.findByText(/Sucursal Origone/i);
 
-    const pricingButtons = screen.getAllByRole("button", { name: /Precios y Ofertas/i });
+    const pricingButtons = screen.getAllByRole("button", { name: /^Precios$/i });
     expect(pricingButtons.length).toBeGreaterThan(0);
 
     fireEvent.click(pricingButtons[0]!);
     expect(mockSetBranch).toHaveBeenCalledWith("origone");
+  });
+
+  it("opens branch users modal (Encargados), displays managers, and allows adding a new manager", async () => {
+    renderBranchesPage(Role.ADMIN_GENERAL);
+
+    await screen.findByText(/Sucursal Origone/i);
+
+    const encargadosButtons = screen.getAllByRole("button", {
+      name: /Encargados/i,
+    });
+    expect(encargadosButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(encargadosButtons[0]!);
+
+    // Modal opens
+    expect(
+      await screen.findByRole("heading", { name: /Encargados · Sucursal/i })
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("admin.origone@nutrigon.com")
+    ).toBeInTheDocument();
+
+    // Open creation form
+    const addManagerBtn = screen.getByRole("button", {
+      name: /Agregar Encargado/i,
+    });
+    fireEvent.click(addManagerBtn);
+
+    const nameInput = screen.getByLabelText(/Nombre y Apellido/i);
+    fireEvent.change(nameInput, { target: { value: "Carlos Asistente" } });
+
+    const emailInput = screen.getByLabelText(/Correo Electrónico/i);
+    fireEvent.change(emailInput, {
+      target: { value: "carlos.origone@nutrigon.com" },
+    });
+
+    const passInput = screen.getByLabelText(/Contraseña Inicial/i);
+    fireEvent.change(passInput, { target: { value: "Segura1234!" } });
+
+    const submitBtn = screen.getByRole("button", { name: "Crear Encargado" });
+    fireEvent.click(submitBtn);
+
+    // New user should appear in list
+    expect(
+      await screen.findByText("carlos.origone@nutrigon.com")
+    ).toBeInTheDocument();
   });
 });
