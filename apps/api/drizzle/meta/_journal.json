@@ -15,6 +15,13 @@
       "when": 1792181253347,
       "tag": "0001_violet_deadpool",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792419059946,
+      "tag": "0002_special_zuras",
+      "breakpoints": true
     }
   ]
 }
