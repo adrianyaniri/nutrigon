@@ -115,7 +115,7 @@ export function CatalogHeader({
                 : `Mi pedido, ${cartItemCount} ${cartItemCount === 1 ? "producto" : "productos"}`
             }
             className={cn(
-              "transition-transform duration-200",
+              "transition-transform duration-200 motion-reduce:transform-none",
               animateBadge && "scale-110"
             )}
           >
@@ -124,7 +124,7 @@ export function CatalogHeader({
               <span
                 aria-hidden="true"
                 className={cn(
-                  "absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow-xs transition-all duration-200",
+                  "absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow-xs transition-all duration-200 motion-reduce:transform-none",
                   animateBadge && "scale-125 bg-status-success text-white ring-2 ring-status-success/40"
                 )}
               >
