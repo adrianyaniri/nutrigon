@@ -84,7 +84,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
     // Modal opens instead of directly adding to cart
     expect(await screen.findByRole("dialog", { name: "Almendras Nonpareil" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Opciones de gramaje" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
     // Adding from inside the modal updates the cart
@@ -113,7 +113,7 @@ describe("CatalogPage & Route-based Branching", () => {
     fireEvent.click(heading);
 
     expect(await screen.findByRole("dialog", { name: "Almendras Nonpareil" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Opciones de gramaje" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })).toBeInTheDocument();
   });
 
   it("applies the category from the URL", async () => {

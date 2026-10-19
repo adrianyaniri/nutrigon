@@ -39,6 +39,7 @@ export function ProductModal({
     onClose,
   });
   const modalTitleId = useId();
+  const portionLabelId = useId();
 
   // Reset state when opening a new product
   useEffect(() => {
@@ -189,7 +190,10 @@ export function ProductModal({
               {isWeight && (
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+                    <label
+                      id={portionLabelId}
+                      className="text-[11px] font-bold tracking-wider uppercase text-muted-foreground"
+                    >
                       Seleccionar gramaje
                     </label>
                     <span className="text-xs font-semibold text-primary">
@@ -199,7 +203,7 @@ export function ProductModal({
 
                   <div
                     role="radiogroup"
-                    aria-label="Opciones de gramaje"
+                    aria-labelledby={portionLabelId}
                     className="grid grid-cols-2 gap-2 sm:gap-2.5"
                   >
                     {PORTION_OPTIONS.map((option) => {

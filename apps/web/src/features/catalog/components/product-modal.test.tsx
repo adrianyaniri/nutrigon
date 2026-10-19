@@ -60,6 +60,7 @@ describe("ProductModal", () => {
     expect(screen.getByText("Frutos Secos")).toBeInTheDocument();
     expect(screen.getByText("Almendras tostadas de primera calidad.")).toBeInTheDocument();
     expect(screen.getByText(/Precio por 1 kg:/i)).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })).toBeInTheDocument();
 
     // Default portion is 250g (0.25 of 10000 = $2.500), appears in main price and 250g card
     expect(screen.getAllByText(/2\.500/).length).toBeGreaterThanOrEqual(1);
