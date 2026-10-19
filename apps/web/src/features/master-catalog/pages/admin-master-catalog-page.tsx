@@ -260,6 +260,32 @@ export function AdminMasterCatalogPage() {
     },
   });
 
+  // Delete Category Mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (categoryId: string) =>
+      masterCatalogRepository.deleteCategory(authToken, categoryId),
+    onSuccess: (deleted) => {
+      queryClient.invalidateQueries({ queryKey: ["master-catalog", "categories"] });
+      if (selectedCategoryId === deleted.id) {
+        setSelectedCategoryId("");
+      }
+      setIsCategoryModalOpen(false);
+      setEditingCategoryId("");
+      setCategoryName("");
+      setCategorySlug("");
+      setCategoryFormError(null);
+      setFeedbackBanner({
+        type: "success",
+        text: `Categoría "${deleted.name}" eliminada exitosamente.`,
+      });
+    },
+    onError: (err) => {
+      setCategoryFormError(
+        err instanceof Error ? err.message : "No se pudo eliminar la categoría."
+      );
+    },
+  });
+
   function openCreateProductModal() {
     setEditingProduct(null);
     setProductName("");
@@ -772,6 +798,8 @@ export function AdminMasterCatalogPage() {
         onCategorySlugChange={setCategorySlug}
         formError={categoryFormError}
         isSaving={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+        isDeleting={deleteCategoryMutation.isPending}
+        onDeleteCategory={(categoryId) => deleteCategoryMutation.mutate(categoryId)}
         onClose={() => setIsCategoryModalOpen(false)}
         onSubmit={handleCategorySubmit}
       />

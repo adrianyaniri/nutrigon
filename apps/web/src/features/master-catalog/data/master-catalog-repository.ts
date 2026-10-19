@@ -73,6 +73,22 @@ export function createHttpMasterCatalogRepository(
       return (await res.json()) as MasterCategory;
     },
 
+    async deleteCategory(token, categoryId) {
+      const res = await fetchFn(
+        `${normalizedBase}/api/v1/categories/${encodeURIComponent(categoryId)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) {
+        throw await parseApiError(res, "No se pudo eliminar la categoría.");
+      }
+      return (await res.json()) as MasterCategory;
+    },
+
     async listProducts(token, query = {}) {
       const params = new URLSearchParams();
       if (query.search?.trim()) params.set("search", query.search.trim());
@@ -182,6 +198,12 @@ export const masterCatalogRepository: MasterCatalogRepository = isTestEnv
           return mockMasterRepo.updateCategory(token, categoryId, input);
         }
         return httpMasterRepo.updateCategory(token, categoryId, input);
+      },
+      async deleteCategory(token, categoryId) {
+        if (import.meta.env.DEV && token.startsWith("mock-jwt-token")) {
+          return mockMasterRepo.deleteCategory(token, categoryId);
+        }
+        return httpMasterRepo.deleteCategory(token, categoryId);
       },
       async listProducts(token, query) {
         try {

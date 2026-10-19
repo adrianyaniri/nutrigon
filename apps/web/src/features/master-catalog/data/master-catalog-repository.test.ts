@@ -183,4 +183,16 @@ describe("createInMemoryMasterCatalogRepository", () => {
     expect(created.name).toBe("Pistachos Californianos");
     expect(created.isActive).toBe(true);
   });
+
+  it("soft-deletes a category and excludes it from listCategories", async () => {
+    const repo = createInMemoryMasterCatalogRepository();
+    const initial = await repo.listCategories();
+    expect(initial.some((c) => c.id === "c-suplementos")).toBe(true);
+
+    const deleted = await repo.deleteCategory("token", "c-suplementos");
+    expect(deleted.isActive).toBe(false);
+
+    const after = await repo.listCategories();
+    expect(after.some((c) => c.id === "c-suplementos")).toBe(false);
+  });
 });

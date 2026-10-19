@@ -82,6 +82,7 @@ export interface MasterCatalogRepository {
     categoryId: string,
     input: UpdateCategoryInput
   ): Promise<MasterCategory>;
+  deleteCategory(token: string, categoryId: string): Promise<MasterCategory>;
   listProducts(
     token: string,
     query?: MasterProductsQuery

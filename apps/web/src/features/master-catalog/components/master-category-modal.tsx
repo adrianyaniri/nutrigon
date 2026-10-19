@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderCog, List, Pencil, Plus, X } from "lucide-react";
+import { FolderCog, List, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocusTrap } from "@/hooks";
 import { slugifyCategoryName } from "../lib/slugify";
@@ -18,6 +18,8 @@ export interface MasterCategoryModalProps {
   onCategorySlugChange: (slug: string) => void;
   formError: string | null;
   isSaving: boolean;
+  isDeleting?: boolean;
+  onDeleteCategory?: (categoryId: string) => void;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -34,6 +36,8 @@ export function MasterCategoryModal({
   onCategorySlugChange,
   formError,
   isSaving,
+  isDeleting = false,
+  onDeleteCategory,
   onClose,
   onSubmit,
 }: MasterCategoryModalProps) {
@@ -132,7 +136,10 @@ export function MasterCategoryModal({
             id="category-tab-list"
             aria-controls="category-tabpanel-list"
             aria-selected={activeTab === "list"}
-            onClick={() => setActiveTab("list")}
+            onClick={() => {
+              onSelectCategoryMode("");
+              setActiveTab("list");
+            }}
             className={cn(
               "flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
               activeTab === "list"
@@ -166,7 +173,7 @@ export function MasterCategoryModal({
             ) : (
               <>
                 <Plus className="size-3.5" aria-hidden="true" />
-                <span>+ Nueva Categoría</span>
+                <span>Nueva Categoría</span>
               </>
             )}
           </button>
@@ -178,25 +185,8 @@ export function MasterCategoryModal({
             role="tabpanel"
             id="category-tabpanel-list"
             aria-labelledby="category-tab-list"
-            className="space-y-3 pt-1"
+            className="space-y-2.5 pt-1"
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-zinc-400">
-                Categorías activas para sucursales
-              </span>
-              <Button
-                type="button"
-                onClick={() => {
-                  onSelectCategoryMode("");
-                  setActiveTab("form");
-                }}
-                className="min-h-[44px] bg-brand-gold/15 text-brand-gold border border-brand-gold/30 hover:bg-brand-gold hover:text-stone-950 text-xs font-semibold gap-1.5 px-3.5 transition-all"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                <span>Nueva Categoría</span>
-              </Button>
-            </div>
-
             <div className="space-y-2 max-h-[50dvh] overflow-y-auto pr-1">
               {categories.map((cat) => {
                 const count = productCountMap[cat.id] ?? 0;
@@ -217,7 +207,7 @@ export function MasterCategoryModal({
                       <div className="flex items-center gap-2 text-[11px] text-zinc-400">
                         <span className="font-mono text-zinc-500">/{cat.slug}</span>
                         <span>·</span>
-                        <span className="text-brand-muted">
+                        <span className="text-brand-muted tabular-nums">
                           {count === 1 ? "1 producto maestro" : `${count} productos maestros`}
                         </span>
                       </div>
@@ -255,25 +245,6 @@ export function MasterCategoryModal({
             {formError && (
               <div className="p-3 rounded-xl border border-status-destructive/30 bg-status-destructive/10 text-status-destructive text-xs font-medium">
                 {formError}
-              </div>
-            )}
-
-            {/* Active editing mode banner */}
-            {editingCategoryId && (
-              <div className="flex items-center justify-between p-3 rounded-xl border border-brand-gold/30 bg-brand-gold/10 text-xs">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Pencil className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
-                  <span className="text-zinc-200 truncate">
-                    Editando: <strong className="text-white">{currentCategory?.name ?? categoryName}</strong>
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onSelectCategoryMode("")}
-                  className="text-xs text-brand-gold hover:underline shrink-0 font-medium cursor-pointer ml-2"
-                >
-                  Cambiar a nueva
-                </button>
               </div>
             )}
 
@@ -329,15 +300,20 @@ export function MasterCategoryModal({
             </div>
 
             <div className="flex items-center justify-between gap-2 pt-2 border-t border-outline/70">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab("list")}
-                className="min-h-[44px] text-xs gap-1.5"
-              >
-                <List className="size-3.5" aria-hidden="true" />
-                <span>Ver Lista</span>
-              </Button>
+              {editingCategoryId && onDeleteCategory ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSaving || isDeleting}
+                  onClick={() => onDeleteCategory(editingCategoryId)}
+                  className="min-h-[44px] border-status-destructive/40 bg-status-destructive/10 text-status-destructive hover:bg-status-destructive hover:text-white text-xs font-semibold gap-1.5"
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                  <span>{isDeleting ? "Eliminando..." : "Eliminar Categoría"}</span>
+                </Button>
+              ) : (
+                <div />
+              )}
 
               <div className="flex items-center gap-2">
                 <Button
@@ -350,7 +326,7 @@ export function MasterCategoryModal({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSaving || categoryName.trim().length < 2}
+                  disabled={isSaving || isDeleting || categoryName.trim().length < 2}
                   className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold/90 font-semibold text-xs px-5 shadow-sm"
                 >
                   {isSaving ? "Guardando..." : "Guardar Categoría"}

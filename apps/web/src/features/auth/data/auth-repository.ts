@@ -58,8 +58,34 @@ const MOCK_USERS: Record<string, { pass: string; user: AuthUser }> = {
   },
 };
 
+function mockLogin(credentials: LoginDto): LoginResponse {
+  const normalizedEmail = credentials.email.trim().toLowerCase();
+  const entry = MOCK_USERS[normalizedEmail];
+
+  if (!entry || entry.pass !== credentials.password) {
+    throw new Error("Credenciales inválidas. Verificá tu email y contraseña.");
+  }
+
+  return {
+    accessToken: `mock-jwt-token-${entry.user.id}-${Date.now()}`,
+    user: entry.user,
+  };
+}
+
+function mockGetMe(token: string): AuthUser {
+  const matched = Object.values(MOCK_USERS).find((entry) =>
+    token.includes(entry.user.id)
+  );
+  if (matched) return matched.user;
+  throw new Error("SESSION_INVALID");
+}
+
 export const authRepository: AuthRepository = {
   async login(credentials: LoginDto): Promise<LoginResponse> {
+    if (import.meta.env.MODE === "test") {
+      return mockLogin(credentials);
+    }
+
     const baseUrl = import.meta.env.VITE_API_URL || "";
     try {
       const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
@@ -81,22 +107,15 @@ export const authRepository: AuthRepository = {
         throw err;
       }
 
-      // If network failure occurs (e.g. offline unit testing in jsdom), fall back to mock
-      const normalizedEmail = credentials.email.trim().toLowerCase();
-      const entry = MOCK_USERS[normalizedEmail];
-
-      if (!entry || entry.pass !== credentials.password) {
-        throw new Error("Credenciales inválidas. Verificá tu email y contraseña.");
-      }
-
-      return {
-        accessToken: `mock-jwt-token-${entry.user.id}-${Date.now()}`,
-        user: entry.user,
-      };
+      return mockLogin(credentials);
     }
   },
 
   async getMe(token: string): Promise<AuthUser> {
+    if (import.meta.env.MODE === "test") {
+      return mockGetMe(token);
+    }
+
     const baseUrl = import.meta.env.VITE_API_URL || "";
     try {
       const res = await fetch(`${baseUrl}/api/v1/auth/me`, {
@@ -112,12 +131,7 @@ export const authRepository: AuthRepository = {
       if (err instanceof Error && err.message === "UNAUTHORIZED") {
         throw err;
       }
-      // If network failure occurs (e.g. offline unit testing in jsdom), fall back to mock
-      const matched = Object.values(MOCK_USERS).find((entry) =>
-        token.includes(entry.user.id)
-      );
-      if (matched) return matched.user;
-      throw new Error("SESSION_INVALID");
+      return mockGetMe(token);
     }
 
     throw new Error("SESSION_INVALID");

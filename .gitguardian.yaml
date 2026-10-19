@@ -9,4 +9,5 @@ paths-ignore:
   - "apps/api/src/core/database/seed.ts"
   - "apps/web/src/features/auth/data/auth-repository.ts"
   - "docker-compose.yml"
+  - ".github/workflows/**"
   - "**/.env.example"

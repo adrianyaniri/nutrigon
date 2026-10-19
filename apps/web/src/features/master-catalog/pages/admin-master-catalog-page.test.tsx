@@ -208,4 +208,38 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
       await screen.findByText(/Categoría "Harinas y Cereales" actualizada exitosamente/i)
     ).toBeInTheDocument();
   });
+
+  it("allows deleting a master category from the edit view without redundant navigation buttons", async () => {
+    renderMasterCatalogPage(Role.ADMIN_GENERAL);
+
+    await screen.findByText("Almendras Nonpareil");
+
+    const summaryBtn = screen.getByRole("button", { name: /Ver y editar categorías maestras/i });
+    fireEvent.click(summaryBtn);
+
+    const dialog = await screen.findByRole("dialog");
+
+    // Switch to list tab
+    const listTab = within(dialog).getByRole("tab", { name: /Lista de Categorías/i });
+    fireEvent.click(listTab);
+
+    // Ensure there is only 1 access to "Nueva Categoría" (the tab itself, no duplicate button in list)
+    expect(within(dialog).queryByRole("button", { name: "Nueva Categoría" })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("tab", { name: /Nueva Categoría/i })).toBeInTheDocument();
+
+    // Click edit on Suplementos
+    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Suplementos" });
+    fireEvent.click(editBtn);
+
+    // Ensure redundant "Ver Lista" button is not rendered in the form footer
+    expect(within(dialog).queryByRole("button", { name: /Ver Lista/i })).not.toBeInTheDocument();
+
+    // Click Eliminar Categoría
+    const deleteBtn = within(dialog).getByRole("button", { name: /Eliminar Categoría/i });
+    fireEvent.click(deleteBtn);
+
+    expect(
+      await screen.findByText(/Categoría "Suplementos" eliminada exitosamente/i)
+    ).toBeInTheDocument();
+  });
 });

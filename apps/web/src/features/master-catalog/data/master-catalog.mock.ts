@@ -139,6 +139,20 @@ export function createInMemoryMasterCatalogRepository(
       return updated;
     },
 
+    async deleteCategory(_token, categoryId) {
+      const idx = categories.findIndex((c) => c.id === categoryId);
+      if (idx === -1) {
+        throw new Error("Categoría no encontrada.");
+      }
+      const updated: MasterCategory = {
+        ...categories[idx]!,
+        isActive: false,
+        updatedAt: new Date().toISOString(),
+      };
+      categories[idx] = updated;
+      return updated;
+    },
+
     async listProducts(_token, query = {}) {
       let filtered = [...products];
 
