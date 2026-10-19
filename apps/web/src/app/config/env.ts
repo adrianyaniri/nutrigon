@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const envSchema = z.object({
+  VITE_API_URL: z.string().optional(),
   VITE_SUPABASE_URL: z.string().url("VITE_SUPABASE_URL must be a valid URL").optional(),
   VITE_SUPABASE_ANON_KEY: z
     .string()
@@ -20,6 +21,7 @@ function parseEnv(): {
   missingVars: string[];
 } {
   const rawEnv = {
+    VITE_API_URL: import.meta.env.VITE_API_URL,
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     VITE_APP_NAME: import.meta.env.VITE_APP_NAME,
@@ -48,6 +50,7 @@ function parseEnv(): {
     console.warn("Environment validation warning:", parsed.error.format());
     return {
       env: {
+        VITE_API_URL: rawEnv.VITE_API_URL,
         VITE_APP_NAME: "Nutrigon Dietética",
         VITE_APP_ENV: "development",
         VITE_SUPABASE_URL: url,
