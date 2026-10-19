@@ -125,8 +125,33 @@ describe("createHttpCombosRepository", () => {
         headers: expect.objectContaining({
           Authorization: "Bearer jwt-token-123",
         }),
+        body: JSON.stringify({
+          fileName: "combo-pic.webp",
+          contentType: "image/webp",
+          folder: "combos",
+          fileSize: mockFile.size,
+        }),
       })
     );
+  });
+
+  it("rejects uploading a combo image larger than 5 MB before calling the API", async () => {
+    const mockFetch = vi.fn();
+    const repo = createHttpCombosRepository(
+      "http://localhost:3000",
+      mockFetch as unknown as typeof fetch
+    );
+
+    const oversizedFile = new File(
+      [new Uint8Array(6 * 1024 * 1024)],
+      "combo-pesado.png",
+      { type: "image/png" }
+    );
+
+    await expect(
+      repo.uploadComboImage("jwt-token-123", oversizedFile)
+    ).rejects.toThrow(/5\s*MB/i);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
 

@@ -59,17 +59,18 @@ export class BranchesService {
     });
   }
 
-  async update(id: string, dto: UpdateBranchDto): Promise<BranchEntity> {
-    const branch = await this.branchesRepository.findById(id);
-    if (!branch) {
-      throw new NotFoundException(`Branch with ID "${id}" was not found`);
+  private async ensureUniqueBranchSlug(slug: string, excludeBranchId?: string): Promise<void> {
+    const existingSlug = await this.branchesRepository.findBySlug(slug);
+    if (existingSlug && existingSlug.id !== excludeBranchId) {
+      throw new ConflictException(`A branch with slug "${slug}" already exists`);
     }
+  }
+
+  async update(id: string, dto: UpdateBranchDto): Promise<BranchEntity> {
+    const branch = await this.findById(id);
 
     if (dto.slug && dto.slug.toLowerCase().trim() !== branch.slug.toLowerCase().trim()) {
-      const existingSlug = await this.branchesRepository.findBySlug(dto.slug);
-      if (existingSlug && existingSlug.id !== id) {
-        throw new ConflictException(`A branch with slug "${dto.slug}" already exists`);
-      }
+      await this.ensureUniqueBranchSlug(dto.slug, id);
     }
 
     const updated = await this.branchesRepository.update(id, dto);

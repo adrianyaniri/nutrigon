@@ -27,7 +27,7 @@ function renderAdminCombosPage() {
           setSelectedBranchSlug: () => {},
           isLoading: false,
           isAuthenticated: true,
-          login: async () => {},
+          login: async () => ({} as never),
           logout: () => {},
         }}
       >

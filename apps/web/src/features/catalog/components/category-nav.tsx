@@ -30,8 +30,8 @@ export function CategoryNav({ options, value, onChange }: CategoryNavProps) {
                 className={cn(
                   "group flex min-h-[44px] w-full items-center justify-between rounded-xl px-3.5 text-sm transition-all border",
                   selected
-                    ? "border-brand-gold/60 bg-brand-gold/15 font-semibold text-white shadow-2xs"
-                    : "border-transparent text-zinc-300 hover:border-border hover:bg-brand-surface hover:text-white"
+                    ? "border-brand-gold/60 bg-brand-gold/15 font-semibold text-foreground shadow-2xs"
+                    : "border-transparent text-muted-foreground hover:border-border hover:bg-brand-surface hover:text-foreground"
                 )}
               >
                 <span>{option.label}</span>
@@ -39,7 +39,7 @@ export function CategoryNav({ options, value, onChange }: CategoryNavProps) {
                   className={cn(
                     "rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums transition-colors",
                     selected
-                      ? "bg-brand-gold text-brand-surface font-bold"
+                      ? "bg-brand-gold text-brand-dark font-bold"
                       : "bg-muted/70 text-muted-foreground group-hover:bg-muted"
                   )}
                 >

@@ -101,6 +101,85 @@ export class BranchProductsService {
     return this.branchProductsRepository.countByStatus(branchId);
   }
 
+  private mapEntityToBranchProduct(entity: {
+    id: string;
+    branchId: string;
+    productId: string;
+    price: string;
+    promotionalPrice: string | null;
+    isOnSale: boolean;
+    isAvailable: boolean;
+    isFeatured: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }): BranchProduct {
+    return {
+      id: entity.id,
+      branchId: entity.branchId,
+      productId: entity.productId,
+      price: Number(entity.price),
+      promotionalPrice:
+        entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
+      isOnSale: entity.isOnSale,
+      isAvailable: entity.isAvailable,
+      isFeatured: entity.isFeatured,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    };
+  }
+
+  private mapRowToCatalogItem(row: {
+    id: string;
+    name: string;
+    description: string | null;
+    categoryId: string;
+    categoryName: string;
+    saleUnit: string;
+    price: string;
+    promotionalPrice: string | null;
+    isOnSale: boolean;
+    isFeatured: boolean;
+    imageUrls: string[] | null;
+  }): BranchCatalogItem {
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      categoryId: row.categoryId,
+      categoryName: row.categoryName,
+      saleUnit: row.saleUnit as SaleUnit,
+      price: Number(row.price),
+      promotionalPrice:
+        row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
+      isOnSale: row.isOnSale,
+      isFeatured: row.isFeatured,
+      priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
+      imageUrls: row.imageUrls ?? [],
+    };
+  }
+
+  private validateOfferPrice(
+    isOnSale: boolean,
+    promotionalPrice: number | null | undefined,
+    regularPrice: number,
+  ): void {
+    if (!isOnSale) {
+      return;
+    }
+
+    const isValidPromo =
+      promotionalPrice !== null &&
+      promotionalPrice !== undefined &&
+      promotionalPrice > 0 &&
+      promotionalPrice < regularPrice;
+
+    if (!isValidPromo) {
+      throw new BadRequestException(
+        `Promotional price must be greater than 0 and strictly less than the regular price (${regularPrice})`,
+      );
+    }
+  }
+
   async upsert(
     branchId: string,
     productId: string,
@@ -138,19 +217,7 @@ export class BranchProductsService {
       ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
     });
 
-    return {
-      id: entity.id,
-      branchId: entity.branchId,
-      productId: entity.productId,
-      price: Number(entity.price),
-      promotionalPrice:
-        entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
-      isOnSale: entity.isOnSale,
-      isAvailable: entity.isAvailable,
-      isFeatured: entity.isFeatured,
-      createdAt: entity.createdAt.toISOString(),
-      updatedAt: entity.updatedAt.toISOString(),
-    };
+    return this.mapEntityToBranchProduct(entity);
   }
 
   async updateOffer(
@@ -175,19 +242,7 @@ export class BranchProductsService {
       );
     }
 
-    const regularPrice = Number(existing.price);
-    if (dto.isOnSale) {
-      if (
-        dto.promotionalPrice === null ||
-        dto.promotionalPrice === undefined ||
-        dto.promotionalPrice <= 0 ||
-        dto.promotionalPrice >= regularPrice
-      ) {
-        throw new BadRequestException(
-          `Promotional price must be greater than 0 and strictly less than the regular price (${regularPrice})`,
-        );
-      }
-    }
+    this.validateOfferPrice(dto.isOnSale, dto.promotionalPrice, Number(existing.price));
 
     const entity = await this.branchProductsRepository.upsert(branchId, productId, {
       price: existing.price,
@@ -197,19 +252,7 @@ export class BranchProductsService {
       isAvailable: existing.isAvailable,
     });
 
-    return {
-      id: entity.id,
-      branchId: entity.branchId,
-      productId: entity.productId,
-      price: Number(entity.price),
-      promotionalPrice:
-        entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
-      isOnSale: entity.isOnSale,
-      isAvailable: entity.isAvailable,
-      isFeatured: entity.isFeatured,
-      createdAt: entity.createdAt.toISOString(),
-      updatedAt: entity.updatedAt.toISOString(),
-    };
+    return this.mapEntityToBranchProduct(entity);
   }
 
   async getPublicCatalog(
@@ -227,22 +270,6 @@ export class BranchProductsService {
       this.branchProductsRepository.findPublishedCategories(branch.id),
     ]);
 
-    const items: BranchCatalogItem[] = result.items.map((row) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      categoryId: row.categoryId,
-      categoryName: row.categoryName,
-      saleUnit: row.saleUnit as SaleUnit,
-      price: Number(row.price),
-      promotionalPrice:
-        row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
-      isOnSale: row.isOnSale,
-      isFeatured: row.isFeatured,
-      priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
-      imageUrls: row.imageUrls ?? [],
-    }));
-
     return {
       branch: {
         id: branch.id,
@@ -253,7 +280,7 @@ export class BranchProductsService {
         whatsappNumber: branch.whatsappNumber,
       },
       categories,
-      items,
+      items: result.items.map((row) => this.mapRowToCatalogItem(row)),
       total: result.total,
       page: result.page,
       limit: result.limit,
@@ -277,22 +304,6 @@ export class BranchProductsService {
         : Promise.resolve([]),
     ]);
 
-    const products: BranchCatalogItem[] = onSaleProducts.items.map((row) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      categoryId: row.categoryId,
-      categoryName: row.categoryName,
-      saleUnit: row.saleUnit as SaleUnit,
-      price: Number(row.price),
-      promotionalPrice:
-        row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
-      isOnSale: row.isOnSale,
-      isFeatured: row.isFeatured,
-      priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
-      imageUrls: row.imageUrls ?? [],
-    }));
-
     return {
       branch: {
         id: branch.id,
@@ -302,7 +313,7 @@ export class BranchProductsService {
         phone: branch.phone,
         whatsappNumber: branch.whatsappNumber,
       },
-      products,
+      products: onSaleProducts.items.map((row) => this.mapRowToCatalogItem(row)),
       combos,
     };
   }

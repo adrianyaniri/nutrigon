@@ -69,4 +69,44 @@ describe("BranchQrModal", () => {
     fireEvent.click(dialogBackdrop);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it("prints QR poster using standard DOM manipulation without document.write", async () => {
+    const mockPrint = vi.fn();
+    const mockClose = vi.fn();
+    const mockFocus = vi.fn();
+    const mockWrite = vi.fn();
+
+    const mockPrintWindow = {
+      document: {
+        title: "",
+        head: document.createElement("head"),
+        body: document.createElement("body"),
+        createElement: (tag: string) => document.createElement(tag),
+        write: mockWrite,
+      },
+      focus: mockFocus,
+      print: mockPrint,
+      close: mockClose,
+    };
+
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(mockPrintWindow as unknown as Window);
+
+    render(<BranchQrModal isOpen={true} onClose={vi.fn()} branch={mockBranch} />);
+
+    const printBtn = screen.getByRole("button", { name: /Imprimir cartel/i });
+    await waitFor(() => {
+      expect(printBtn).toBeEnabled();
+    });
+
+    fireEvent.click(printBtn);
+
+    expect(openSpy).toHaveBeenCalledWith("", "_blank");
+    expect(mockWrite).not.toHaveBeenCalled();
+    expect(mockPrintWindow.document.title).toContain("Origone");
+    expect(mockPrintWindow.document.body.innerHTML).toContain("Nutrigon");
+    expect(mockPrintWindow.document.body.innerHTML).toContain("Sucursal Origone");
+    expect(mockFocus).toHaveBeenCalled();
+
+    openSpy.mockRestore();
+  });
 });

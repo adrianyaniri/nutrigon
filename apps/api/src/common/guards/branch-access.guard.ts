@@ -31,13 +31,14 @@ export class BranchAccessGuard implements CanActivate {
       throw new ForbiddenException('Branch identifier is required for this operation');
     }
 
-    if (user.role === Role.BRANCH_ADMIN) {
-      if (!user.branchId || user.branchId !== branchId) {
-        throw new ForbiddenException('You do not have permission to access another branch');
-      }
-      return true;
+    if (user.role !== Role.BRANCH_ADMIN) {
+      throw new ForbiddenException('Access denied');
     }
 
-    throw new ForbiddenException('Access denied');
+    if (!user.branchId || user.branchId !== branchId) {
+      throw new ForbiddenException('You do not have permission to access another branch');
+    }
+
+    return true;
   }
 }

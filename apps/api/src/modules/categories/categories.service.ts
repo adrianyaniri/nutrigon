@@ -59,23 +59,31 @@ export class CategoriesService {
     });
   }
 
-  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryEntity> {
-    const category = await this.categoriesRepository.findById(id);
-    if (!category) {
-      throw new NotFoundException(`Category with ID "${id}" was not found`);
+  private async resolveUpdatedSlug(
+    currentId: string,
+    currentSlug: string,
+    requestedSlug?: string,
+  ): Promise<string> {
+    if (!requestedSlug) {
+      return currentSlug;
     }
 
-    let slugToUpdate = category.slug;
-    if (dto.slug) {
-      const normalizedSlug = slugify(dto.slug);
-      if (normalizedSlug !== category.slug) {
-        const existingSlug = await this.categoriesRepository.findBySlug(normalizedSlug);
-        if (existingSlug && existingSlug.id !== id) {
-          throw new ConflictException(`A category with slug "${normalizedSlug}" already exists`);
-        }
-        slugToUpdate = normalizedSlug;
-      }
+    const normalizedSlug = slugify(requestedSlug);
+    if (normalizedSlug === currentSlug) {
+      return currentSlug;
     }
+
+    const existingSlug = await this.categoriesRepository.findBySlug(normalizedSlug);
+    if (existingSlug && existingSlug.id !== currentId) {
+      throw new ConflictException(`A category with slug "${normalizedSlug}" already exists`);
+    }
+
+    return normalizedSlug;
+  }
+
+  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryEntity> {
+    const category = await this.findById(id);
+    const slugToUpdate = await this.resolveUpdatedSlug(id, category.slug, dto.slug);
 
     const updated = await this.categoriesRepository.update(id, {
       ...dto,

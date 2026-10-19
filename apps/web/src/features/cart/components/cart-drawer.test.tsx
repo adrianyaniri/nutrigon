@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { CartProvider, useCart } from "@/features/cart";
 import { CartDrawer } from "./cart-drawer";
 import type { CatalogBranch, CatalogProduct } from "@/features/catalog/types";
@@ -37,6 +37,11 @@ const mockProducts: CatalogProduct[] = [
 ];
 
 describe("CartDrawer", () => {
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+  });
+
   it("renders empty state when there are no items in cart", () => {
     render(
       <CartProvider>
@@ -113,5 +118,47 @@ describe("CartDrawer", () => {
     expect(decodeURIComponent(calledUrl)).toContain("2x Almendras Nonpareil");
 
     openSpy.mockRestore();
+  });
+
+  it("requires confirmation before clearing the cart", () => {
+    function TestCartTrigger() {
+      const { addProduct } = useCart();
+      return (
+        <div>
+          <button type="button" onClick={() => addProduct("centro", "p-almendras")}>
+            Add Almendras
+          </button>
+          <CartDrawer
+            isOpen={true}
+            onClose={vi.fn()}
+            branch={mockBranch}
+            products={mockProducts}
+          />
+        </div>
+      );
+    }
+
+    render(
+      <CartProvider>
+        <TestCartTrigger />
+      </CartProvider>
+    );
+
+    fireEvent.click(screen.getByText("Add Almendras"));
+    expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
+
+    // First click on Vaciar carrito shows confirmation controls instead of clearing immediately
+    fireEvent.click(screen.getByRole("button", { name: "Vaciar carrito" }));
+    expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirmar vaciar carrito" })).toBeInTheDocument();
+
+    // Cancel keeps the cart intact
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
+
+    // Click Vaciar again and confirm
+    fireEvent.click(screen.getByRole("button", { name: "Vaciar carrito" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar vaciar carrito" }));
+    expect(screen.getByText("Tu pedido está vacío")).toBeInTheDocument();
   });
 });

@@ -81,7 +81,7 @@ export function AdminLoginPage() {
     <div className="relative flex min-h-dvh flex-col justify-between bg-background text-foreground font-body antialiased selection:bg-brand-gold selection:text-brand-dark overflow-x-hidden">
       {/* Ambient Subtle Wheat-Gold Glow */}
       <div className="fixed inset-0 pointer-events-none opacity-40 motion-reduce:hidden" aria-hidden="true">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[400px] bg-gradient-to-b from-brand-gold/15 via-brand-gold/5 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(245,183,49,0.18)_0%,rgba(245,183,49,0.05)_45%,transparent_70%)] rounded-full" />
       </div>
 
       {/* Top Minimalist Utility Bar */}

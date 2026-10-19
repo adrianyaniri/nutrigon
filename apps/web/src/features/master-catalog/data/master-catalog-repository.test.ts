@@ -134,9 +134,29 @@ describe("createHttpMasterCatalogRepository", () => {
           fileName: "caju.webp",
           contentType: "image/webp",
           folder: "products",
+          fileSize: file.size,
         }),
       })
     );
+  });
+
+  it("rejects uploading a product image larger than 5 MB before calling the API", async () => {
+    const mockFetch = vi.fn();
+    const repo = createHttpMasterCatalogRepository(
+      "http://localhost:3000",
+      mockFetch as unknown as typeof fetch
+    );
+
+    const oversizedFile = new File(
+      [new Uint8Array(6 * 1024 * 1024)],
+      "pesada.jpg",
+      { type: "image/jpeg" }
+    );
+
+    await expect(
+      repo.uploadProductImage("jwt-admin-token", oversizedFile)
+    ).rejects.toThrow(/5\s*MB/i);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
 

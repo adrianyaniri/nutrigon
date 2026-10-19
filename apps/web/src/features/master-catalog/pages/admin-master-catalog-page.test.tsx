@@ -27,7 +27,7 @@ function renderMasterCatalogPage(role: Role = Role.ADMIN_GENERAL) {
           setSelectedBranchSlug: () => {},
           isLoading: false,
           isAuthenticated: true,
-          login: async () => {},
+          login: async () => ({} as never),
           logout: () => {},
         }}
       >
@@ -121,6 +121,34 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
 
     expect(
       await screen.findByText(/Categoría "Especias & Condimentos" creada exitosamente/i)
+    ).toBeInTheDocument();
+  });
+
+  it("allows editing an existing master category", async () => {
+    renderMasterCatalogPage(Role.ADMIN_GENERAL);
+
+    await screen.findByText("Almendras Nonpareil");
+
+    const categoryModalBtn = screen.getByRole("button", {
+      name: /Nueva Categoría/i,
+    });
+    fireEvent.click(categoryModalBtn);
+
+    const modeSelect = await screen.findByLabelText(/Acción sobre Categorías/i);
+    fireEvent.change(modeSelect, { target: { value: "c-frutos-secos" } });
+
+    expect(
+      await screen.findByRole("heading", { name: /Editar Categoría Maestra/i })
+    ).toBeInTheDocument();
+
+    const catNameInput = screen.getByLabelText(/Nombre de la Categoría \*/i);
+    fireEvent.change(catNameInput, { target: { value: "Frutos Secos Premium" } });
+
+    const saveCatBtn = screen.getByRole("button", { name: "Guardar Categoría" });
+    fireEvent.click(saveCatBtn);
+
+    expect(
+      await screen.findByText(/Categoría "Frutos Secos Premium" actualizada exitosamente/i)
     ).toBeInTheDocument();
   });
 

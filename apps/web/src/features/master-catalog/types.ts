@@ -16,6 +16,13 @@ export interface CreateCategoryInput {
   orderIndex?: number;
 }
 
+export interface UpdateCategoryInput {
+  name?: string;
+  slug?: string;
+  orderIndex?: number;
+  isActive?: boolean;
+}
+
 export interface MasterProduct {
   id: string;
   categoryId: string;
@@ -65,4 +72,29 @@ export interface UpdateMasterProductInput {
   barcode?: string | null;
   imageUrls?: string[];
   isActive?: boolean;
+}
+
+export interface MasterCatalogRepository {
+  listCategories(): Promise<MasterCategory[]>;
+  createCategory(token: string, input: CreateCategoryInput): Promise<MasterCategory>;
+  updateCategory(
+    token: string,
+    categoryId: string,
+    input: UpdateCategoryInput
+  ): Promise<MasterCategory>;
+  listProducts(
+    token: string,
+    query?: MasterProductsQuery
+  ): Promise<PaginatedMasterProducts>;
+  createProduct(
+    token: string,
+    input: CreateMasterProductInput
+  ): Promise<MasterProduct>;
+  updateProduct(
+    token: string,
+    productId: string,
+    input: UpdateMasterProductInput
+  ): Promise<MasterProduct>;
+  deleteProduct(token: string, productId: string): Promise<MasterProduct>;
+  uploadProductImage(token: string, file: File): Promise<string>;
 }

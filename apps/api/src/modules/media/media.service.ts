@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
-import type { UploadUrlResponse } from '@nutrigon/contracts';
+import {
+  MAX_UPLOAD_FILE_SIZE_BYTES,
+  type UploadUrlResponse,
+} from '@nutrigon/contracts';
 import {
   MEDIA_STORAGE_PROVIDER,
   type IMediaStorageProvider,
@@ -30,6 +33,15 @@ export class MediaService {
   ) {}
 
   async generateUploadUrl(dto: GetUploadUrlDto): Promise<UploadUrlResponse> {
+    if (
+      dto.fileSize !== undefined &&
+      (dto.fileSize <= 0 || dto.fileSize > MAX_UPLOAD_FILE_SIZE_BYTES)
+    ) {
+      throw new BadRequestException(
+        'File size must be between 1 byte and 5 MB',
+      );
+    }
+
     const rawExt = dto.fileName.split('.').pop()?.toLowerCase() ?? '';
     const expectedMime = EXTENSION_TO_MIME[rawExt];
 
@@ -47,6 +59,7 @@ export class MediaService {
       key,
       contentType: dto.contentType,
       expiresInSeconds: PRESIGN_EXPIRES_IN_SECONDS,
+      ...(dto.fileSize !== undefined ? { contentLength: dto.fileSize } : {}),
     });
 
     return {

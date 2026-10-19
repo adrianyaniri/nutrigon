@@ -42,20 +42,28 @@ export class ProductsService {
     return product;
   }
 
-  async create(dto: CreateProductDto): Promise<ProductEntity> {
-    // 1. Verify category exists and is active
-    const category = await this.categoriesRepository.findById(dto.categoryId);
+  private async ensureActiveCategory(categoryId: string): Promise<void> {
+    const category = await this.categoriesRepository.findById(categoryId);
     if (!category || !category.isActive) {
-      throw new BadRequestException(`Category with ID "${dto.categoryId}" is invalid or inactive`);
+      throw new BadRequestException(`Category with ID "${categoryId}" is invalid or inactive`);
+    }
+  }
+
+  private async ensureUniqueCode(code?: string | null, excludeProductId?: string): Promise<void> {
+    const normalizedCode = code?.trim();
+    if (!normalizedCode) {
+      return;
     }
 
-    // 2. If code provided, verify uniqueness
-    if (dto.code && dto.code.trim()) {
-      const existing = await this.productsRepository.findByCode(dto.code.trim());
-      if (existing) {
-        throw new ConflictException(`Product with code "${dto.code}" already exists`);
-      }
+    const existing = await this.productsRepository.findByCode(normalizedCode);
+    if (existing && existing.id !== excludeProductId) {
+      throw new ConflictException(`Product with code "${normalizedCode}" already exists`);
     }
+  }
+
+  async create(dto: CreateProductDto): Promise<ProductEntity> {
+    await this.ensureActiveCategory(dto.categoryId);
+    await this.ensureUniqueCode(dto.code);
 
     return this.productsRepository.create({
       categoryId: dto.categoryId,
@@ -70,26 +78,14 @@ export class ProductsService {
   }
 
   async update(id: string, dto: UpdateProductDto): Promise<ProductEntity> {
-    const product = await this.productsRepository.findById(id);
-    if (!product) {
-      throw new NotFoundException(`Product with ID "${id}" was not found`);
-    }
+    const product = await this.findById(id);
 
     if (dto.categoryId && dto.categoryId !== product.categoryId) {
-      const category = await this.categoriesRepository.findById(dto.categoryId);
-      if (!category || !category.isActive) {
-        throw new BadRequestException(`Category with ID "${dto.categoryId}" is invalid or inactive`);
-      }
+      await this.ensureActiveCategory(dto.categoryId);
     }
 
-    if (dto.code && dto.code.trim()) {
-      const normalizedCode = dto.code.trim();
-      if (normalizedCode !== product.code) {
-        const existingCode = await this.productsRepository.findByCode(normalizedCode);
-        if (existingCode && existingCode.id !== id) {
-          throw new ConflictException(`Product with code "${normalizedCode}" already exists`);
-        }
-      }
+    if (dto.code && dto.code.trim() !== product.code) {
+      await this.ensureUniqueCode(dto.code, id);
     }
 
     const updated = await this.productsRepository.update(id, dto);

@@ -12,7 +12,7 @@ describe("Application Bootstrap", () => {
 
     expect(screen.getAllByText("Nutrigon").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Dietética & Cerealera/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Elegí tu sucursal más cercana/i)).toBeInTheDocument();
+    expect(screen.getByText(/Escaneá el código QR en tu sucursal/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Acceso Gestión/i })).toBeInTheDocument();
 
     await screen.findByRole("heading", { name: /Sucursal (Centro|Origone)/i });

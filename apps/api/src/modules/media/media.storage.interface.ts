@@ -4,6 +4,7 @@ export interface PresignPutParams {
   key: string;
   contentType: string;
   expiresInSeconds: number;
+  contentLength?: number;
 }
 
 export interface PresignedUploadResult {

@@ -2,30 +2,31 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
-  Check,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Package,
-  Percent,
   Search,
-  Sparkles,
-  Star,
-  Tag,
   X,
 } from "lucide-react";
-import { ProductImage } from "@/components/atoms/product-image";
 import { Button } from "@/components/ui/button";
 import { useAuth, Role } from "@/features/auth";
-import { catalogKeys, useBranches } from "@/features/catalog/hooks/use-catalog-queries";
+import {
+  catalogKeys,
+  useBranches,
+} from "@/features/catalog/hooks/use-catalog-queries";
+import { masterCatalogRepository } from "@/features/master-catalog/data/master-catalog-repository";
 import {
   branchPricingRepository,
   type BranchProductAdminItem,
   type BranchProductStatus,
 } from "@/features/pricing/data/branch-pricing-repository";
+import { useDebounce } from "@/hooks";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
+import { BranchOfferModal } from "../components/branch-offer-modal";
+import { BranchProductRow } from "../components/branch-product-row";
 
 type FilterTab = "ALL" | BranchProductStatus | "ON_SALE";
 
@@ -60,6 +61,8 @@ export function AdminProductsPage() {
 
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [page, setPage] = useState(1);
   const [feedbackBanner, setFeedbackBanner] = useState<{
     type: "success" | "error";
@@ -70,42 +73,46 @@ export function AdminProductsPage() {
   const [draftPrices, setDraftPrices] = useState<Record<string, string>>({});
 
   // Offer Modal state
-  const [offerModalItem, setOfferModalItem] = useState<BranchProductAdminItem | null>(null);
+  const [offerModalItem, setOfferModalItem] =
+    useState<BranchProductAdminItem | null>(null);
   const [promoPriceInput, setPromoPriceInput] = useState("");
   const [offerModalError, setOfferModalError] = useState<string | null>(null);
 
   // Reset pagination when filter or branch changes
   useEffect(() => {
     setPage(1);
-  }, [activeTab, searchTerm, branchId]);
+  }, [activeTab, debouncedSearchTerm, selectedCategoryId, branchId]);
 
-  // Handle ESC key for offer modal dismissal
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && offerModalItem) {
-        setOfferModalItem(null);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [offerModalItem]);
+  const categoriesQuery = useQuery({
+    queryKey: ["master-catalog", "categories"],
+    queryFn: () => masterCatalogRepository.listCategories(),
+  });
+
+  const categories = useMemo(
+    () => categoriesQuery.data ?? [],
+    [categoriesQuery.data]
+  );
 
   const queryFilter = useMemo(() => {
     return {
       status:
-        activeTab === "ACTIVE" || activeTab === "INACTIVE" || activeTab === "UNCONFIGURED"
+        activeTab === "ACTIVE" ||
+        activeTab === "INACTIVE" ||
+        activeTab === "UNCONFIGURED"
           ? activeTab
           : undefined,
       isOnSale: activeTab === "ON_SALE" ? true : undefined,
-      search: searchTerm.trim() || undefined,
+      search: debouncedSearchTerm.trim() || undefined,
+      categoryId: selectedCategoryId || undefined,
       page,
       limit: 20,
     };
-  }, [activeTab, searchTerm, page]);
+  }, [activeTab, debouncedSearchTerm, selectedCategoryId, page]);
 
   const productsQuery = useQuery({
     queryKey: ["admin", "branch-products", branchId, queryFilter],
-    queryFn: () => branchPricingRepository.listProducts(branchId, authToken, queryFilter),
+    queryFn: () =>
+      branchPricingRepository.listProducts(branchId, authToken, queryFilter),
     enabled: Boolean(branchId),
   });
 
@@ -132,9 +139,15 @@ export function AdminProductsPage() {
 
   async function invalidateBranchQueries() {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["admin", "branch-products", branchId] }),
-      queryClient.invalidateQueries({ queryKey: ["admin", "branch-products-counts", branchId] }),
-      queryClient.invalidateQueries({ queryKey: catalogKeys.branch(activeBranch.slug) }),
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "branch-products", branchId],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "branch-products-counts", branchId],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.branch(activeBranch.slug),
+      }),
     ]);
   }
 
@@ -146,11 +159,18 @@ export function AdminProductsPage() {
       isFeatured?: boolean;
       productName: string;
     }) =>
-      branchPricingRepository.upsertProduct(branchId, vars.productId, authToken, {
-        price: vars.price,
-        isAvailable: vars.isAvailable,
-        ...(vars.isFeatured !== undefined ? { isFeatured: vars.isFeatured } : {}),
-      }),
+      branchPricingRepository.upsertProduct(
+        branchId,
+        vars.productId,
+        authToken,
+        {
+          price: vars.price,
+          isAvailable: vars.isAvailable,
+          ...(vars.isFeatured !== undefined
+            ? { isFeatured: vars.isFeatured }
+            : {}),
+        }
+      ),
     onSuccess: async (_data, vars) => {
       await invalidateBranchQueries();
       showFeedback(
@@ -190,7 +210,9 @@ export function AdminProductsPage() {
     },
     onError: (err: unknown) => {
       setOfferModalError(
-        err instanceof Error ? err.message : "No se pudo actualizar la oferta."
+        err instanceof Error
+          ? err.message
+          : "No se pudo actualizar la oferta."
       );
     },
   });
@@ -201,7 +223,17 @@ export function AdminProductsPage() {
     return item.price !== null ? String(item.price) : "";
   }
 
-  function handleSavePrice(item: BranchProductAdminItem, nextAvailable?: boolean) {
+  function handleDraftPriceChange(productId: string, value: string) {
+    setDraftPrices((prev) => ({
+      ...prev,
+      [productId]: value,
+    }));
+  }
+
+  function handleSavePrice(
+    item: BranchProductAdminItem,
+    nextAvailable?: boolean
+  ) {
     const raw = getDraftPrice(item).trim();
     const numericPrice = Number(raw);
 
@@ -214,8 +246,8 @@ export function AdminProductsPage() {
       nextAvailable !== undefined
         ? nextAvailable
         : item.status === "UNCONFIGURED"
-          ? numericPrice > 0
-          : item.isAvailable;
+        ? numericPrice > 0
+        : item.isAvailable;
 
     if (isAvailable && numericPrice <= 0) {
       showFeedback(
@@ -236,7 +268,10 @@ export function AdminProductsPage() {
 
   function handleToggleFeatured(item: BranchProductAdminItem) {
     if (item.price === null || item.price <= 0) {
-      showFeedback("error", `Configurá primero el precio de "${item.name}" antes de destacarlo.`);
+      showFeedback(
+        "error",
+        `Configurá primero el precio de "${item.name}" antes de destacarlo.`
+      );
       return;
     }
     upsertMutation.mutate({
@@ -267,7 +302,9 @@ export function AdminProductsPage() {
     }
     if (promo >= basePrice) {
       setOfferModalError(
-        `El precio promocional debe ser menor al precio regular (${formatPrice(basePrice)}).`
+        `El precio promocional debe ser menor al precio regular (${formatPrice(
+          basePrice
+        )}).`
       );
       return;
     }
@@ -309,16 +346,17 @@ export function AdminProductsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-white pb-12">
       {/* Top Operational Header */}
-      <section className="rounded-2xl border border-white/[0.08] bg-surface-card p-5 sm:p-6 shadow-xl">
+      <section className="rounded-2xl border border-outline bg-surface-card p-5 sm:p-6 shadow-xl">
         <div className="space-y-1.5">
           <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Gestión de Precios y Ofertas por Sucursal
           </h1>
 
           <p className="text-xs sm:text-sm text-brand-muted max-w-2xl leading-relaxed">
-            Configurá el precio por kilogramo o por unidad, habilitá productos en el
-            mostrador online y activá ofertas exclusivas para{" "}
-            <strong className="text-white">Sucursal {activeBranch.name}</strong>.
+            Configurá el precio por kilogramo o por unidad, habilitá productos
+            en el mostrador online y activá ofertas exclusivas para{" "}
+            <strong className="text-white">Sucursal {activeBranch.name}</strong>
+            .
           </p>
         </div>
 
@@ -326,7 +364,7 @@ export function AdminProductsPage() {
         <div
           role="tablist"
           aria-label="Filtrar por estado en la sucursal"
-          className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-5 border-t border-white/[0.06]"
+          className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-5 border-t border-outline/60"
         >
           {filterTabs.map((tab) => {
             const isSelected = activeTab === tab.id;
@@ -341,16 +379,18 @@ export function AdminProductsPage() {
                   "flex min-h-[48px] items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition-all cursor-pointer",
                   isSelected
                     ? "border-brand-gold bg-brand-gold/15 text-white shadow-sm"
-                    : "border-white/[0.06] bg-[#111215] text-zinc-400 hover:border-white/15 hover:text-white"
+                    : "border-outline/60 bg-surface text-zinc-400 hover:border-outline hover:text-white"
                 )}
               >
-                <span className="text-xs font-semibold truncate pr-2">{tab.label}</span>
+                <span className="text-xs font-semibold truncate pr-2">
+                  {tab.label}
+                </span>
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
                     isSelected
                       ? "bg-brand-gold text-stone-950"
-                      : "bg-white/[0.06] text-zinc-300"
+                      : "bg-surface-elevated text-zinc-300"
                   )}
                 >
                   {tab.count}
@@ -394,46 +434,67 @@ export function AdminProductsPage() {
 
       {/* Search & Filter Toolbar */}
       <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar producto por nombre o código..."
-            aria-label="Buscar producto en la sucursal"
-            className="min-h-[44px] w-full rounded-xl border border-white/[0.08] bg-surface-card pl-10 pr-10 text-sm text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm("")}
-              aria-label="Limpiar búsqueda"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-white rounded-md transition-colors"
-            >
-              <X className="size-4" />
-            </button>
-          )}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar producto por nombre o código..."
+              aria-label="Buscar producto en la sucursal"
+              className="min-h-[44px] w-full rounded-xl border border-outline bg-surface pl-10 pr-10 text-sm text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-white rounded-md transition-colors"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            aria-label="Filtrar por categoría"
+            className="min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-gold"
+          >
+            <option value="">Todas las categorías</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="text-xs text-zinc-400">
           Mostrando <strong className="text-white">{items.length}</strong> de{" "}
-          <strong className="text-white">{productsQuery.data?.total ?? 0}</strong> productos
+          <strong className="text-white">
+            {productsQuery.data?.total ?? 0}
+          </strong>{" "}
+          productos
         </div>
       </section>
 
       {/* Products List */}
       <section className="space-y-3">
         {productsQuery.isPending ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card py-16 text-zinc-400 gap-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-16 text-zinc-400 gap-3">
             <Loader2 className="size-6 animate-spin text-brand-gold" />
-            <span className="text-sm">Cargando productos de la sucursal...</span>
+            <span className="text-sm">
+              Cargando productos de la sucursal...
+            </span>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card py-14 px-4 text-center gap-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-14 px-4 text-center gap-3">
             <Package className="size-10 text-brand-gold/60" />
             <h2 className="font-headline text-base font-bold text-white">
               No encontramos productos con este filtro
@@ -441,13 +502,14 @@ export function AdminProductsPage() {
             <p className="text-xs text-zinc-400 max-w-sm">
               Probá cambiando de pestaña o limpiando el término de búsqueda.
             </p>
-            {(activeTab !== "ALL" || searchTerm) && (
+            {(activeTab !== "ALL" || searchTerm || selectedCategoryId) && (
               <Button
                 variant="outline"
                 className="min-h-[44px] mt-1"
                 onClick={() => {
                   setActiveTab("ALL");
                   setSearchTerm("");
+                  setSelectedCategoryId("");
                 }}
               >
                 Restablecer filtros
@@ -456,211 +518,24 @@ export function AdminProductsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {items.map((item) => {
-              const unitSuffix = item.saleUnit === "WEIGHT" ? "/ kg" : "/ un.";
-              const unitBadge =
-                item.saleUnit === "WEIGHT"
-                  ? "Granel · Precio por 1 kg"
-                  : "Venta por unidad";
-              const draftValue = getDraftPrice(item);
-              const isConfigured = item.price !== null && item.price > 0;
-
-              return (
-                <article
-                  key={item.productId}
-                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-surface-card p-4 sm:p-5 transition-colors hover:border-white/[0.15]"
-                >
-                  {/* Left: Product Identity & Status Badges */}
-                  <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
-                    <div className="size-14 sm:size-16 shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#111215]">
-                      <ProductImage
-                        src={item.imageUrls[0] ?? null}
-                        alt={item.name}
-                      />
-                    </div>
-
-                    <div className="min-w-0 flex-1 space-y-1">
-                      {/* Top Eyebrow: Category · Unit · Status + Promo chips (Oferta & Destacado) */}
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-gold shrink-0">
-                          {item.categoryName}
-                        </span>
-                        <span className="text-zinc-500 select-none">·</span>
-                        <span className="text-[11px] font-medium text-zinc-300 shrink-0">
-                          {unitBadge}
-                        </span>
-                        <span className="text-zinc-500 select-none">·</span>
-
-                        {item.status === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 shrink-0">
-                            <span className="size-1.5 rounded-full bg-emerald-400" />
-                            <span>En tienda</span>
-                          </span>
-                        )}
-                        {item.status === "INACTIVE" && (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-400 shrink-0">
-                            <span className="size-1.5 rounded-full bg-amber-400" />
-                            <span>Pausado</span>
-                          </span>
-                        )}
-                        {item.status === "UNCONFIGURED" && (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 shrink-0">
-                            <span className="size-1.5 rounded-full bg-zinc-500" />
-                            <span>Sin precio</span>
-                          </span>
-                        )}
-
-                        {/* Promo Chips (arriba del nombre) */}
-                        {item.isOnSale && item.promotionalPrice !== null && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold shrink-0">
-                            <Sparkles className="size-2.5 shrink-0" aria-hidden="true" />
-                            <span>
-                              Oferta {formatPrice(item.promotionalPrice)} {unitSuffix}
-                            </span>
-                          </span>
-                        )}
-
-                        {item.isFeatured && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300 shrink-0">
-                            <Star className="size-2.5 fill-amber-300 text-amber-300 shrink-0" aria-hidden="true" />
-                            <span>Destacado</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Product Name */}
-                      <h2 className="font-headline text-sm sm:text-base font-bold text-white truncate">
-                        {item.name}
-                      </h2>
-
-                      {item.description && (
-                        <p className="text-xs text-zinc-400 line-clamp-1">
-                          {item.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right: Price Input, Save, Offer Trigger & Availability Switch */}
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pt-3 border-t border-white/[0.06] lg:pt-0 lg:border-t-0 shrink-0">
-                    {/* Price Input Group */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="relative flex items-center">
-                        <span className="pointer-events-none absolute left-2.5 text-xs font-bold text-zinc-400">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="10"
-                          aria-label={`Precio de ${item.name}`}
-                          value={draftValue}
-                          onChange={(e) =>
-                            setDraftPrices((prev) => ({
-                              ...prev,
-                              [item.productId]: e.target.value,
-                            }))
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleSavePrice(item);
-                            }
-                          }}
-                          placeholder="0"
-                          className="h-10 w-28 sm:w-32 rounded-xl border border-white/[0.1] bg-[#111215] pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-white placeholder:text-zinc-500 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
-                        />
-                        <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-zinc-400">
-                          {unitSuffix}
-                        </span>
-                      </div>
-
-                      <Button
-                        type="button"
-                        aria-label="Guardar precio"
-                        onClick={() => handleSavePrice(item)}
-                        disabled={upsertMutation.isPending}
-                        className="h-10 px-3 text-xs font-semibold gap-1 shrink-0"
-                      >
-                        <Check className="size-3.5" aria-hidden="true" />
-                        <span>Guardar</span>
-                      </Button>
-                    </div>
-
-                    {/* Operational Actions (Destacar, Oferta, Pausar/Activar) */}
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        aria-label={item.isFeatured ? "Destacado" : "Destacar"}
-                        title={
-                          isConfigured
-                            ? item.isFeatured
-                              ? "Quitar de destacados en esta sucursal"
-                              : "Marcar como destacado en esta sucursal"
-                            : "Guardá primero un precio base para destacar"
-                        }
-                        disabled={!isConfigured || upsertMutation.isPending}
-                        onClick={() => handleToggleFeatured(item)}
-                        className={cn(
-                          "size-10 inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
-                          item.isFeatured
-                            ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
-                            : "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-brand-gold/50 hover:text-white"
-                        )}
-                      >
-                        <Star
-                          className={cn("size-4", item.isFeatured && "fill-brand-gold")}
-                          aria-hidden="true"
-                        />
-                      </button>
-
-                      <button
-                        type="button"
-                        aria-label={item.isOnSale ? "Editar oferta" : "Oferta"}
-                        title={
-                          isConfigured
-                            ? item.isOnSale
-                              ? `Oferta activa: ${formatPrice(item.promotionalPrice)} (clic para editar)`
-                              : "Configurar oferta para este producto"
-                            : "Guardá primero un precio base para habilitar ofertas"
-                        }
-                        disabled={!isConfigured}
-                        onClick={() => openOfferModal(item)}
-                        className={cn(
-                          "size-10 inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
-                          item.isOnSale
-                            ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
-                            : "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-brand-gold/50 hover:text-white"
-                        )}
-                      >
-                        <Tag className="size-4" aria-hidden="true" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSavePrice(item, !item.isAvailable)}
-                        disabled={upsertMutation.isPending}
-                        title={item.isAvailable ? "Pausar producto en esta sucursal" : "Activar producto en esta sucursal"}
-                        className={cn(
-                          "h-10 inline-flex items-center justify-center rounded-xl border px-3 text-xs font-semibold transition-all cursor-pointer shrink-0",
-                          item.isAvailable
-                            ? "border-white/[0.1] bg-[#111215] text-zinc-300 hover:border-amber-500/40 hover:text-amber-300"
-                            : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-                        )}
-                      >
-                        {item.isAvailable ? "Pausar" : "Activar"}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {items.map((item) => (
+              <BranchProductRow
+                key={item.productId}
+                item={item}
+                draftValue={getDraftPrice(item)}
+                isSaving={upsertMutation.isPending}
+                onDraftPriceChange={handleDraftPriceChange}
+                onSavePrice={handleSavePrice}
+                onToggleFeatured={handleToggleFeatured}
+                onOpenOfferModal={openOfferModal}
+              />
+            ))}
           </div>
         )}
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
+          <div className="flex items-center justify-between pt-4 border-t border-outline">
             <Button
               variant="outline"
               disabled={page <= 1}
@@ -688,138 +563,19 @@ export function AdminProductsPage() {
       </section>
 
       {/* Offer Configuration Modal */}
-      {offerModalItem && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="offer-modal-title"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-        >
-          <div
-            className="fixed inset-0 bg-black/75 backdrop-blur-xs"
-            onClick={() => setOfferModalItem(null)}
-            aria-hidden="true"
-          />
-
-          <div className="relative z-10 w-full max-w-md rounded-t-3xl sm:rounded-2xl border border-white/[0.1] bg-surface-card p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
-                  <Percent className="size-3.5" /> Promoción de Sucursal
-                </span>
-                <h2
-                  id="offer-modal-title"
-                  className="font-headline text-lg font-bold text-white mt-0.5"
-                >
-                  {offerModalItem.name}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setOfferModalItem(null)}
-                aria-label="Cerrar modal de oferta"
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-white/[0.06] bg-[#111215] p-3.5 flex items-center justify-between text-xs">
-              <span className="text-zinc-400">
-                Precio regular ({offerModalItem.saleUnit === "WEIGHT" ? "por 1 kg" : "por unidad"}):
-              </span>
-              <span className="font-headline text-sm font-bold text-white">
-                {formatPrice(offerModalItem.price ?? 0)}{" "}
-                {offerModalItem.saleUnit === "WEIGHT" ? "/ kg" : "/ un."}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="promoPriceField"
-                className="block text-xs font-semibold text-zinc-200"
-              >
-                Precio promocional de oferta ({offerModalItem.saleUnit === "WEIGHT" ? "$ / kg" : "$ / un."})
-              </label>
-              <div className="relative flex items-center">
-                <span className="pointer-events-none absolute left-3.5 text-sm font-bold text-brand-gold">
-                  $
-                </span>
-                <input
-                  id="promoPriceField"
-                  type="number"
-                  min="1"
-                  step="10"
-                  value={promoPriceInput}
-                  onChange={(e) => {
-                    setPromoPriceInput(e.target.value);
-                    setOfferModalError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleActivateOffer();
-                    }
-                  }}
-                  placeholder="Ej: 12500"
-                  className="min-h-[46px] w-full rounded-xl border border-white/[0.12] bg-[#111215] pl-8 pr-16 text-sm font-bold text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
-                />
-                {offerModalItem.price &&
-                  Number(promoPriceInput) > 0 &&
-                  Number(promoPriceInput) < offerModalItem.price && (
-                    <span className="absolute right-3 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold text-brand-gold">
-                      -
-                      {Math.round(
-                        ((offerModalItem.price - Number(promoPriceInput)) /
-                          offerModalItem.price) *
-                          100
-                      )}
-                      %
-                    </span>
-                  )}
-              </div>
-              <p className="text-[11px] text-zinc-400">
-                En el catálogo público se mostrará el precio regular tachado junto con la insignia de{" "}
-                <strong className="text-brand-gold">Oferta</strong>.
-              </p>
-            </div>
-
-            {offerModalError && (
-              <div
-                role="alert"
-                className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200"
-              >
-                <AlertCircle className="size-4 shrink-0 text-red-400" />
-                <span>{offerModalError}</span>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2">
-              {offerModalItem.isOnSale && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRemoveOffer}
-                  disabled={offerMutation.isPending}
-                  className="w-full sm:w-auto min-h-[44px] border-red-500/40 text-red-300 hover:bg-red-500/15"
-                >
-                  Quitar oferta
-                </Button>
-              )}
-
-              <Button
-                type="button"
-                onClick={handleActivateOffer}
-                disabled={offerMutation.isPending}
-                className="w-full sm:w-auto min-h-[44px] bg-brand-gold text-stone-950 hover:bg-brand-gold-hover font-bold"
-              >
-                {offerModalItem.isOnSale ? "Guardar oferta" : "Activar oferta"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BranchOfferModal
+        item={offerModalItem}
+        promoPriceInput={promoPriceInput}
+        onPromoPriceInputChange={(val) => {
+          setPromoPriceInput(val);
+          setOfferModalError(null);
+        }}
+        error={offerModalError}
+        isSaving={offerMutation.isPending}
+        onClose={() => setOfferModalItem(null)}
+        onActivateOffer={handleActivateOffer}
+        onRemoveOffer={handleRemoveOffer}
+      />
     </div>
   );
 }

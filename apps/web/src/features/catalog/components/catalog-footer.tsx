@@ -1,5 +1,4 @@
 import { ExternalLink, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
-import { Link } from "react-router-dom";
 import type { CatalogBranch } from "../types";
 
 export interface CatalogFooterProps {
@@ -70,7 +69,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                 Nuestras Sucursales
               </h3>
               <span className="text-[11px] text-muted-foreground">
-                Horarios de atención y pedidos directos en cada local
+                Ubicación y contacto directo de cada punto de venta
               </span>
             </div>
 
@@ -87,22 +86,16 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                     className={`flex flex-col justify-between gap-3 rounded-2xl border p-4.5 transition-all ${
                       isCurrent
                         ? "border-brand-gold/60 bg-brand-card shadow-sm"
-                        : "border-border/60 bg-brand-surface/60 hover:border-brand-border hover:bg-brand-card/70"
+                        : "border-border/60 bg-brand-surface/60"
                     }`}
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-headline text-sm font-bold text-foreground">
-                          Sucursal{" "}
-                          <Link
-                            to={`/catalogo/${b.slug}`}
-                            className="text-foreground hover:text-brand-gold hover:underline transition-colors"
-                          >
-                            {b.name}
-                          </Link>
+                          Sucursal {b.name}
                         </span>
                         {isCurrent && (
-                          <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
+                          <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-brand-gold">
                             Actual
                           </span>
                         )}

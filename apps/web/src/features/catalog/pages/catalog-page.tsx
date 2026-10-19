@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, MapPin, Store, X } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { AlertTriangle, ArrowRight, MapPin, QrCode, ShoppingBag, X } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { SearchInput } from "@/components/molecules/search-input";
 import { SortSelect } from "@/components/molecules/sort-select";
 import { useCart, CartDrawer } from "@/features/cart";
-import { BranchPickerModal } from "../components/branch-picker-modal";
+import { formatPrice } from "@/lib/format/price";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
 import { CatalogHero } from "../components/catalog-hero";
@@ -17,7 +17,12 @@ import { ProductModal } from "../components/product-modal";
 import { ProductGrid } from "../components/product-grid";
 import { useCatalogFilters } from "../hooks/use-catalog-filters";
 import { useBranchCatalog, useBranches } from "../hooks/use-catalog-queries";
-import { buildCategoryOptions, filterAndSortProducts } from "../lib/filter-products";
+import {
+  buildCategoryOptions,
+  filterAndSortProducts,
+  getEffectivePrice,
+} from "../lib/filter-products";
+import { calculatePortionPrice } from "../lib/portion-pricing";
 import type { CatalogProduct, SortOption } from "../types";
 
 const SORT_OPTIONS: readonly { value: SortOption; label: string }[] = [
@@ -29,11 +34,9 @@ const SORT_OPTIONS: readonly { value: SortOption; label: string }[] = [
 
 export function CatalogPage() {
   const { branchSlug } = useParams<{ branchSlug: string }>();
-  const navigate = useNavigate();
 
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isBranchPickerOpen, setIsBranchPickerOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
 
   const branchesQuery = useBranches();
@@ -46,7 +49,7 @@ export function CatalogPage() {
   const catalogQuery = useBranchCatalog(isValidBranch ? (branchSlug ?? null) : null);
   const catalog = catalogQuery.data;
 
-  const { itemCount, addProduct, clear: clearCart } = useCart();
+  const { state: cartState, itemCount, addProduct } = useCart();
 
   // Remember last visited valid branch in localStorage
   useEffect(() => {
@@ -74,29 +77,30 @@ export function CatalogPage() {
     [catalog, filters]
   );
 
+  const cartTotalAmount = useMemo(() => {
+    if (!catalog) return 0;
+    const productMap = new Map(catalog.products.map((p) => [p.id, p]));
+    return cartState.lines.reduce((acc, line) => {
+      const product = productMap.get(line.productId);
+      if (!product) return acc;
+      const basePrice = getEffectivePrice(product);
+      const unitPrice =
+        product.saleUnit === "WEIGHT" && line.portion
+          ? calculatePortionPrice(basePrice, line.portion)
+          : basePrice;
+      return acc + unitPrice * line.quantity;
+    }, 0);
+  }, [catalog, cartState.lines]);
+
   const activeCategory = categoryOptions.find((option) => option.value === filters.categorySlug);
   const isLoading = branchesQuery.isPending || (catalogQuery.isPending && !catalog);
   const hasError = branchesQuery.isError || catalogQuery.isError;
 
   function handleAdd(product: CatalogProduct) {
-    if (product.saleUnit === "WEIGHT") {
+    if (product.saleUnit === "WEIGHT" && !product.isCombo) {
       setSelectedProduct(product);
     } else if (branchSlug) {
       addProduct(branchSlug, product.id);
-    }
-  }
-
-  function handleBranchChange(newSlug: string) {
-    if (newSlug !== branchSlug) {
-      if (itemCount > 0) {
-        clearCart();
-      }
-      try {
-        localStorage.setItem("nutrigon:last-branch", newSlug);
-      } catch {
-        // Ignore
-      }
-      navigate(`/catalogo/${newSlug}`);
     }
   }
 
@@ -104,28 +108,16 @@ export function CatalogPage() {
   if (!branchesQuery.isPending && branches.length > 0 && !isValidBranch) {
     return (
       <div className="flex min-h-dvh flex-col bg-background text-foreground">
-        <CatalogHeader
-          branchSlug={branchSlug ?? ""}
-          cartItemCount={0}
-        />
+        <CatalogHeader branchSlug={branchSlug ?? ""} cartItemCount={0} />
         <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col items-center justify-center px-4 py-12">
           <EmptyState
             icon={<MapPin className="size-10 text-brand-gold" />}
             title="Sucursal no encontrada"
-            description={`La sucursal "${branchSlug}" no existe o el código QR es incorrecto.`}
+            description={`La sucursal "${branchSlug}" no existe o el código QR es incorrecto. Escaneá el código QR en el mostrador de tu sucursal para acceder al catálogo correspondiente.`}
             action={
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {branches.map((b) => (
-                  <Button
-                    key={b.slug}
-                    variant="outline"
-                    className="min-h-[44px]"
-                    onClick={() => handleBranchChange(b.slug)}
-                  >
-                    <Store className="size-4 mr-2" />
-                    Ir a Sucursal {b.name}
-                  </Button>
-                ))}
+              <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-2.5 text-xs font-semibold text-amber-800 dark:text-brand-gold">
+                <QrCode className="size-4 shrink-0" aria-hidden="true" />
+                <span>Acceso exclusivo mediante código QR de cada sucursal</span>
               </div>
             }
           />
@@ -143,10 +135,15 @@ export function CatalogPage() {
         cartItemCount={itemCount}
         onOpenCategories={() => setIsCategoryDrawerOpen(true)}
         onOpenCart={() => setIsCartOpen(true)}
-        onOpenBranchPicker={() => setIsBranchPickerOpen(true)}
       />
 
-      <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:flex-row md:gap-8 md:px-6">
+      <main
+        className={`mx-auto flex w-full max-w-screen-xl flex-1 flex-col gap-6 px-4 pt-4 sm:pt-6 md:flex-row md:gap-8 md:px-6 ${
+          itemCount > 0
+            ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            : "pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        }`}
+      >
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 shrink-0 md:block">
           <div className="sticky top-24">
@@ -205,7 +202,7 @@ export function CatalogPage() {
                     <button
                       type="button"
                       onClick={() => setCategory(null)}
-                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-brand-gold hover:bg-brand-gold/25 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:text-brand-gold hover:bg-brand-gold/25 transition-colors"
                       title="Quitar filtro de categoría"
                     >
                       <span>Quitar filtro</span>
@@ -257,6 +254,38 @@ export function CatalogPage() {
         </section>
       </main>
 
+      {/* Mobile Sticky Bottom Cart Dock */}
+      {itemCount > 0 && !isCartOpen && (
+        <div className="fixed inset-x-0 bottom-0 z-30 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:hidden pointer-events-none">
+          <button
+            type="button"
+            onClick={() => setIsCartOpen(true)}
+            aria-label={`Ver pedido: ${itemCount} ${itemCount === 1 ? "producto" : "productos"}, total ${formatPrice(cartTotalAmount)}`}
+            className="pointer-events-auto mx-auto flex min-h-[52px] w-full max-w-md items-center justify-between rounded-2xl bg-primary px-4 py-3 text-primary-foreground shadow-xl ring-1 ring-brand-gold/50 transition-transform active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-8 items-center justify-center rounded-xl bg-brand-dark/15 font-headline text-xs font-extrabold tabular-nums">
+                {itemCount}
+              </span>
+              <div className="flex flex-col text-left leading-tight">
+                <span className="text-[11px] font-bold uppercase tracking-wider opacity-85">
+                  Tu pedido · {itemCount} {itemCount === 1 ? "ítem" : "ítems"}
+                </span>
+                <span className="font-headline text-sm font-black tracking-tight">
+                  {formatPrice(cartTotalAmount)}
+                </span>
+              </div>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 rounded-xl bg-brand-dark/10 px-3 py-1.5 text-xs font-bold">
+              <ShoppingBag className="size-3.5" aria-hidden="true" />
+              <span>Ver pedido</span>
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Mobile/Tablet Category Slide-over Drawer */}
       <CategoryDrawer
         isOpen={isCategoryDrawerOpen}
@@ -283,20 +312,8 @@ export function CatalogPage() {
         categories={catalog?.categories ?? []}
       />
 
-      {/* Branch Selector Modal */}
-      <BranchPickerModal
-        isOpen={isBranchPickerOpen}
-        onClose={() => setIsBranchPickerOpen(false)}
-        branches={branches}
-        currentBranchSlug={branchSlug ?? ""}
-        onSelectBranch={(newSlug) => {
-          setIsBranchPickerOpen(false);
-          handleBranchChange(newSlug);
-        }}
-        cartItemCount={itemCount}
-      />
-
       <CatalogFooter currentBranch={catalog?.branch} branches={branches} />
     </div>
   );
 }
+

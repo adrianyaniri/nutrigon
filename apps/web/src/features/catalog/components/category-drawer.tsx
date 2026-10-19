@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CategoryOption } from "@/features/catalog/types";
+import { useDialogFocusTrap } from "@/hooks";
 import { cn } from "@/lib/utils/cn";
 
 export interface CategoryDrawerProps {
@@ -23,27 +23,10 @@ export function CategoryDrawer({
   value,
   onChange,
 }: CategoryDrawerProps) {
-  const drawerRef = useRef<HTMLDivElement>(null);
-
-  // Close on Escape and lock background scroll
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [isOpen, onClose]);
+  const drawerRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -64,7 +47,7 @@ export function CategoryDrawer({
       {/* Slide-over Panel */}
       <div
         ref={drawerRef}
-        className="relative z-10 flex h-full w-full max-w-xs flex-col border-r border-border bg-card p-5 shadow-2xl animate-in slide-in-from-left duration-200"
+        className="relative z-10 flex h-full w-full max-w-xs flex-col border-r border-border bg-card p-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-2xl animate-in slide-in-from-left duration-200 overscroll-contain"
       >
         <div className="flex items-center justify-between pb-4 border-b border-border">
           <h2
@@ -84,7 +67,7 @@ export function CategoryDrawer({
         </div>
 
         {/* Category List */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-1.5">
+        <div className="flex-1 overflow-y-auto py-4 space-y-1.5 overscroll-contain">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -100,8 +83,8 @@ export function CategoryDrawer({
                 className={cn(
                   "flex min-h-[48px] w-full items-center justify-between rounded-xl px-4 text-sm font-medium transition-all border",
                   isSelected
-                    ? "border-brand-gold bg-brand-gold/15 text-white font-semibold shadow-2xs"
-                    : "border-border/60 bg-brand-surface/40 text-zinc-300 hover:border-brand-gold/40 hover:bg-brand-surface hover:text-white"
+                    ? "border-brand-gold bg-brand-gold/15 text-foreground font-semibold shadow-2xs"
+                    : "border-border/60 bg-brand-surface/40 text-muted-foreground hover:border-brand-gold/40 hover:bg-brand-surface hover:text-foreground"
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -112,7 +95,7 @@ export function CategoryDrawer({
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
                     isSelected
-                      ? "bg-brand-gold text-brand-surface font-bold"
+                      ? "bg-brand-gold text-brand-dark font-bold"
                       : "bg-muted text-muted-foreground"
                   )}
                 >

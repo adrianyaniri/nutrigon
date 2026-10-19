@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
+import { MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
 import { cn } from "@/lib/utils/cn";
@@ -10,12 +10,11 @@ export interface CatalogHeaderProps {
   cartItemCount: number;
   onOpenCategories?: () => void;
   onOpenCart?: () => void;
-  onOpenBranchPicker?: () => void;
 }
 
 /**
  * Editorial header with perfectly centered branding.
- * Left: Mobile category drawer toggle / Responsive branch selector pill.
+ * Left: Mobile category drawer toggle & static read-only branch badge.
  * Center: Nutrigon Logo and brand identity.
  * Right: Cart button.
  */
@@ -25,7 +24,6 @@ export function CatalogHeader({
   cartItemCount,
   onOpenCategories,
   onOpenCart,
-  onOpenBranchPicker,
 }: CatalogHeaderProps) {
   const [animateBadge, setAnimateBadge] = useState(false);
   const prevCountRef = useRef(cartItemCount);
@@ -41,7 +39,7 @@ export function CatalogHeader({
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 md:px-6">
-        {/* Left Column: Mobile Menu Toggle / Responsive Branch Location */}
+        {/* Left Column: Mobile Menu Toggle & Read-Only Branch Badge */}
         <div className="flex w-1/3 md:w-1/4 items-center justify-start gap-1.5 sm:gap-2">
           {onOpenCategories && (
             <button
@@ -55,27 +53,18 @@ export function CatalogHeader({
             </button>
           )}
 
-          {branchName &&
-            (onOpenBranchPicker ? (
-              <button
-                type="button"
-                onClick={onOpenBranchPicker}
-                aria-label={`Sucursal actual: ${branchName}. Tocar para cambiar de sucursal`}
-                className="flex min-h-[44px] items-center gap-1 sm:gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 text-xs text-muted-foreground hover:border-brand-gold hover:text-foreground transition-all group shadow-2xs"
-              >
-                <MapPin className="size-3.5 text-brand-gold shrink-0 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span className="font-medium text-foreground max-w-[75px] sm:max-w-none truncate">
-                  <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
-                  {branchName}
-                </span>
-                <ChevronDown className="size-3 text-brand-gold/80 shrink-0 transition-transform group-hover:translate-y-0.5" aria-hidden="true" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/60 px-3 py-1.5 text-xs text-muted-foreground">
-                <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
-                <span className="font-medium text-foreground">Sucursal {branchName}</span>
-              </div>
-            ))}
+          {branchName && (
+            <div
+              aria-label={`Sucursal actual: ${branchName}`}
+              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 py-1.5 text-xs text-muted-foreground shadow-2xs"
+            >
+              <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+              <span className="font-medium text-foreground max-w-[85px] sm:max-w-none truncate">
+                <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
+                {branchName}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Center Column: Prominent Centered Brand Logo */}
@@ -85,7 +74,15 @@ export function CatalogHeader({
             className="flex items-center gap-2.5 sm:gap-3 group"
           >
             <span className="relative flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 shadow-md bg-brand-surface transition-transform group-hover:scale-105">
-              <img src="/Logo.jpeg" alt="Nutrigon" className="size-full object-cover" />
+              <img
+                src="/Logo.jpeg"
+                alt="Nutrigon"
+                width="44"
+                height="44"
+                loading="eager"
+                decoding="async"
+                className="size-full object-cover"
+              />
             </span>
             <div className="flex flex-col leading-tight text-center sm:text-left">
               <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-foreground">

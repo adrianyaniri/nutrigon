@@ -43,58 +43,63 @@ export class R2StorageProvider implements IMediaStorageProvider {
     );
   }
 
-  private getClient(): S3Client {
-    if (!this.s3Client) {
-      this.s3Client = new S3Client({
-        region: 'auto',
-        endpoint: `https://${this.config.accountId}.r2.cloudflarestorage.com`,
-        forcePathStyle: true,
-        requestChecksumCalculation: 'WHEN_REQUIRED',
-        credentials: {
-          accessKeyId: this.config.accessKeyId!,
-          secretAccessKey: this.config.secretAccessKey!,
-        },
-      });
-    }
+  private getOrCreateClient(): S3Client {
+    this.s3Client ??= new S3Client({
+      region: 'auto',
+      endpoint: `https://${this.config.accountId}.r2.cloudflarestorage.com`,
+      forcePathStyle: true,
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      credentials: {
+        accessKeyId: this.config.accessKeyId!,
+        secretAccessKey: this.config.secretAccessKey!,
+      },
+    });
     return this.s3Client;
   }
 
-  async createPresignedPutUrl(params: PresignPutParams): Promise<PresignedUploadResult> {
-    if (!this.isConfigured()) {
-      if (this.config.nodeEnv === 'production') {
-        throw new InternalServerErrorException(
-          'Cloudflare R2 storage credentials are not configured',
-        );
-      }
+  private createDevelopmentFallbackUrl(params: PresignPutParams): PresignedUploadResult {
+    this.logger.warn(
+      'Cloudflare R2 credentials not set — returning local development mock presigned URL',
+    );
+    const basePublic = (this.config.publicUrl || 'https://pub-r2.nutrigon.com').replace(
+      /\/+$/,
+      '',
+    );
+    const bucket = this.config.bucketName || 'nutrigon-media';
 
-      this.logger.warn(
-        'Cloudflare R2 credentials not set — returning local development mock presigned URL',
+    return {
+      uploadUrl: `https://local-r2.nutrigon.dev/${bucket}/${params.key}?X-Amz-Expires=${params.expiresInSeconds}`,
+      publicUrl: `${basePublic}/${params.key}`,
+    };
+  }
+
+  async createPresignedPutUrl(params: PresignPutParams): Promise<PresignedUploadResult> {
+    if (!this.isConfigured() && this.config.nodeEnv === 'production') {
+      throw new InternalServerErrorException(
+        'Cloudflare R2 storage credentials are not configured',
       );
-      const basePublic = (
-        this.config.publicUrl || 'https://pub-r2.nutrigon.com'
-      ).replace(/\/+$/, '');
-      return {
-        uploadUrl: `https://local-r2.nutrigon.dev/${this.config.bucketName || 'nutrigon-media'}/${params.key}?X-Amz-Expires=${params.expiresInSeconds}`,
-        publicUrl: `${basePublic}/${params.key}`,
-      };
+    }
+
+    if (!this.isConfigured()) {
+      return this.createDevelopmentFallbackUrl(params);
     }
 
     const command = new PutObjectCommand({
       Bucket: this.config.bucketName!,
       Key: params.key,
       ContentType: params.contentType,
+      ContentLength: params.contentLength,
     });
 
-    const uploadUrl = await getSignedUrl(this.getClient(), command, {
+    const uploadUrl = await getSignedUrl(this.getOrCreateClient(), command, {
       expiresIn: params.expiresInSeconds,
     });
 
     const basePublic = this.config.publicUrl!.replace(/\/+$/, '');
-    const publicUrl = `${basePublic}/${params.key}`;
 
     return {
       uploadUrl,
-      publicUrl,
+      publicUrl: `${basePublic}/${params.key}`,
     };
   }
 }

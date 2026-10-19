@@ -105,5 +105,18 @@ describe('MediaModule (e2e)', () => {
       expect(res.body.uploadUrl).toContain(res.body.key);
       expect(res.body.publicUrl).toContain(res.body.key);
     });
+
+    it('returns 400 when fileSize exceeds 5 MB limit', async () => {
+      await request(app.getHttpServer())
+        .post('/api/v1/media/upload-url')
+        .set('Authorization', `Bearer ${adminGeneralToken}`)
+        .send({
+          fileName: 'almendras-pesadas.webp',
+          contentType: 'image/webp',
+          folder: 'products',
+          fileSize: 6 * 1024 * 1024,
+        })
+        .expect(400);
+    });
   });
 });

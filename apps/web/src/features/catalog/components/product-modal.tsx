@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Check, CheckCircle2, ShieldCheck, ShoppingBag, Store, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/atoms/product-image";
@@ -10,6 +10,7 @@ import {
 } from "@/features/catalog/lib/portion-pricing";
 import { getEffectivePrice } from "@/features/catalog/lib/filter-products";
 import type { CatalogBranch, CatalogCategory, CatalogProduct } from "../types";
+import { useDialogFocusTrap } from "@/hooks";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 
@@ -33,8 +34,10 @@ export function ProductModal({
   const [quantity, setQuantity] = useState(1);
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
 
-  const modalRef = useRef<HTMLDivElement>(null);
-  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const modalRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
   const modalTitleId = useId();
 
   // Reset state when opening a new product
@@ -45,54 +48,6 @@ export function ProductModal({
       setIsAddedFeedback(false);
     }
   }, [isOpen, product?.id]);
-
-  // A11y: Scroll lock, Escape listener & Focus Trap
-  useEffect(() => {
-    if (!isOpen) return;
-
-    previouslyFocusedElementRef.current = document.activeElement as HTMLElement | null;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-
-      if (event.key === "Tab" && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length === 0) return;
-
-        const first = focusableElements[0];
-        const last = focusableElements[focusableElements.length - 1];
-
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    // Set initial focus
-    requestAnimationFrame(() => {
-      const closeBtn = modalRef.current?.querySelector<HTMLElement>("button");
-      closeBtn?.focus();
-    });
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = originalOverflow;
-      previouslyFocusedElementRef.current?.focus();
-    };
-  }, [isOpen, onClose]);
 
   const categoryName = useMemo(() => {
     if (!product) return "Dietética";
@@ -159,7 +114,7 @@ export function ProductModal({
           <X className="size-5" />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 overflow-y-auto">
+        <div className="grid grid-cols-1 md:grid-cols-12 overflow-y-auto overscroll-contain">
           {/* Left Column: Visual & Organic Authenticity Badges */}
           <div className="md:col-span-5 relative bg-brand-surface/40 border-b md:border-b-0 md:border-r border-border p-5 sm:p-6 flex flex-col justify-between gap-4">
             <div className="space-y-4">

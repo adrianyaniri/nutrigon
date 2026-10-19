@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CatalogProduct } from "../types";
 import { ProductCard } from "./product-card";
 
@@ -15,12 +15,17 @@ const base: CatalogProduct = {
 };
 
 describe("ProductCard", () => {
-  it("shows name, sale unit and price", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("shows name, sale unit, starting 100g portion price, and kg price for WEIGHT products", () => {
     render(<ProductCard product={base} />);
     expect(screen.getByRole("heading", { name: "Almendras Nonpareil" })).toBeInTheDocument();
     expect(screen.getByText("Granel · Precio por 1 kg")).toBeInTheDocument();
     expect(screen.getByText("/ kg")).toBeInTheDocument();
     expect(screen.getByText(/1\.450/)).toBeInTheDocument();
+    expect(screen.getByText(/Desde.*150.*\/ 100g/)).toBeInTheDocument();
     expect(screen.queryByText("Oferta")).not.toBeInTheDocument();
   });
 
@@ -31,11 +36,15 @@ describe("ProductCard", () => {
     expect(screen.getByText(/2\.000/)).toBeInTheDocument();
   });
 
-  it("calls onAdd with the product through an accessibly named button", () => {
+  it("renders an 'Elegir' button for WEIGHT products without false 'added' checkmark", () => {
     const onAdd = vi.fn();
     render(<ProductCard product={base} onAdd={onAdd} />);
-    fireEvent.click(screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" }));
+    const chooseBtn = screen.getByRole("button", { name: "Elegir gramos de Almendras Nonpareil" });
+    fireEvent.click(chooseBtn);
     expect(onAdd).toHaveBeenCalledWith(base);
+    expect(
+      screen.queryByRole("button", { name: "Almendras Nonpareil agregado al pedido" })
+    ).not.toBeInTheDocument();
   });
 
   it("does not render an add button without onAdd", () => {
@@ -67,12 +76,21 @@ describe("ProductCard", () => {
     expect(onSelect).toHaveBeenCalledWith(base);
   });
 
-  it("displays transient check feedback when adding to cart", () => {
+  it("displays transient check feedback when adding a UNIT product to cart", () => {
     const onAdd = vi.fn();
-    render(<ProductCard product={base} onAdd={onAdd} />);
-    const addBtn = screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" });
+    const unitProduct: CatalogProduct = {
+      ...base,
+      id: "p2",
+      name: "Galletas de Arroz",
+      saleUnit: "UNIT",
+      price: 1200,
+    };
+    render(<ProductCard product={unitProduct} onAdd={onAdd} />);
+    const addBtn = screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" });
     fireEvent.click(addBtn);
-    expect(onAdd).toHaveBeenCalledWith(base);
-    expect(screen.getByRole("button", { name: "Almendras Nonpareil agregado al pedido" })).toBeInTheDocument();
+    expect(onAdd).toHaveBeenCalledWith(unitProduct);
+    expect(
+      screen.getByRole("button", { name: "Galletas de Arroz agregado al pedido" })
+    ).toBeInTheDocument();
   });
 });

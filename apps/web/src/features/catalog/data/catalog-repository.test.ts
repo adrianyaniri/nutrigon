@@ -194,10 +194,10 @@ describe("createHttpCatalogRepository", () => {
     const catalog = await repo.getBranchCatalog("origone");
 
     const [comboItem, regularItem] = catalog.products;
-    expect(comboItem.imageUrl).toBe(
+    expect(comboItem?.imageUrl).toBe(
       "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
     );
-    expect(regularItem.imageUrl).toBe(
+    expect(regularItem?.imageUrl).toBe(
       "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
     );
   });

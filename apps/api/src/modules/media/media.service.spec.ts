@@ -91,4 +91,33 @@ describe('MediaService (TDD)', () => {
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it('rejects requests where fileSize exceeds the 5 MB limit', async () => {
+    const sixMegabytes = 6 * 1024 * 1024;
+
+    await expect(
+      service.generateUploadUrl({
+        fileName: 'producto-pesado.webp',
+        contentType: 'image/webp',
+        folder: 'products',
+        fileSize: sixMegabytes,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('forwards valid fileSize as contentLength to the storage provider', async () => {
+    const result = await service.generateUploadUrl({
+      fileName: 'combo-energetico.webp',
+      contentType: 'image/webp',
+      folder: 'combos',
+      fileSize: 185_000,
+    });
+
+    expect(storageProvider.lastParams).toEqual({
+      key: result.key,
+      contentType: 'image/webp',
+      expiresInSeconds: 300,
+      contentLength: 185_000,
+    });
+  });
 });

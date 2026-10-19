@@ -1,3 +1,4 @@
+import { uploadOptimizedMediaToR2 } from "@/lib/image/optimize-image";
 import type {
   BranchComboAdminItem,
   CreateComboInput,
@@ -248,41 +249,13 @@ export function createHttpCombosRepository(
     },
 
     async uploadComboImage(token, file) {
-      const urlRes = await fetchFn(`${normalizedBase}/api/v1/media/upload-url`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type || "image/jpeg",
-          folder: "combos",
-        }),
+      return uploadOptimizedMediaToR2({
+        baseUrl: normalizedBase,
+        fetchFn,
+        token,
+        file,
+        folder: "combos",
       });
-
-      if (!urlRes.ok) {
-        throw await parseApiError(urlRes, "No se pudo obtener la URL de subida a Cloudflare R2.");
-      }
-
-      const { uploadUrl, publicUrl } = (await urlRes.json()) as {
-        uploadUrl: string;
-        publicUrl: string;
-      };
-
-      const uploadRes = await fetchFn(uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type || "image/jpeg",
-        },
-        body: file,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error("No se pudo transferir la imagen a Cloudflare R2.");
-      }
-
-      return publicUrl;
     },
   };
 }

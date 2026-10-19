@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Bike,
@@ -23,6 +23,7 @@ import {
 } from "@/features/cart/lib/format-order-message";
 import { getEffectivePrice } from "@/features/catalog/lib/filter-products";
 import type { CatalogBranch, CatalogProduct, SaleUnit } from "@/features/catalog/types";
+import { useDialogFocusTrap } from "@/hooks";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 
@@ -44,9 +45,12 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
   const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">("pickup");
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const drawerRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   const nameInputId = useId();
   const notesInputId = useId();
@@ -79,56 +83,6 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
     () => cartItems.reduce((acc, item) => acc + item.lineTotal, 0),
     [cartItems]
   );
-
-  // A11y: Scroll lock, Escape listener & Focus Trap
-  useEffect(() => {
-    if (!isOpen) return;
-
-    previouslyFocusedElementRef.current = document.activeElement as HTMLElement | null;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-
-      if (event.key === "Tab" && drawerRef.current) {
-        const focusableElements = drawerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length === 0) return;
-
-        const first = focusableElements[0];
-        const last = focusableElements[focusableElements.length - 1];
-
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    // Set initial focus inside drawer
-    requestAnimationFrame(() => {
-      const firstFocusable = drawerRef.current?.querySelector<HTMLElement>(
-        "button, input, textarea"
-      );
-      firstFocusable?.focus();
-    });
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = originalOverflow;
-      previouslyFocusedElementRef.current?.focus();
-    };
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -175,7 +129,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
       <div
         ref={drawerRef}
         className={cn(
-          "relative z-10 flex h-full w-full max-w-lg md:max-w-xl flex-col border-l border-border bg-card shadow-2xl",
+          "relative z-10 flex h-full w-full max-w-lg md:max-w-xl flex-col border-l border-border bg-card shadow-2xl overscroll-contain",
           "animate-in slide-in-from-right duration-200 motion-reduce:animate-none"
         )}
       >
@@ -204,17 +158,43 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
             </div>
           </div>
 
-          {itemCount > 0 && (
-            <button
-              type="button"
-              onClick={clear}
-              aria-label="Vaciar carrito"
-              className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors active:scale-95"
-            >
-              <Trash2 className="size-4" />
-              <span className="hidden sm:inline">Vaciar</span>
-            </button>
-          )}
+          {itemCount > 0 &&
+            (isConfirmingClear ? (
+              <div
+                className="flex items-center gap-1.5"
+                role="group"
+                aria-label="Confirmar vaciado de carrito"
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmingClear(false)}
+                  className="min-h-[38px] rounded-lg px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clear();
+                    setIsConfirmingClear(false);
+                  }}
+                  aria-label="Confirmar vaciar carrito"
+                  className="min-h-[38px] rounded-lg bg-destructive px-2.5 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                >
+                  Sí, vaciar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsConfirmingClear(true)}
+                aria-label="Vaciar carrito"
+                className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors active:scale-95"
+              >
+                <Trash2 className="size-4" />
+                <span className="hidden sm:inline">Vaciar</span>
+              </button>
+            ))}
         </header>
 
         {/* Scrollable Content */}

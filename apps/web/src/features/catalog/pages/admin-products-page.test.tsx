@@ -27,7 +27,7 @@ function renderAdminProductsPage() {
           setSelectedBranchSlug: () => {},
           isLoading: false,
           isAuthenticated: true,
-          login: async () => {},
+          login: async () => ({} as never),
           logout: () => {},
         }}
       >
@@ -153,5 +153,20 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     fireEvent.keyDown(window, { key: "Escape" });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("filters branch products by category selector", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Almendras Nonpareil");
+    await screen.findByRole("option", { name: "Sin TACC" });
+
+    const categorySelect = screen.getByLabelText("Filtrar por categoría");
+    fireEvent.change(categorySelect, { target: { value: "c-sin-tacc" } });
+
+    expect(await screen.findByText("Galletas de Arroz Sin TACC")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    });
   });
 });

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CartProvider } from "@/features/cart";
 import { CatalogLandingPage } from "./catalog-landing-page";
 import { CatalogPage } from "./catalog-page";
@@ -25,6 +25,10 @@ function renderPage(initialEntry = "/catalogo/centro") {
 describe("CatalogPage & Route-based Branching", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it("renders products of the specified branch route", async () => {
@@ -53,35 +57,30 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
   });
 
-  it("navigates to another branch via footer links and updates availability", async () => {
+  it("renders branch info in footer without catalog switching links", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
-    // Pistachos are sold in Centro but not in Sur.
-    expect(screen.getByText("Pistachos Tostados")).toBeInTheDocument();
 
-    // Click link to "Sur" in footer
-    const surLink = screen.getByRole("link", { name: "Sur" });
-    fireEvent.click(surLink);
-
-    expect(await screen.findByText(/en Sucursal Sur/)).toBeInTheDocument();
-    expect(screen.queryByText("Pistachos Tostados")).not.toBeInTheDocument();
+    expect(screen.getByText("Sucursal Sur")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Sur" })).not.toBeInTheDocument();
   });
 
-  it("adds UNIT products directly to cart when clicking the add button", async () => {
+  it("adds UNIT products directly to cart and shows mobile sticky cart dock", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Galletas de Arroz");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" }));
     expect(screen.getByRole("button", { name: "Mi pedido, 1 producto" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ver pedido: 1 producto/i })).toBeInTheDocument();
   });
 
-  it("opens portion modal when clicking the add button on WEIGHT products", async () => {
+  it("opens portion modal when clicking the choose button on WEIGHT products", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Agregar Almendras Nonpareil al pedido" }));
+    fireEvent.click(screen.getByRole("button", { name: "Elegir gramos de Almendras Nonpareil" }));
 
     // Modal opens instead of directly adding to cart
     expect(await screen.findByRole("dialog", { name: "Almendras Nonpareil" })).toBeInTheDocument();
@@ -147,41 +146,29 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
   });
 
-  it("shows branch not found view when navigating to an invalid branch slug", async () => {
+  it("shows QR instruction on branch not found view without branch switching buttons", async () => {
     renderPage("/catalogo/inexistente");
     expect(await screen.findByText("Sucursal no encontrada")).toBeInTheDocument();
     expect(screen.getByText(/La sucursal "inexistente" no existe/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Ir a Sucursal Centro/i })).toBeInTheDocument();
+    expect(screen.getByText(/Acceso exclusivo mediante código QR de cada sucursal/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ir a Sucursal/i })).not.toBeInTheDocument();
   });
 
-  it("renders branch selection landing page when visiting /catalogo root", async () => {
+  it("renders QR instruction and institutional branch directory when visiting /catalogo root", async () => {
     renderPage("/catalogo");
-    expect(await screen.findByText("Elegí tu sucursal más cercana")).toBeInTheDocument();
-    expect(await screen.findByText("Ver Catálogo Centro")).toBeInTheDocument();
-    expect(screen.getByText("Ver Catálogo Norte")).toBeInTheDocument();
-    expect(screen.getByText("Ver Catálogo Sur")).toBeInTheDocument();
+    expect(await screen.findByText("Escaneá el código QR en tu sucursal")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Sucursal Centro" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ver Catálogo/i })).not.toBeInTheDocument();
   });
 
-  it("opens BranchPickerModal when clicking the branch pill in header and switches branch", async () => {
+  it("displays a read-only branch badge in header so customers cannot switch branches without QR", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras Nonpareil");
 
-    // Branch pill is present in header
-    const branchBtn = screen.getByRole("button", { name: /Sucursal actual: Centro/i });
-    expect(branchBtn).toBeInTheDocument();
-
-    // Click branch pill to open modal
-    fireEvent.click(branchBtn);
-
-    // Modal is opened
-    expect(await screen.findByRole("dialog", { name: "Seleccionar Sucursal" })).toBeInTheDocument();
-
-    // Select "Norte" branch
-    const norteOption = screen.getByRole("radio", { name: /Sucursal Norte/i });
-    fireEvent.click(norteOption);
-
-    // Modal closes and user is navigated to Norte branch
-    expect(await screen.findByText(/en Sucursal Norte/)).toBeInTheDocument();
+    // Static badge is present, not an interactive button
+    expect(screen.getByLabelText("Sucursal actual: Centro")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Sucursal actual: Centro/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Seleccionar Sucursal" })).not.toBeInTheDocument();
   });
 
   it("renders CatalogHero with branch name on root view and hides it when filtering", async () => {

@@ -127,7 +127,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     await screen.findByText(/Sucursal Origone/i);
 
     const editButtons = screen.getAllByRole("button", { name: /Editar/i });
-    fireEvent.click(editButtons[0]);
+    fireEvent.click(editButtons[0]!);
 
     expect(
       await screen.findByRole("heading", { name: /Editar Sucursal/i })
@@ -153,7 +153,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     const pauseButtons = screen.getAllByTitle(/Pausar sucursal/i);
     expect(pauseButtons.length).toBeGreaterThan(0);
 
-    fireEvent.click(pauseButtons[0]);
+    fireEvent.click(pauseButtons[0]!);
 
     const statusBanner = await screen.findByRole("status");
     expect(statusBanner).toHaveTextContent(/Sucursal "Origone" pausada/i);
@@ -183,7 +183,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     const pricingButtons = screen.getAllByRole("button", { name: /Precios y Ofertas/i });
     expect(pricingButtons.length).toBeGreaterThan(0);
 
-    fireEvent.click(pricingButtons[0]);
+    fireEvent.click(pricingButtons[0]!);
     expect(mockSetBranch).toHaveBeenCalledWith("origone");
   });
 });
