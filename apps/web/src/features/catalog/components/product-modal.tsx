@@ -310,7 +310,7 @@ export function ProductModal({
                 className={cn(
                   "w-full min-h-[48px] rounded-xl font-headline font-bold text-sm sm:text-base tracking-wide flex items-center justify-center gap-2.5 shadow-lg shadow-brand-gold/15 active:scale-[0.99] transition-all",
                   isAddedFeedback
-                    ? "bg-emerald-600 text-white hover:bg-emerald-600"
+                    ? "bg-status-success text-white hover:bg-status-success/90"
                     : "bg-primary text-primary-foreground hover:bg-brand-gold-hover"
                 )}
               >

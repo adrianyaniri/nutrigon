@@ -14,7 +14,7 @@ interface CategoryNavProps {
 export function CategoryNav({ options, value, onChange }: CategoryNavProps) {
   return (
     <nav aria-label="Categorías" className="space-y-3">
-      <h2 className="px-3 text-xs font-bold uppercase tracking-wider text-brand-gold">
+      <h2 className="px-3 text-xs font-bold uppercase tracking-wider text-brand-gold-text">
         Categorías
       </h2>
       <ul className="space-y-1">

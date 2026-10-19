@@ -95,7 +95,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                           Sucursal {b.name}
                         </span>
                         {isCurrent && (
-                          <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-brand-gold">
+                          <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold-text">
                             Actual
                           </span>
                         )}
@@ -103,7 +103,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
 
                       {b.address && (
                         <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="size-3.5 text-brand-gold shrink-0 mt-0.5" aria-hidden="true" />
+                          <MapPin className="size-3.5 text-brand-gold-text shrink-0 mt-0.5" aria-hidden="true" />
                           <span>{b.address}</span>
                         </div>
                       )}
@@ -114,7 +114,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                             href={mapsQuery}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-gold hover:underline"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-gold-text hover:underline"
                           >
                             <span>Ver en Google Maps</span>
                             <ExternalLink className="size-3" aria-hidden="true" />
@@ -126,7 +126,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                     <div className="pt-2 border-t border-border/40 space-y-1 text-[11px] text-muted-foreground">
                       {b.whatsappNumber && (
                         <div className="flex items-center gap-1.5">
-                          <MessageCircle className="size-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
+                          <MessageCircle className="size-3.5 shrink-0 text-status-success" aria-hidden="true" />
                           <a
                             href={`https://wa.me/${b.whatsappNumber}`}
                             target="_blank"
@@ -140,7 +140,7 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
 
                       {b.phone && (
                         <div className="flex items-center gap-1.5">
-                          <Phone className="size-3.5 shrink-0 text-zinc-400" aria-hidden="true" />
+                          <Phone className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                           <span>Tel: {b.phone}</span>
                         </div>
                       )}

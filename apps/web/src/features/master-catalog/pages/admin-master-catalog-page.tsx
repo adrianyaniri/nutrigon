@@ -5,9 +5,10 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  FolderPlus,
+  FolderCog,
   Loader2,
   Package,
+  Pencil,
   Plus,
   Search,
   ShieldAlert,
@@ -484,9 +485,10 @@ export function AdminMasterCatalogPage() {
               setIsCategoryModalOpen(true);
             }}
             className="min-h-[44px] border-outline hover:bg-surface-hover text-xs font-semibold gap-2"
+            aria-label="Nueva Categoría o Gestionar Categorías"
           >
-            <FolderPlus className="size-4 text-brand-gold" />
-            <span>Nueva Categoría</span>
+            <FolderCog className="size-4 text-brand-gold" />
+            <span>Gestionar Categorías ({categories.length})</span>
           </Button>
 
           <Button
@@ -510,12 +512,25 @@ export function AdminMasterCatalogPage() {
             </span>
           </div>
           <div className="h-4 w-px bg-outline" aria-hidden="true" />
-          <div className="flex items-center gap-2">
-            <span className="text-brand-gold font-medium">Categorías Maestras</span>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCategoryId("");
+              setCategoryName("");
+              setCategorySlug("");
+              setCategoryFormError(null);
+              setIsCategoryModalOpen(true);
+            }}
+            title="Hacé clic para ver y editar todas las categorías"
+            aria-label="Ver y editar categorías maestras"
+            className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer group"
+          >
+            <span className="text-brand-gold font-medium group-hover:underline">Categorías Maestras</span>
             <span className="font-headline text-base font-bold text-brand-gold tabular-nums">
               {categories.length}
             </span>
-          </div>
+            <Pencil className="size-3 text-brand-gold/70 group-hover:text-brand-gold ml-0.5" />
+          </button>
         </div>
         <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
           <CheckCircle2 className="size-3.5 text-emerald-400" />
@@ -748,6 +763,7 @@ export function AdminMasterCatalogPage() {
       <MasterCategoryModal
         isOpen={isCategoryModalOpen}
         categories={categories}
+        products={products}
         editingCategoryId={editingCategoryId}
         onSelectCategoryMode={handleSelectCategoryMode}
         categoryName={categoryName}

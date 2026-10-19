@@ -48,7 +48,7 @@ export function CatalogHeader({
               aria-label="Abrir menú de categorías"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/80 px-2.5 sm:px-3 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors md:hidden shadow-2xs shrink-0"
             >
-              <Menu className="size-4 text-brand-gold" aria-hidden="true" />
+              <Menu className="size-4 text-brand-gold-text" aria-hidden="true" />
               <span className="hidden sm:inline">Categorías</span>
             </button>
           )}
@@ -58,7 +58,7 @@ export function CatalogHeader({
               aria-label={`Sucursal actual: ${branchName}`}
               className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 py-1.5 text-xs text-muted-foreground shadow-2xs"
             >
-              <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+              <MapPin className="size-3.5 text-brand-gold-text shrink-0" aria-hidden="true" />
               <span className="font-medium text-foreground max-w-[85px] sm:max-w-none truncate">
                 <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
                 {branchName}
@@ -88,7 +88,7 @@ export function CatalogHeader({
               <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-foreground">
                 Nutrigon
               </span>
-              <span className="text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
+              <span className="text-[11px] font-semibold tracking-wider text-brand-gold-text uppercase">
                 Dietética &amp; Cerealera
               </span>
             </div>
@@ -103,7 +103,7 @@ export function CatalogHeader({
             aria-label="Acceso al panel de administración"
             className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border/80 bg-brand-surface/60 text-muted-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs"
           >
-            <Shield className="size-4 text-brand-gold/80" aria-hidden="true" />
+            <Shield className="size-4 text-brand-gold-text" aria-hidden="true" />
             <span className="sr-only">Acceso Administración</span>
           </Link>
 
@@ -125,7 +125,7 @@ export function CatalogHeader({
                 aria-hidden="true"
                 className={cn(
                   "absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow-xs transition-all duration-200",
-                  animateBadge && "scale-125 bg-emerald-500 text-white ring-2 ring-emerald-400/40"
+                  animateBadge && "scale-125 bg-status-success text-white ring-2 ring-status-success/40"
                 )}
               >
                 {cartItemCount}

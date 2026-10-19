@@ -95,7 +95,7 @@ export function CatalogLandingPage() {
               <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
                 Nutrigon
               </span>
-              <span className="text-[11px] font-semibold tracking-wider text-brand-gold uppercase">
+              <span className="text-[11px] font-semibold tracking-wider text-brand-gold-text uppercase">
                 Dietética &amp; Cerealera
               </span>
             </span>
@@ -106,7 +106,7 @@ export function CatalogLandingPage() {
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-border bg-card/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:border-brand-gold hover:text-foreground transition-colors"
             title="Acceso al panel de administración"
           >
-            <Shield className="size-3.5 text-brand-gold" aria-hidden="true" />
+            <Shield className="size-3.5 text-brand-gold-text" aria-hidden="true" />
             <span>Acceso Gestión</span>
           </Link>
         </div>
@@ -115,7 +115,7 @@ export function CatalogLandingPage() {
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col items-center justify-center px-4 py-8 md:px-6 md:py-12">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3.5 py-1 text-xs font-semibold text-amber-800 dark:text-brand-gold mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3.5 py-1 text-xs font-semibold text-brand-gold-text mb-4">
             <QrCode className="size-3.5" aria-hidden="true" />
             Acceso Exclusivo por Código QR
           </div>
@@ -131,7 +131,7 @@ export function CatalogLandingPage() {
           {/* 3-Step QR Instructions */}
           <div className="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
             <div className="rounded-xl border border-border bg-card/70 p-3.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-brand-gold">
+              <div className="flex items-center gap-2 text-xs font-bold text-brand-gold-text">
                 <Store className="size-4 shrink-0" aria-hidden="true" />
                 <span>1. En tu sucursal</span>
               </div>
@@ -140,7 +140,7 @@ export function CatalogLandingPage() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card/70 p-3.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-brand-gold">
+              <div className="flex items-center gap-2 text-xs font-bold text-brand-gold-text">
                 <Smartphone className="size-4 shrink-0" aria-hidden="true" />
                 <span>2. Escaneá el QR</span>
               </div>
@@ -149,7 +149,7 @@ export function CatalogLandingPage() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card/70 p-3.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-brand-gold">
+              <div className="flex items-center gap-2 text-xs font-bold text-brand-gold-text">
                 <MessageCircle className="size-4 shrink-0" aria-hidden="true" />
                 <span>3. Armá tu pedido</span>
               </div>
@@ -217,11 +217,11 @@ export function CatalogLandingPage() {
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="flex size-10 items-center justify-center rounded-xl bg-brand-gold/15 text-brand-gold">
+                        <span className="flex size-10 items-center justify-center rounded-xl bg-brand-gold/15 text-brand-gold-text">
                           <Store className="size-5" aria-hidden="true" />
                         </span>
                         {details.badge && (
-                          <span className="rounded-full bg-brand-gold/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-brand-gold">
+                          <span className="rounded-full bg-brand-gold/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold-text">
                             {details.badge}
                           </span>
                         )}
@@ -232,7 +232,7 @@ export function CatalogLandingPage() {
                           Sucursal {branch.name}
                         </h3>
                         <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="size-3.5 shrink-0 text-brand-gold mt-0.5" aria-hidden="true" />
+                          <MapPin className="size-3.5 shrink-0 text-brand-gold-text mt-0.5" aria-hidden="true" />
                           <span>{displayAddress}</span>
                         </div>
                       </div>
@@ -254,7 +254,7 @@ export function CatalogLandingPage() {
                         rel="noopener noreferrer"
                         className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-brand-surface/50 px-3 py-2 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors"
                       >
-                        <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+                        <MapPin className="size-3.5 text-brand-gold-text shrink-0" aria-hidden="true" />
                         <span>Cómo llegar</span>
                         <ExternalLink className="size-3 opacity-60 shrink-0" aria-hidden="true" />
                       </a>
@@ -265,7 +265,7 @@ export function CatalogLandingPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={`Consultar por WhatsApp a Sucursal ${branch.name}`}
-                          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-status-success/30 bg-status-success/10 px-3 py-2 text-xs font-semibold text-status-success hover:bg-status-success/20 transition-colors"
                         >
                           <MessageCircle className="size-3.5 shrink-0" aria-hidden="true" />
                           <span>WhatsApp</span>

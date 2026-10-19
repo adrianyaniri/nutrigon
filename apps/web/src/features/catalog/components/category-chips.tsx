@@ -26,7 +26,7 @@ export function CategoryChips({
           type="button"
           onClick={onOpenDrawer}
           aria-label="Abrir todas las categorías"
-          className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-brand-gold/40 bg-brand-surface/90 px-3.5 py-2 text-xs font-semibold text-amber-800 dark:text-brand-gold hover:border-brand-gold hover:text-foreground transition-colors shadow-2xs"
+          className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-brand-gold/40 bg-brand-surface/90 px-3.5 py-2 text-xs font-semibold text-brand-gold-text hover:border-brand-gold hover:text-foreground transition-colors shadow-2xs"
         >
           <Menu className="size-4" aria-hidden="true" />
           <span>Categorías</span>

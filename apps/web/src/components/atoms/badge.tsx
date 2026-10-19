@@ -10,7 +10,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   sale: "bg-primary text-primary-foreground",
   neutral: "bg-secondary text-secondary-foreground",
-  featured: "bg-brand-gold text-stone-950 font-bold",
+  featured: "bg-brand-gold text-brand-dark font-bold",
 };
 
 export function Badge({ variant = "neutral", className, ...props }: BadgeProps) {

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { AuthContext } from "@/features/auth/context/auth-context";
@@ -163,6 +163,45 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
 
     expect(
       await screen.findByText(/fue desactivado en el catálogo maestro/i)
+    ).toBeInTheDocument();
+  });
+
+  it("allows browsing category list and editing category directly without mode dropdown", async () => {
+    renderMasterCatalogPage(Role.ADMIN_GENERAL);
+
+    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText(/Gestionar Categorías \([1-9]/);
+
+    // Click on the summary pill or category button
+    const summaryBtn = screen.getByRole("button", { name: /Ver y editar categorías maestras/i });
+    fireEvent.click(summaryBtn);
+
+    const dialog = await screen.findByRole("dialog");
+
+    // Switch to list tab
+    const listTab = within(dialog).getByRole("tab", { name: /Lista de Categorías/i });
+    fireEvent.click(listTab);
+
+    // See category within dialog list
+    expect(within(dialog).getByText("Harinas & Granos")).toBeInTheDocument();
+
+    // Click direct edit button on Harinas & Granos
+    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Harinas & Granos" });
+    fireEvent.click(editBtn);
+
+    // Form opens pre-filled
+    expect(within(dialog).getByDisplayValue("Harinas & Granos")).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue("harinas-granos")).toBeInTheDocument();
+
+    // Change name
+    const catNameInput = within(dialog).getByLabelText(/Nombre de la Categoría \*/i);
+    fireEvent.change(catNameInput, { target: { value: "Harinas y Cereales" } });
+
+    // Submit
+    fireEvent.click(within(dialog).getByRole("button", { name: "Guardar Categoría" }));
+
+    expect(
+      await screen.findByText(/Categoría "Harinas y Cereales" actualizada exitosamente/i)
     ).toBeInTheDocument();
   });
 });

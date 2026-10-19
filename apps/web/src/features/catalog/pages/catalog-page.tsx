@@ -111,11 +111,11 @@ export function CatalogPage() {
         <CatalogHeader branchSlug={branchSlug ?? ""} cartItemCount={0} />
         <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col items-center justify-center px-4 py-12">
           <EmptyState
-            icon={<MapPin className="size-10 text-brand-gold" />}
+            icon={<MapPin className="size-10 text-brand-gold-text" />}
             title="Sucursal no encontrada"
             description={`La sucursal "${branchSlug}" no existe o el código QR es incorrecto. Escaneá el código QR en el mostrador de tu sucursal para acceder al catálogo correspondiente.`}
             action={
-              <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-2.5 text-xs font-semibold text-amber-800 dark:text-brand-gold">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-2.5 text-xs font-semibold text-brand-gold-text">
                 <QrCode className="size-4 shrink-0" aria-hidden="true" />
                 <span>Acceso exclusivo mediante código QR de cada sucursal</span>
               </div>
@@ -202,7 +202,7 @@ export function CatalogPage() {
                     <button
                       type="button"
                       onClick={() => setCategory(null)}
-                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:text-brand-gold hover:bg-brand-gold/25 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-brand-gold-text hover:bg-brand-gold/25 transition-colors"
                       title="Quitar filtro de categoría"
                     >
                       <span>Quitar filtro</span>

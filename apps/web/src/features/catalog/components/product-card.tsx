@@ -84,7 +84,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               <>
                 {product.isFeatured && (
                   <Badge variant="featured" className="shadow-sm flex items-center gap-1">
-                    <Star className="size-3 fill-stone-950" aria-hidden="true" />
+                    <Star className="size-3 fill-brand-dark text-brand-dark" aria-hidden="true" />
                     <span>Destacado</span>
                   </Badge>
                 )}
@@ -99,7 +99,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {describeSaleUnit(product)}
           </span>
           <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
@@ -128,7 +128,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               type="button"
               aria-label={`Elegir gramos de ${product.name}`}
               onClick={handleAdd}
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-amber-800 dark:text-brand-gold hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 transition-all shadow-2xs"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-brand-gold-text hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 transition-all shadow-2xs"
             >
               <Scale className="size-3.5 shrink-0" aria-hidden="true" />
               <span>Elegir</span>
@@ -144,7 +144,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               className={cn(
                 "transition-all duration-200 active:scale-95",
                 isAddedFeedback
-                  ? "bg-emerald-600 text-white hover:bg-emerald-600 scale-105"
+                  ? "bg-status-success text-white hover:bg-status-success/90 scale-105"
                   : "hover:scale-105"
               )}
             >

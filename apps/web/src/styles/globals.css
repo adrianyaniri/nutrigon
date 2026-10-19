@@ -13,28 +13,29 @@
   --font-display: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
 
   /* Brand Tokens (Stitch Nutrigon) */
-  --color-brand-gold: #f5b731;
-  --color-brand-gold-hover: #e5a820;
-  --color-brand-dark: #121316;
-  --color-brand-surface: #1a1d24;
-  --color-brand-card: #1e222b;
-  --color-brand-border: #2a2e39;
-  --color-brand-muted: #94a3b8;
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-hover: var(--brand-gold-hover);
+  --color-brand-gold-text: var(--brand-gold-text);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-card: var(--brand-card);
+  --color-brand-border: var(--brand-border);
+  --color-brand-muted: var(--brand-muted);
 
   /* Surfaces & Elevations */
-  --color-surface: #121316;
-  --color-surface-modal: #16171b;
-  --color-surface-card: #1a1c20;
-  --color-surface-elevated: #22252b;
-  --color-surface-hover: #2a2e36;
-  --color-outline: #2f333d;
-  --color-outline-variant: #3f4452;
+  --color-surface: var(--surface);
+  --color-surface-modal: var(--surface-modal);
+  --color-surface-card: var(--surface-card);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
 
   /* Status Tokens */
-  --color-status-success: #34d399;
-  --color-status-warning: #fbbf24;
-  --color-status-info: #60a5fa;
-  --color-status-destructive: #ef4444;
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-info: var(--status-info);
+  --color-status-destructive: var(--status-destructive);
 
   /* shadcn / UI components mapping */
   --color-background: var(--background);
@@ -95,6 +96,31 @@
   --sidebar-accent-foreground: #1e293b;
   --sidebar-border: #e2e8f0;
   --sidebar-ring: #f5b731;
+
+  /* Brand Tokens in Light Mode (High Contrast WCAG AA) */
+  --brand-gold: #f5b731;
+  --brand-gold-hover: #d97706;
+  --brand-gold-text: #92400e;
+  --brand-dark: #121316;
+  --brand-surface: #f8fafc;
+  --brand-card: #ffffff;
+  --brand-border: #e2e8f0;
+  --brand-muted: #64748b;
+
+  /* Surfaces & Elevations in Light Mode */
+  --surface: #ffffff;
+  --surface-modal: #ffffff;
+  --surface-card: #f8fafc;
+  --surface-elevated: #f1f5f9;
+  --surface-hover: #e2e8f0;
+  --outline: #e2e8f0;
+  --outline-variant: #cbd5e1;
+
+  /* Status Tokens in Light Mode */
+  --status-success: #059669;
+  --status-warning: #d97706;
+  --status-info: #2563eb;
+  --status-destructive: #dc2626;
 }
 
 .dark {
@@ -126,6 +152,31 @@
   --sidebar-accent-foreground: #f2f3f5;
   --sidebar-border: #2f333d;
   --sidebar-ring: #f5b731;
+
+  /* Brand Tokens in Dark Mode */
+  --brand-gold: #f5b731;
+  --brand-gold-hover: #e5a820;
+  --brand-gold-text: #f5b731;
+  --brand-dark: #121316;
+  --brand-surface: #1a1d24;
+  --brand-card: #1e222b;
+  --brand-border: #2a2e39;
+  --brand-muted: #94a3b8;
+
+  /* Surfaces & Elevations in Dark Mode */
+  --surface: #121316;
+  --surface-modal: #16171b;
+  --surface-card: #1a1c20;
+  --surface-elevated: #22252b;
+  --surface-hover: #2a2e36;
+  --outline: #2f333d;
+  --outline-variant: #3f4452;
+
+  /* Status Tokens in Dark Mode */
+  --status-success: #34d399;
+  --status-warning: #fbbf24;
+  --status-info: #60a5fa;
+  --status-destructive: #ef4444;
 }
 
 @layer base {

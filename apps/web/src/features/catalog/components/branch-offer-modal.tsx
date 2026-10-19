@@ -52,16 +52,16 @@ export function BranchOfferModal({
       >
         {/* Mobile Drag Indicator */}
         <div className="flex sm:hidden justify-center items-center -mt-2 pb-1">
-          <div className="w-12 h-1.5 rounded-full bg-zinc-600" />
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
         </div>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-brand-gold-text">
               <Percent className="size-3.5" /> Promoción de Sucursal
             </span>
             <h2
               id="offer-modal-title"
-              className="font-headline text-lg font-bold text-white mt-0.5"
+              className="font-headline text-lg font-bold text-foreground mt-0.5"
             >
               {item.name}
             </h2>
@@ -71,17 +71,17 @@ export function BranchOfferModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal de oferta"
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-zinc-400 hover:bg-surface-hover hover:text-white transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="size-5" />
           </button>
         </div>
 
         <div className="rounded-xl border border-outline/60 bg-surface p-3.5 flex items-center justify-between text-xs">
-          <span className="text-zinc-400">
+          <span className="text-muted-foreground">
             Precio regular ({item.saleUnit === "WEIGHT" ? "por 1 kg" : "por unidad"}):
           </span>
-          <span className="font-headline text-sm font-bold text-white">
+          <span className="font-headline text-sm font-bold text-foreground">
             {formatPrice(item.price ?? 0)}{" "}
             {item.saleUnit === "WEIGHT" ? "/ kg" : "/ un."}
           </span>
@@ -90,12 +90,12 @@ export function BranchOfferModal({
         <div className="space-y-2">
           <label
             htmlFor="promoPriceField"
-            className="block text-xs font-semibold text-zinc-200"
+            className="block text-xs font-semibold text-foreground"
           >
             Precio promocional de oferta ({item.saleUnit === "WEIGHT" ? "$ / kg" : "$ / un."})
           </label>
           <div className="relative flex items-center">
-            <span className="pointer-events-none absolute left-3.5 text-sm font-bold text-brand-gold">
+            <span className="pointer-events-none absolute left-3.5 text-sm font-bold text-brand-gold-text">
               $
             </span>
             <input
@@ -112,12 +112,12 @@ export function BranchOfferModal({
                 }
               }}
               placeholder="Ej: 12500"
-              className="min-h-[46px] w-full rounded-xl border border-outline bg-surface pl-8 pr-16 text-sm font-bold text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+              className="min-h-[46px] w-full rounded-xl border border-outline bg-surface pl-8 pr-16 text-sm font-bold text-foreground placeholder:text-muted-foreground caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
             />
             {item.price &&
               Number(promoPriceInput) > 0 &&
               Number(promoPriceInput) < item.price && (
-                <span className="absolute right-3 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold text-brand-gold">
+                <span className="absolute right-3 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold text-brand-gold-text">
                   -
                   {Math.round(
                     ((item.price - Number(promoPriceInput)) / item.price) * 100
@@ -126,18 +126,18 @@ export function BranchOfferModal({
                 </span>
               )}
           </div>
-          <p className="text-[11px] text-zinc-400">
+          <p className="text-[11px] text-muted-foreground">
             En el catálogo público se mostrará el precio regular tachado junto con la insignia de{" "}
-            <strong className="text-brand-gold">Oferta</strong>.
+            <strong className="text-brand-gold-text">Oferta</strong>.
           </p>
         </div>
 
         {error && (
           <div
             role="alert"
-            className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200"
+            className="flex items-center gap-2 rounded-xl border border-status-destructive/30 bg-status-destructive/10 p-3 text-xs text-status-destructive"
           >
-            <AlertCircle className="size-4 shrink-0 text-red-400" />
+            <AlertCircle className="size-4 shrink-0 text-status-destructive" />
             <span>{error}</span>
           </div>
         )}
@@ -149,7 +149,7 @@ export function BranchOfferModal({
               variant="outline"
               onClick={onRemoveOffer}
               disabled={isSaving}
-              className="w-full sm:w-auto min-h-[44px] border-red-500/40 text-red-300 hover:bg-red-500/15"
+              className="w-full sm:w-auto min-h-[44px] border-status-destructive/40 text-status-destructive hover:bg-status-destructive/15"
             >
               Quitar oferta
             </Button>
@@ -159,7 +159,7 @@ export function BranchOfferModal({
             type="button"
             onClick={onActivateOffer}
             disabled={isSaving}
-            className="w-full sm:w-auto min-h-[44px] bg-brand-gold text-stone-950 hover:bg-brand-gold-hover font-bold"
+            className="w-full sm:w-auto min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold-hover font-bold"
           >
             {item.isOnSale ? "Guardar oferta" : "Activar oferta"}
           </Button>

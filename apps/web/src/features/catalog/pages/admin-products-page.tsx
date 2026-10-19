@@ -452,7 +452,7 @@ export function AdminProductsPage() {
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
                     isSelected
-                      ? "bg-brand-gold text-stone-950"
+                      ? "bg-brand-gold text-brand-dark"
                       : "bg-surface-elevated text-zinc-300"
                   )}
                 >
