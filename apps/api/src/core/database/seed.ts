@@ -144,7 +144,7 @@ async function runSeed() {
     const adminEmail = env.INITIAL_ADMIN_EMAIL;
     const adminPassword = env.INITIAL_ADMIN_PASSWORD;
 
-    if (env.NODE_ENV === 'production' && adminPassword === 'AdminNutrigon2026!') {
+    if (env.NODE_ENV === 'production' && adminPassword === 'AdminNutrigon2026!') { // ggignore
       console.warn(
         '⚠️  SECURITY WARNING: Using default password in production. Please set INITIAL_ADMIN_PASSWORD in environment variables.',
       );

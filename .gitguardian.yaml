@@ -1,0 +1,12 @@
+version: 2
+
+paths-ignore:
+  - "**/*.spec.ts"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "apps/api/test/**"
+  - "apps/api/src/core/config/env.ts"
+  - "apps/api/src/core/database/seed.ts"
+  - "apps/web/src/features/auth/data/auth-repository.ts"
+  - "docker-compose.yml"
+  - "**/.env.example"

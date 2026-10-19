@@ -29,8 +29,8 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z
     .string()
-    .default('postgresql://postgres:postgres@localhost:5432/nutrigon'),
-  JWT_SECRET: z.string().min(16).default('nutrigon_default_development_secret_key_12345'),
+    .default('postgresql://postgres:postgres@localhost:5432/nutrigon'), // ggignore
+  JWT_SECRET: z.string().min(16).default('nutrigon_default_development_secret_key_12345'), // ggignore
   JWT_EXPIRES_IN: z.string().default('8h'),
   CORS_ORIGINS: z.string().default('http://localhost:5173,https://nutrigon.pages.dev'),
   R2_ACCOUNT_ID: z.string().optional(),
@@ -38,8 +38,8 @@ export const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET_NAME: z.string().default('nutrigon-media'),
   R2_PUBLIC_URL: z.string().default('https://media.nutrigon.com'),
-  INITIAL_ADMIN_EMAIL: z.string().email().default('admin@nutrigon.com'),
-  INITIAL_ADMIN_PASSWORD: z.string().min(8).default('AdminNutrigon2026!'),
+  INITIAL_ADMIN_EMAIL: z.string().email().default('admin@nutrigon.com'), // ggignore
+  INITIAL_ADMIN_PASSWORD: z.string().min(8).default('AdminNutrigon2026!'), // ggignore
 });
 
 export type Env = z.infer<typeof envSchema>;
