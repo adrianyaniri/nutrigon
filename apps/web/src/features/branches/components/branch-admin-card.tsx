@@ -1,4 +1,5 @@
 import {
+  Clock,
   Edit2,
   ExternalLink,
   MapPin,
@@ -9,9 +10,9 @@ import {
   Store,
   Tag,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+import { formatDisplayWhatsapp } from "../lib/whatsapp-formatter";
 import type { BranchAdminItem } from "../types";
 
 export interface BranchAdminCardProps {
@@ -85,6 +86,13 @@ export function BranchAdminCard({
           </div>
 
           <div className="flex items-center gap-2">
+            <Clock className="size-4 shrink-0 text-amber-400/90" />
+            <span className="truncate">
+              {branch.openingHours || "Sin horario configurado"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
             <Phone className="size-4 shrink-0 text-zinc-400" />
             <span>{branch.phone || "Sin teléfono fijo"}</span>
           </div>
@@ -99,7 +107,7 @@ export function BranchAdminCard({
                 className="text-emerald-400 hover:underline font-mono text-[11px] inline-flex items-center gap-1"
                 title="Probar enlace de WhatsApp"
               >
-                +{branch.whatsappNumber}
+                {formatDisplayWhatsapp(branch.whatsappNumber)}
                 <ExternalLink className="size-3" />
               </a>
             ) : (
@@ -113,24 +121,23 @@ export function BranchAdminCard({
       <div className="mt-5 space-y-2.5 border-t border-outline/60 pt-3">
         <Button
           type="button"
-          variant="outline"
-          onClick={() => onNavigatePricing(branch)}
-          title={`Gestionar precios y ofertas de Sucursal ${branch.name}`}
-          className="w-full min-h-[44px] text-xs font-semibold gap-1.5 border-brand-gold/30 bg-brand-gold/10 text-brand-gold hover:bg-brand-gold/20 transition-colors"
+          onClick={() => onEdit(branch)}
+          className="w-full min-h-[44px] text-xs font-semibold gap-2 bg-brand-gold text-surface hover:bg-brand-gold/90 transition-colors shadow-xs"
         >
-          <Tag className="size-3.5" />
-          <span>Precios y Ofertas</span>
+          <Edit2 className="size-3.5" />
+          <span>Editar Sucursal</span>
         </Button>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
-            onClick={() => onEdit(branch)}
-            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-zinc-200 hover:bg-surface-hover hover:text-white"
+            onClick={() => onNavigatePricing(branch)}
+            title={`Ver precios y ofertas de Sucursal ${branch.name}`}
+            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-zinc-300 hover:bg-surface-hover hover:text-white"
           >
-            <Edit2 className="size-3.5" />
-            <span>Editar</span>
+            <Tag className="size-3.5 text-brand-gold" />
+            <span>Precios y Ofertas</span>
           </Button>
 
           <Button
@@ -158,16 +165,6 @@ export function BranchAdminCard({
           >
             <Power className="size-4" />
           </Button>
-
-          <Link
-            to={`/catalogo/${branch.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-outline bg-surface-elevated/40 text-zinc-400 hover:text-brand-gold hover:border-brand-gold/40 transition-colors"
-            title="Abrir catálogo público de esta sucursal"
-          >
-            <ExternalLink className="size-4" />
-          </Link>
         </div>
       </div>
     </div>

@@ -107,14 +107,14 @@ export function ComboFormModal({
             <span className="text-[11px] font-bold uppercase tracking-wider text-brand-gold">
               Sucursal {branchName}
             </span>
-            <h2 id="create-combo-title" className="font-headline text-lg font-bold text-white">
+            <h2 id="create-combo-title" className="font-headline text-lg font-bold text-foreground">
               Armar Nuevo Combo
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full text-zinc-400 hover:bg-surface-hover hover:text-white"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full text-muted-foreground hover:bg-surface-hover hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none"
             aria-label="Cerrar modal de creación de combo"
           >
             <X className="size-5" />
@@ -133,7 +133,7 @@ export function ComboFormModal({
           {/* Basic Fields */}
           <div className="space-y-4">
             <div>
-              <label htmlFor="combo-name-input" className="block text-xs font-semibold text-zinc-300 mb-1">
+              <label htmlFor="combo-name-input" className="block text-xs font-semibold text-foreground/90 mb-1">
                 Nombre del Combo *
               </label>
               <input
@@ -143,12 +143,12 @@ export function ComboFormModal({
                 value={comboName}
                 onChange={(e) => onComboNameChange(e.target.value)}
                 placeholder="ej. Pack Desayuno Saludable"
-                className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-gold"
               />
             </div>
 
             <div>
-              <label htmlFor="combo-desc-input" className="block text-xs font-semibold text-zinc-300 mb-1">
+              <label htmlFor="combo-desc-input" className="block text-xs font-semibold text-foreground/90 mb-1">
                 Descripción del Combo (opcional)
               </label>
               <textarea
@@ -157,13 +157,13 @@ export function ComboFormModal({
                 value={comboDescription}
                 onChange={(e) => onComboDescriptionChange(e.target.value)}
                 placeholder="ej. Combinación de frutos secos y avena para arrancar la semana con energía."
-                className="w-full rounded-xl border border-outline bg-surface p-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold resize-none"
+                className="w-full rounded-xl border border-outline bg-surface p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-gold resize-none"
               />
             </div>
 
             {/* Image Upload directly to Cloudflare R2 */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+              <label className="block text-xs font-semibold text-foreground/90 mb-1">
                 Foto del Combo (Cloudflare R2)
               </label>
               <div className="flex items-center gap-4">
@@ -177,7 +177,8 @@ export function ComboFormModal({
                     <button
                       type="button"
                       onClick={onClearUploadedImage}
-                      className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity"
+                      aria-label="Eliminar foto del combo"
+                      className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none transition-opacity cursor-pointer"
                       title="Eliminar foto"
                     >
                       <X className="size-4" />
@@ -203,7 +204,7 @@ export function ComboFormModal({
                 )}
 
                 <div className="flex-1">
-                  <label className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 rounded-xl border border-outline bg-surface text-xs font-semibold text-zinc-300 hover:text-white hover:border-brand-gold cursor-pointer transition-colors">
+                  <label className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 rounded-xl border border-outline bg-surface text-xs font-semibold text-foreground/90 hover:text-foreground hover:border-brand-gold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-gold has-[:focus-visible]:border-brand-gold cursor-pointer transition-all">
                     <Upload className="size-4 text-brand-gold" />
                     <span>
                       {isUploadingImage
@@ -220,7 +221,7 @@ export function ComboFormModal({
                       className="sr-only"
                     />
                   </label>
-                  <p className="mt-1 text-[11px] text-zinc-500">
+                  <p className="mt-1 text-[11px] text-muted-foreground">
                     {uploadedImageUrl
                       ? "Foto personalizada alojada en Cloudflare R2."
                       : "WEBP, JPEG o PNG (máx. 5 MB, optimizado automáticamente a WebP en R2)."}
@@ -234,10 +235,10 @@ export function ComboFormModal({
           <div className="space-y-3 pt-3 border-t border-outline">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Productos Incluidos ({selectedItems.length}/2 mínimos)
                 </h3>
-                <p className="text-[11px] text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   Seleccioná los productos que integran este combo y definí sus cantidades.
                 </p>
               </div>
@@ -261,10 +262,10 @@ export function ComboFormModal({
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-outline bg-surface p-3 text-xs"
                     >
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-white truncate block">
+                        <span className="font-semibold text-foreground truncate block">
                           {item.productName}
                         </span>
-                        <span className="text-[11px] text-zinc-400">
+                        <span className="text-[11px] text-muted-foreground">
                           Precio ref: {formatPrice(item.unitPrice)}{" "}
                           {item.saleUnit === "WEIGHT" ? "/ kg" : "/ un."}
                         </span>
@@ -273,7 +274,7 @@ export function ComboFormModal({
                       <div className="flex items-center gap-3">
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-1.5">
-                          <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-zinc-400">
+                          <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-muted-foreground">
                             Cantidad:
                           </label>
                           <input
@@ -288,16 +289,16 @@ export function ComboFormModal({
                                 parseFloat(e.target.value) || 0
                               )
                             }
-                            className="w-20 min-h-[44px] rounded-lg border border-outline bg-surface px-2 py-1 text-center font-mono text-xs text-white focus:outline-none focus:border-brand-gold"
+                            className="w-20 min-h-[44px] rounded-lg border border-outline bg-surface px-2 py-1 text-center font-mono text-xs text-foreground focus:outline-none focus:border-brand-gold"
                           />
-                          <span className="text-[11px] text-zinc-400 font-mono">
+                          <span className="text-[11px] text-muted-foreground font-mono">
                             {item.saleUnit === "WEIGHT" ? "kg" : "un."}
                           </span>
                         </div>
 
                         {/* Subtotal */}
                         <div className="w-24 text-right">
-                          <span className="text-[11px] text-zinc-400 block uppercase">Subtotal</span>
+                          <span className="text-[11px] text-muted-foreground block uppercase">Subtotal</span>
                           <span className="font-mono font-semibold text-brand-gold">
                             {formatPrice(itemSubtotal)}
                           </span>
@@ -307,7 +308,7 @@ export function ComboFormModal({
                         <button
                           type="button"
                           onClick={() => onRemoveProduct(item.productId)}
-                          className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-surface-hover"
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none cursor-pointer"
                           aria-label={`Quitar ${item.productName} del combo`}
                         >
                           <X className="size-4" />
@@ -322,20 +323,24 @@ export function ComboFormModal({
             {/* Product Search & Quick Add */}
             <div className="rounded-xl border border-outline/60 bg-surface p-3 space-y-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400" />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <input
-                  type="text"
+                  type="search"
                   value={productSearchTerm}
                   onChange={(e) => onProductSearchTermChange(e.target.value)}
                   placeholder="Buscar producto de la sucursal para agregar..."
-                  className="w-full min-h-[44px] rounded-lg border border-outline bg-surface pl-8 pr-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+                  aria-label="Buscar producto de la sucursal para agregar"
+                  className="w-full min-h-[44px] rounded-lg border border-outline bg-surface pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-gold"
                 />
               </div>
 
               {/* Search Results list */}
-              <div className="max-h-36 overflow-y-auto divide-y divide-outline/40">
+              <div className="max-h-48 overflow-y-auto divide-y divide-outline/40">
                 {isLoadingProducts ? (
-                  <div className="p-3 text-center text-xs text-zinc-500">
+                  <div className="p-3 text-center text-xs text-muted-foreground">
                     Buscando productos...
                   </div>
                 ) : availableProducts.length > 0 ? (
@@ -346,18 +351,23 @@ export function ComboFormModal({
                     return (
                       <div
                         key={prod.productId}
-                        className="flex items-center justify-between py-1.5 px-1 text-xs"
+                        className="flex items-center justify-between py-2 px-1 text-xs gap-2"
                       >
-                        <span className="truncate pr-2 text-zinc-300">{prod.name}</span>
+                        <span className="truncate pr-2 text-foreground/90 font-medium">{prod.name}</span>
                         <button
                           type="button"
                           disabled={isAlreadySelected}
                           onClick={() => onAddProduct(prod)}
-                          className={cn(
-                            "shrink-0 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
+                          aria-label={
                             isAlreadySelected
-                              ? "bg-surface-elevated text-zinc-500 cursor-not-allowed"
-                              : "bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
+                              ? `${prod.name} ya agregado al combo`
+                              : `Agregar ${prod.name} al combo`
+                          }
+                          className={cn(
+                            "shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none flex items-center justify-center",
+                            isAlreadySelected
+                              ? "bg-surface-elevated text-muted-foreground/60 cursor-not-allowed"
+                              : "bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25 cursor-pointer"
                           )}
                         >
                           {isAlreadySelected ? "Agregado" : "+ Agregar"}
@@ -366,7 +376,7 @@ export function ComboFormModal({
                     );
                   })
                 ) : (
-                  <div className="p-3 text-center text-xs text-zinc-500">
+                  <div className="p-3 text-center text-xs text-muted-foreground">
                     No se encontraron productos disponibles.
                   </div>
                 )}
@@ -378,14 +388,14 @@ export function ComboFormModal({
           <div className="space-y-3 pt-3 border-t border-outline">
             <div className="rounded-xl border border-outline bg-surface p-4 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-zinc-400">Suma individual de referencia:</span>
-                <strong className="text-white font-mono text-sm">
+                <span className="text-muted-foreground">Suma individual de referencia:</span>
+                <strong className="text-foreground font-mono text-sm">
                   {formatPrice(referenceTotalSum)}
                 </strong>
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <label htmlFor="combo-final-price" className="text-xs font-semibold text-white">
+                <label htmlFor="combo-final-price" className="text-xs font-semibold text-foreground">
                   Precio Final del Combo ($) *
                 </label>
                 <input
@@ -421,7 +431,7 @@ export function ComboFormModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="min-h-[44px] text-xs"
+              className="min-h-[44px] text-xs cursor-pointer"
             >
               Cancelar
             </Button>
@@ -434,7 +444,7 @@ export function ComboFormModal({
                 parsedComboPrice <= 0 ||
                 isUploadingImage
               }
-              className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold text-xs px-5 shadow-sm disabled:opacity-50"
+              className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold-hover font-semibold text-xs px-5 shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? (
                 <div className="flex items-center gap-2">

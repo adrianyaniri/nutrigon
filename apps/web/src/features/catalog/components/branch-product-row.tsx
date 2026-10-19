@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Check, Sparkles, Star, Tag, Undo2 } from "lucide-react";
 import { ProductImage } from "@/components/atoms/product-image";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ export interface BranchProductRowProps {
   onOpenOfferModal: (item: BranchProductAdminItem) => void;
 }
 
-export function BranchProductRow({
+export const BranchProductRow = memo(function BranchProductRow({
   item,
   draftValue,
   isSaving,
@@ -51,11 +52,11 @@ export function BranchProductRow({
             <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-gold shrink-0">
               {item.categoryName}
             </span>
-            <span className="text-zinc-500 select-none">·</span>
-            <span className="text-[11px] font-medium text-zinc-300 shrink-0">
+            <span className="text-muted-foreground select-none">·</span>
+            <span className="text-[11px] font-medium text-foreground/90 shrink-0">
               {unitBadge}
             </span>
-            <span className="text-zinc-500 select-none">·</span>
+            <span className="text-muted-foreground select-none">·</span>
 
             {item.status === "ACTIVE" && (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 shrink-0">
@@ -70,8 +71,8 @@ export function BranchProductRow({
               </span>
             )}
             {item.status === "UNCONFIGURED" && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 shrink-0">
-                <span className="size-1.5 rounded-full bg-zinc-500" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground shrink-0">
+                <span className="size-1.5 rounded-full bg-muted-foreground/60" />
                 <span>Sin precio</span>
               </span>
             )}
@@ -98,12 +99,12 @@ export function BranchProductRow({
           </div>
 
           {/* Product Name */}
-          <h2 className="font-headline text-sm sm:text-base font-bold text-white truncate">
+          <h2 className="font-headline text-sm sm:text-base font-bold text-foreground truncate">
             {item.name}
           </h2>
 
           {item.description && (
-            <p className="text-xs text-zinc-400 line-clamp-1">
+            <p className="text-xs text-muted-foreground line-clamp-1">
               {item.description}
             </p>
           )}
@@ -115,19 +116,19 @@ export function BranchProductRow({
         {isReadOnly ? (
           <div className="flex items-center gap-3 py-1">
             <div className="text-right">
-              <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-mono block">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-mono block">
                 Precio Sucursal
               </span>
               <p className="font-headline text-base sm:text-lg font-bold text-brand-gold tabular-nums">
                 {isConfigured ? `${formatPrice(item.price!)} ${unitSuffix}` : "Sin precio asignado"}
               </p>
               {item.saleUnit === "WEIGHT" && isConfigured && (
-                <span className="text-[11px] text-zinc-400 font-medium block tabular-nums">
+                <span className="text-[11px] text-muted-foreground font-medium block tabular-nums">
                   ({formatPrice(Math.round(item.price! / 10))} / 100g)
                 </span>
               )}
             </div>
-            <div className="rounded-lg border border-outline bg-surface-elevated px-2.5 py-1 text-[11px] font-medium text-zinc-400 select-none">
+            <div className="rounded-lg border border-outline bg-surface-elevated px-2.5 py-1 text-[11px] font-medium text-muted-foreground select-none">
               Solo Lectura
             </div>
           </div>
@@ -137,7 +138,7 @@ export function BranchProductRow({
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
                 <div className="relative flex items-center">
-                  <span className="pointer-events-none absolute left-2.5 text-xs font-bold text-zinc-400">
+                  <span className="pointer-events-none absolute left-2.5 text-xs font-bold text-muted-foreground">
                     $
                   </span>
                   <input
@@ -159,13 +160,13 @@ export function BranchProductRow({
                     }}
                     placeholder="0"
                     className={cn(
-                      "h-11 min-h-[44px] w-28 sm:w-32 rounded-xl border bg-surface pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-white placeholder:text-zinc-500 caret-brand-gold focus:outline-none transition-all",
+                      "h-11 min-h-[44px] w-28 sm:w-32 rounded-xl border bg-surface pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-foreground placeholder:text-muted-foreground caret-brand-gold focus:outline-none transition-all",
                       isDirty
                         ? "border-amber-500/70 bg-amber-500/5 ring-1 ring-amber-500/40 focus:border-amber-400 focus:ring-amber-400"
                         : "border-outline focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                     )}
                   />
-                  <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-zinc-400">
+                  <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-muted-foreground">
                     {unitSuffix}
                   </span>
                 </div>
@@ -176,7 +177,7 @@ export function BranchProductRow({
                     aria-label={`Revertir precio de ${item.name}`}
                     title="Revertir cambios al valor guardado"
                     onClick={() => onDraftPriceChange(item.productId, savedPriceStr)}
-                    className="size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border border-outline bg-surface text-zinc-400 hover:text-white hover:border-zinc-500 cursor-pointer shrink-0 transition-colors"
+                    className="size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border border-outline bg-surface text-muted-foreground hover:text-foreground hover:border-zinc-500 cursor-pointer shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none"
                   >
                     <Undo2 className="size-4" aria-hidden="true" />
                   </button>
@@ -188,8 +189,8 @@ export function BranchProductRow({
                   onClick={() => onSavePrice(item)}
                   disabled={isSaving}
                   className={cn(
-                    "h-11 min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 shrink-0 transition-all",
-                    isDirty && "bg-brand-gold text-stone-950 hover:bg-brand-gold/90 shadow-lg shadow-brand-gold/20"
+                    "h-11 min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 shrink-0 transition-all focus-visible:ring-2 focus-visible:ring-brand-gold",
+                    isDirty && "bg-brand-gold text-brand-dark hover:bg-brand-gold-hover shadow-lg shadow-brand-gold/20"
                   )}
                 >
                   <Check className="size-3.5" aria-hidden="true" />
@@ -227,10 +228,10 @@ export function BranchProductRow({
                 disabled={!isConfigured || isSaving}
                 onClick={() => onToggleFeatured(item)}
                 className={cn(
-                  "size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
+                  "size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
                   item.isFeatured
                     ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
-                    : "border-outline bg-surface text-zinc-300 hover:border-brand-gold/50 hover:text-white"
+                    : "border-outline bg-surface text-foreground/80 hover:border-brand-gold/50 hover:text-foreground"
                 )}
               >
                 <Star
@@ -252,10 +253,10 @@ export function BranchProductRow({
                 disabled={!isConfigured}
                 onClick={() => onOpenOfferModal(item)}
                 className={cn(
-                  "size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0",
+                  "size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
                   item.isOnSale
                     ? "border-brand-gold bg-brand-gold/15 text-brand-gold hover:bg-brand-gold/25"
-                    : "border-outline bg-surface text-zinc-300 hover:border-brand-gold/50 hover:text-white"
+                    : "border-outline bg-surface text-foreground/80 hover:border-brand-gold/50 hover:text-foreground"
                 )}
               >
                 <Tag className="size-4" aria-hidden="true" />
@@ -272,9 +273,9 @@ export function BranchProductRow({
                     : "Activar producto en esta sucursal"
                 }
                 className={cn(
-                  "h-11 min-h-[44px] inline-flex items-center justify-center rounded-xl border px-3.5 text-xs font-semibold transition-all cursor-pointer shrink-0",
+                  "h-11 min-h-[44px] inline-flex items-center justify-center rounded-xl border px-3.5 text-xs font-semibold transition-all cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
                   item.isAvailable
-                    ? "border-outline bg-surface text-zinc-300 hover:border-amber-500/40 hover:text-amber-300"
+                    ? "border-outline bg-surface text-foreground/80 hover:border-amber-500/40 hover:text-amber-300"
                     : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
                 )}
               >
@@ -286,4 +287,4 @@ export function BranchProductRow({
       </div>
     </article>
   );
-}
+});

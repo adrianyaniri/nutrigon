@@ -18,7 +18,7 @@ import {
   branchPricingRepository,
   type BranchProductAdminItem,
 } from "@/features/pricing/data/branch-pricing-repository";
-import { useDialogFocusTrap } from "@/hooks";
+import { useDebounce, useDialogFocusTrap } from "@/hooks";
 import { cn } from "@/lib/utils/cn";
 import { ComboCard } from "../components/combo-card";
 import {
@@ -67,6 +67,13 @@ export function AdminCombosPage() {
     text: string;
   } | null>(null);
 
+  function showFeedback(type: "success" | "error", text: string) {
+    setFeedbackBanner({ type, text });
+    setTimeout(() => {
+      setFeedbackBanner((prev) => (prev?.text === text ? null : prev));
+    }, 3500);
+  }
+
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deleteConfirmCombo, setDeleteConfirmCombo] =
@@ -90,6 +97,7 @@ export function AdminCombosPage() {
 
   // Product Search within Modal
   const [productSearchTerm, setProductSearchTerm] = useState("");
+  const debouncedProductSearchTerm = useDebounce(productSearchTerm, 300);
 
   // Combos Query
   const combosQuery = useQuery({
@@ -99,10 +107,10 @@ export function AdminCombosPage() {
 
   // Available Products Query for Modal Picker
   const productsQuery = useQuery({
-    queryKey: ["branch-products-picker", branchId, productSearchTerm],
+    queryKey: ["branch-products-picker", branchId, debouncedProductSearchTerm],
     queryFn: () =>
       branchPricingRepository.listProducts(branchId, authToken, {
-        search: productSearchTerm.trim() || undefined,
+        search: debouncedProductSearchTerm.trim() || undefined,
         limit: 50,
       }),
     enabled: isCreateModalOpen,
@@ -132,21 +140,20 @@ export function AdminCombosPage() {
         (old) =>
           old ? old.map((c) => (c.id === updated.id ? updated : c)) : [updated]
       );
-      setFeedbackBanner({
-        type: "success",
-        text: `El combo "${updated.name}" ahora está ${
+      showFeedback(
+        "success",
+        `El combo "${updated.name}" ahora está ${
           updated.isAvailable ? "disponible" : "pausado"
-        }.`,
-      });
+        }.`
+      );
     },
     onError: (err) => {
-      setFeedbackBanner({
-        type: "error",
-        text:
-          err instanceof Error
-            ? err.message
-            : "Error al actualizar la disponibilidad.",
-      });
+      showFeedback(
+        "error",
+        err instanceof Error
+          ? err.message
+          : "Error al actualizar la disponibilidad."
+      );
     },
   });
 
@@ -167,17 +174,17 @@ export function AdminCombosPage() {
         ["combos", "branch", branchId],
         (old) => (old ? old.filter((c) => c.id !== deleteConfirmCombo.id) : [])
       );
-      setFeedbackBanner({
-        type: "success",
-        text: `El combo "${deleteConfirmCombo.name}" fue eliminado correctamente.`,
-      });
+      showFeedback(
+        "success",
+        `El combo "${deleteConfirmCombo.name}" fue eliminado correctamente.`
+      );
       setDeleteConfirmCombo(null);
     },
     onError: (err) => {
-      setFeedbackBanner({
-        type: "error",
-        text: err instanceof Error ? err.message : "Error al eliminar el combo.",
-      });
+      showFeedback(
+        "error",
+        err instanceof Error ? err.message : "Error al eliminar el combo."
+      );
     },
   });
 
@@ -198,10 +205,10 @@ export function AdminCombosPage() {
       );
       setIsCreateModalOpen(false);
       resetCreateForm();
-      setFeedbackBanner({
-        type: "success",
-        text: `¡Combo "${newCombo.name}" creado y publicado exitosamente!`,
-      });
+      showFeedback(
+        "success",
+        `¡Combo "${newCombo.name}" creado y publicado exitosamente!`
+      );
     },
     onError: (err) => {
       setFormError(
@@ -224,10 +231,10 @@ export function AdminCombosPage() {
 
   function handleOpenCreateModal() {
     if (isGeneralAdmin) {
-      setFeedbackBanner({
-        type: "error",
-        text: "Los administradores generales no pueden crear combos ni packs.",
-      });
+      showFeedback(
+        "error",
+        "Los administradores generales no pueden crear combos ni packs."
+      );
       return;
     }
     resetCreateForm();
@@ -374,32 +381,32 @@ export function AdminCombosPage() {
   const pausedCount = totalCount - availableCount;
 
   return (
-    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      {/* Feedback Banner */}
+    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-12">
+      {/* Feedback Toast / Floating Notification */}
       {feedbackBanner && (
         <div
           role="status"
           aria-live="polite"
           className={cn(
-            "flex items-center justify-between gap-3 p-4 rounded-xl border text-sm transition-all",
+            "fixed bottom-6 right-6 z-50 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-xs sm:text-sm font-medium shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200 max-w-sm sm:max-w-md",
             feedbackBanner.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-red-500/10 border-red-500/30 text-red-300"
+              ? "border-emerald-500/50 bg-surface-card text-emerald-200 shadow-emerald-950/40"
+              : "border-red-500/50 bg-surface-card text-red-200 shadow-red-950/40"
           )}
         >
           <div className="flex items-center gap-2.5">
             {feedbackBanner.type === "success" ? (
-              <CheckCircle2 className="size-5 shrink-0 text-emerald-400" />
+              <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
             ) : (
-              <AlertCircle className="size-5 shrink-0 text-red-400" />
+              <AlertCircle className="size-4 text-red-400 shrink-0" />
             )}
             <span>{feedbackBanner.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setFeedbackBanner(null)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
             aria-label="Cerrar notificación"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl text-foreground/60 hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="size-4" />
           </button>
@@ -415,7 +422,7 @@ export function AdminCombosPage() {
         >
           <Info className="size-5 shrink-0 text-sky-400 mt-0.5" aria-hidden="true" />
           <div className="space-y-1">
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-foreground">
               Modo Auditoría de Sucursal (Solo Lectura)
             </p>
             <p className="text-sky-200/90 leading-relaxed">
@@ -434,10 +441,10 @@ export function AdminCombosPage() {
               Sucursal {activeBranch.name}
             </span>
           </div>
-          <h1 className="mt-2 font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="mt-2 font-headline text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Gestión de Combos y Packs
           </h1>
-          <p className="mt-1 text-sm text-zinc-400 max-w-2xl">
+          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
             Creá y administrá packs promocionales combinando productos por peso o
             unidad con precios especiales para la sucursal.
           </p>
@@ -448,7 +455,7 @@ export function AdminCombosPage() {
             <Button
               type="button"
               onClick={handleOpenCreateModal}
-              className="min-h-[44px] w-full sm:w-auto bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold px-5 text-sm gap-2 shadow-sm"
+              className="min-h-[44px] w-full sm:w-auto bg-brand-gold text-brand-dark hover:bg-brand-gold-hover font-semibold px-5 text-sm gap-2 shadow-sm"
             >
               <Plus className="size-4" />
               <span>Nuevo Combo</span>
@@ -460,10 +467,10 @@ export function AdminCombosPage() {
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-outline bg-surface-card p-4">
-          <span className="text-xs text-zinc-400 font-medium">
+          <span className="text-xs text-muted-foreground font-medium">
             Total de Combos
           </span>
-          <p className="mt-1 font-headline text-2xl font-bold text-white">
+          <p className="mt-1 font-headline text-2xl font-bold text-foreground">
             {totalCount}
           </p>
         </div>
@@ -488,13 +495,17 @@ export function AdminCombosPage() {
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+            aria-hidden="true"
+          />
           <input
-            type="text"
+            type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre o producto..."
-            className="w-full min-h-[44px] rounded-xl border border-outline bg-surface pl-9 pr-4 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-gold"
+            aria-label="Buscar combo por nombre o producto"
+            className="w-full min-h-[44px] rounded-xl border border-outline bg-surface pl-9 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand-gold"
           />
         </div>
 
@@ -503,10 +514,10 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("ALL")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "ALL"
-                ? "bg-brand-gold text-surface"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-brand-gold text-brand-dark"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Todos ({totalCount})
@@ -515,10 +526,10 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("AVAILABLE")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "AVAILABLE"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Disponibles ({availableCount})
@@ -527,10 +538,10 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("PAUSED")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "PAUSED"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Pausados ({pausedCount})
@@ -540,7 +551,7 @@ export function AdminCombosPage() {
 
       {/* Combos Grid / List */}
       {combosQuery.isLoading ? (
-        <div className="flex flex-col items-center justify-center p-12 text-zinc-400 space-y-3">
+        <div className="flex flex-col items-center justify-center p-12 text-muted-foreground space-y-3">
           <Loader2 className="size-8 animate-spin text-brand-gold" />
           <p className="text-sm">Cargando combos de la sucursal...</p>
         </div>
@@ -567,12 +578,12 @@ export function AdminCombosPage() {
             <Package className="size-6" />
           </div>
           <div>
-            <h3 className="font-headline text-base font-semibold text-white">
+            <h2 className="font-headline text-base font-semibold text-foreground">
               {searchTerm
                 ? "No se encontraron combos con ese criterio"
                 : "Aún no hay combos creados"}
-            </h3>
-            <p className="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
               {searchTerm
                 ? "Probá ajustando los términos de búsqueda o cambiando el filtro."
                 : "Armá promociones combinando al menos 2 productos para impulsar las ventas en esta sucursal."}
@@ -582,7 +593,7 @@ export function AdminCombosPage() {
             <Button
               type="button"
               onClick={handleOpenCreateModal}
-              className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 text-xs font-semibold px-4"
+              className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold-hover text-xs font-semibold px-4 cursor-pointer"
             >
               <Plus className="size-4 mr-1" />
               Crear el primer combo
@@ -629,15 +640,15 @@ export function AdminCombosPage() {
           >
             {/* Mobile Drag Indicator */}
             <div className="flex sm:hidden justify-center items-center -mt-2 pb-1">
-              <div className="w-12 h-1.5 rounded-full bg-zinc-600" />
+              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
             </div>
             <h3
               id="delete-dialog-title"
-              className="font-headline text-lg font-bold text-white"
+              className="font-headline text-lg font-bold text-foreground"
             >
               ¿Eliminar el combo "{deleteConfirmCombo.name}"?
             </h3>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Esta acción dará de baja el combo en la sucursal{" "}
               {activeBranch.name}. Dejará de ser visible en el catálogo público
               inmediatamente.

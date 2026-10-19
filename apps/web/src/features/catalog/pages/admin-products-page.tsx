@@ -388,18 +388,18 @@ export function AdminProductsPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-white pb-12">
+    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-foreground pb-12">
       {/* Top Operational Header */}
       <section className="rounded-2xl border border-outline bg-surface-card p-5 sm:p-6 shadow-xl">
         <div className="space-y-1.5">
-          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Gestión de Precios y Ofertas por Sucursal
           </h1>
 
-          <p className="text-xs sm:text-sm text-brand-muted max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
             Configurá el precio por kilogramo o por unidad, habilitá productos
             en el mostrador online y activá ofertas exclusivas para{" "}
-            <strong className="text-white">Sucursal {activeBranch.name}</strong>
+            <strong className="text-foreground">Sucursal {activeBranch.name}</strong>
             .
           </p>
         </div>
@@ -413,7 +413,7 @@ export function AdminProductsPage() {
           >
             <Info className="size-5 shrink-0 text-sky-400 mt-0.5" aria-hidden="true" />
             <div className="space-y-1">
-              <p className="font-semibold text-white">
+              <p className="font-semibold text-foreground">
                 Modo Auditoría de Sucursal (Solo Lectura)
               </p>
               <p className="text-sky-200/90 leading-relaxed">
@@ -439,10 +439,10 @@ export function AdminProductsPage() {
                 aria-selected={isSelected}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex min-h-[48px] items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition-all cursor-pointer",
+                  "flex min-h-[48px] items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
                   isSelected
-                    ? "border-brand-gold bg-brand-gold/15 text-white shadow-sm"
-                    : "border-outline/60 bg-surface text-zinc-400 hover:border-outline hover:text-white"
+                    ? "border-brand-gold bg-brand-gold/15 text-foreground shadow-sm"
+                    : "border-outline/60 bg-surface text-muted-foreground hover:border-outline hover:text-foreground"
                 )}
               >
                 <span className="text-xs font-semibold truncate pr-2">
@@ -453,7 +453,7 @@ export function AdminProductsPage() {
                     "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
                     isSelected
                       ? "bg-brand-gold text-brand-dark"
-                      : "bg-surface-elevated text-zinc-300"
+                      : "bg-surface-elevated text-foreground/80"
                   )}
                 >
                   {tab.count}
@@ -472,8 +472,8 @@ export function AdminProductsPage() {
           className={cn(
             "fixed bottom-6 right-6 z-50 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-xs sm:text-sm font-medium shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200 max-w-sm sm:max-w-md",
             feedbackBanner.type === "success"
-              ? "border-emerald-500/50 bg-stone-900/95 text-emerald-200 shadow-emerald-950/40"
-              : "border-red-500/50 bg-stone-900/95 text-red-200 shadow-red-950/40"
+              ? "border-emerald-500/50 bg-surface-card text-emerald-200 shadow-emerald-950/40"
+              : "border-red-500/50 bg-surface-card text-red-200 shadow-red-950/40"
           )}
         >
           <div className="flex items-center gap-2.5">
@@ -488,7 +488,7 @@ export function AdminProductsPage() {
             type="button"
             onClick={() => setFeedbackBanner(null)}
             aria-label="Cerrar notificación"
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl text-white/60 hover:text-white transition-colors cursor-pointer"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl text-foreground/60 hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="size-4" />
           </button>
@@ -500,7 +500,7 @@ export function AdminProductsPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
           <div className="relative flex-1 max-w-md">
             <Search
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
               aria-hidden="true"
             />
             <input
@@ -509,14 +509,14 @@ export function AdminProductsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar producto por nombre o código..."
               aria-label="Buscar producto en la sucursal"
-              className="min-h-[44px] w-full rounded-xl border border-outline bg-surface pl-10 pr-10 text-sm text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+              className="min-h-[44px] w-full rounded-xl border border-outline bg-surface pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm("")}
                 aria-label="Limpiar búsqueda"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-white rounded-md transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
               >
                 <X className="size-4" />
               </button>
@@ -527,7 +527,7 @@ export function AdminProductsPage() {
             value={selectedCategoryId}
             onChange={(e) => setSelectedCategoryId(e.target.value)}
             aria-label="Filtrar por categoría"
-            className="min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-gold"
+            className="min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs sm:text-sm text-foreground focus:outline-none focus:border-brand-gold cursor-pointer"
           >
             <option value="">Todas las categorías</option>
             {categories.map((cat) => (
@@ -538,9 +538,9 @@ export function AdminProductsPage() {
           </select>
         </div>
 
-        <div className="text-xs text-zinc-400">
-          Mostrando <strong className="text-white">{items.length}</strong> de{" "}
-          <strong className="text-white">
+        <div className="text-xs text-muted-foreground">
+          Mostrando <strong className="text-foreground">{items.length}</strong> de{" "}
+          <strong className="text-foreground">
             {productsQuery.data?.total ?? 0}
           </strong>{" "}
           productos
@@ -550,7 +550,7 @@ export function AdminProductsPage() {
       {/* Products List */}
       <section className="space-y-3">
         {productsQuery.isPending ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-16 text-zinc-400 gap-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-16 text-muted-foreground gap-3">
             <Loader2 className="size-6 animate-spin text-brand-gold" />
             <span className="text-sm">
               Cargando productos de la sucursal...
@@ -559,10 +559,10 @@ export function AdminProductsPage() {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-14 px-4 text-center gap-3">
             <Package className="size-10 text-brand-gold/60" />
-            <h2 className="font-headline text-base font-bold text-white">
+            <h2 className="font-headline text-base font-bold text-foreground">
               No encontramos productos con este filtro
             </h2>
-            <p className="text-xs text-zinc-400 max-w-sm">
+            <p className="text-xs text-muted-foreground max-w-sm">
               Probá cambiando de pestaña o limpiando el término de búsqueda.
             </p>
             {(activeTab !== "ALL" || searchTerm || selectedCategoryId) && (
@@ -610,9 +610,9 @@ export function AdminProductsPage() {
               <ChevronLeft className="size-4 mr-1" /> Anterior
             </Button>
 
-            <span className="text-xs text-zinc-400">
-              Página <strong className="text-white">{page}</strong> de{" "}
-              <strong className="text-white">{totalPages}</strong>
+            <span className="text-xs text-muted-foreground">
+              Página <strong className="text-foreground">{page}</strong> de{" "}
+              <strong className="text-foreground">{totalPages}</strong>
             </span>
 
             <Button

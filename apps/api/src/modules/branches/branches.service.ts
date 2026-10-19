@@ -55,6 +55,7 @@ export class BranchesService {
       address: dto.address ?? null,
       phone: dto.phone ?? null,
       whatsappNumber: dto.whatsappNumber ?? null,
+      openingHours: dto.openingHours ?? null,
       isActive: true,
     });
   }

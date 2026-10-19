@@ -105,6 +105,8 @@ export function BranchPickerModal({
               address: `Sucursal ${branch.name}`,
               hours: "Consulte horarios de atención",
             };
+            const displayAddress = branch.address || meta.address;
+            const displayHours = branch.openingHours || meta.hours;
 
             return (
               <button
@@ -138,9 +140,9 @@ export function BranchPickerModal({
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="size-3 text-brand-gold shrink-0" aria-hidden="true" />
-                    <span>{meta.address}</span>
+                    <span>{displayAddress}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground/80">{meta.hours}</p>
+                  <p className="text-[11px] text-muted-foreground/80">{displayHours}</p>
                 </div>
 
                 <div className="shrink-0 text-xs font-semibold text-brand-gold">

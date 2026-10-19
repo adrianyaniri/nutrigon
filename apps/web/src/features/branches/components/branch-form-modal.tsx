@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { Building2, Edit2, X } from "lucide-react";
+import { Building2, Clock, Edit2, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocusTrap } from "@/hooks";
+import { cn } from "@/lib/utils/cn";
+import {
+  formatDisplayWhatsapp,
+  validateWhatsapp,
+} from "../lib/whatsapp-formatter";
 import type {
   BranchAdminItem,
   CreateBranchInput,
@@ -28,11 +33,14 @@ export function CreateBranchModal({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [address, setAddress] = useState("");
+  const [openingHours, setOpeningHours] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const whatsappValidation = validateWhatsapp(whatsappNumber, false);
 
   function handleNameChange(val: string) {
     setName(val);
@@ -57,9 +65,8 @@ export function CreateBranchModal({
       return;
     }
 
-    const cleanWhatsapp = whatsappNumber.trim().replace(/[^0-9]/g, "");
-    if (cleanWhatsapp && !/^[1-9]\d{7,14}$/.test(cleanWhatsapp)) {
-      setError("Formato de WhatsApp inválido. Ejemplo: 5491144501001");
+    if (whatsappNumber.trim() && !whatsappValidation.isValid) {
+      setError(whatsappValidation.error || "Formato de WhatsApp inválido.");
       return;
     }
 
@@ -68,8 +75,9 @@ export function CreateBranchModal({
       name: name.trim(),
       slug: slug.trim(),
       address: address.trim() || null,
+      openingHours: openingHours.trim() || null,
       phone: phone.trim() || null,
-      whatsappNumber: cleanWhatsapp || null,
+      whatsappNumber: whatsappValidation.normalized,
     });
   }
 
@@ -170,6 +178,26 @@ export function CreateBranchModal({
             />
           </div>
 
+          <div>
+            <label htmlFor="create-branch-hours" className="block text-xs font-semibold text-zinc-300 mb-1">
+              Horarios de Atención
+            </label>
+            <div className="relative">
+              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
+              <input
+                id="create-branch-hours"
+                type="text"
+                value={openingHours}
+                onChange={(e) => setOpeningHours(e.target.value)}
+                placeholder="Ej. Lun a Sáb 9:00 a 13:00 y 16:30 a 20:30"
+                className="w-full min-h-[44px] rounded-xl border border-outline bg-surface pl-10 pr-3.5 text-xs text-white placeholder:text-zinc-500 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
+              />
+            </div>
+            <span className="mt-1 block text-[11px] text-zinc-500">
+              Visible para los clientes en el catálogo web y selección de sucursal.
+            </span>
+          </div>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="create-branch-phone" className="block text-xs font-semibold text-zinc-300 mb-1">
@@ -194,14 +222,40 @@ export function CreateBranchModal({
                 type="text"
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="5491144501234"
+                placeholder="Ej. 11 4450-1001 o 5491144501001"
                 className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 font-mono text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
           </div>
-          <span className="block text-[11px] text-zinc-500">
-            El número de WhatsApp recibe los carritos de compra de los clientes de esta sucursal.
-          </span>
+
+          {whatsappNumber.trim() ? (
+            <div
+              className={cn(
+                "flex items-center justify-between p-2.5 rounded-xl border text-xs",
+                whatsappValidation.isValid
+                  ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-300"
+                  : "bg-amber-500/10 border-amber-500/25 text-amber-300"
+              )}
+            >
+              <div className="flex items-center gap-2 truncate">
+                <MessageCircle className="size-4 shrink-0 text-emerald-400" />
+                <span className="truncate font-mono text-[11px]">
+                  {whatsappValidation.isValid
+                    ? `wa.me/${whatsappValidation.normalized} (${formatDisplayWhatsapp(whatsappNumber)})`
+                    : whatsappValidation.error}
+                </span>
+              </div>
+              {whatsappValidation.isValid && (
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
+                  Válido
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="block text-[11px] text-zinc-500">
+              Podés ingresar el celular con o sin código de país (ej. 11 4450-1001 o 011-15...). Se normalizará automáticamente.
+            </span>
+          )}
 
           <div className="flex justify-end gap-2 pt-2 border-t border-outline">
             <Button
@@ -248,12 +302,15 @@ export function EditBranchModal({
   });
   const [name, setName] = useState(branch.name);
   const [address, setAddress] = useState(branch.address ?? "");
+  const [openingHours, setOpeningHours] = useState(branch.openingHours ?? "");
   const [phone, setPhone] = useState(branch.phone ?? "");
   const [whatsappNumber, setWhatsappNumber] = useState(branch.whatsappNumber ?? "");
   const [isActive, setIsActive] = useState(branch.isActive);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const whatsappValidation = validateWhatsapp(whatsappNumber, false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -262,9 +319,8 @@ export function EditBranchModal({
       return;
     }
 
-    const cleanWhatsapp = whatsappNumber.trim().replace(/[^0-9]/g, "");
-    if (cleanWhatsapp && !/^[1-9]\d{7,14}$/.test(cleanWhatsapp)) {
-      setError("Formato de WhatsApp inválido. Ejemplo: 5491144501001");
+    if (whatsappNumber.trim() && !whatsappValidation.isValid) {
+      setError(whatsappValidation.error || "Formato de WhatsApp inválido.");
       return;
     }
 
@@ -272,8 +328,9 @@ export function EditBranchModal({
     onSubmit({
       name: name.trim(),
       address: address.trim() || null,
+      openingHours: openingHours.trim() || null,
       phone: phone.trim() || null,
-      whatsappNumber: cleanWhatsapp || null,
+      whatsappNumber: whatsappValidation.normalized,
       isActive,
     });
   }
@@ -351,6 +408,26 @@ export function EditBranchModal({
             />
           </div>
 
+          <div>
+            <label htmlFor="edit-branch-hours" className="block text-xs font-semibold text-zinc-300 mb-1">
+              Horarios de Atención
+            </label>
+            <div className="relative">
+              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
+              <input
+                id="edit-branch-hours"
+                type="text"
+                value={openingHours}
+                onChange={(e) => setOpeningHours(e.target.value)}
+                placeholder="Ej. Lun a Sáb 9:00 a 13:00 y 16:30 a 20:30"
+                className="w-full min-h-[44px] rounded-xl border border-outline bg-surface pl-10 pr-3.5 text-xs text-white placeholder:text-zinc-500 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
+              />
+            </div>
+            <span className="mt-1 block text-[11px] text-zinc-500">
+              Visible para los clientes en el catálogo web y selección de sucursal.
+            </span>
+          </div>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="edit-branch-phone" className="block text-xs font-semibold text-zinc-300 mb-1">
@@ -375,11 +452,40 @@ export function EditBranchModal({
                 type="text"
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="5491144501001"
+                placeholder="Ej. 11 4450-1001 o 5491144501001"
                 className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 font-mono text-xs text-white placeholder:text-zinc-400 caret-brand-gold focus:border-brand-gold focus:ring-1 focus:ring-brand-gold focus:outline-none"
               />
             </div>
           </div>
+
+          {whatsappNumber.trim() ? (
+            <div
+              className={cn(
+                "flex items-center justify-between p-2.5 rounded-xl border text-xs",
+                whatsappValidation.isValid
+                  ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-300"
+                  : "bg-amber-500/10 border-amber-500/25 text-amber-300"
+              )}
+            >
+              <div className="flex items-center gap-2 truncate">
+                <MessageCircle className="size-4 shrink-0 text-emerald-400" />
+                <span className="truncate font-mono text-[11px]">
+                  {whatsappValidation.isValid
+                    ? `wa.me/${whatsappValidation.normalized} (${formatDisplayWhatsapp(whatsappNumber)})`
+                    : whatsappValidation.error}
+                </span>
+              </div>
+              {whatsappValidation.isValid && (
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
+                  Válido
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="block text-[11px] text-zinc-500">
+              Podés ingresar el celular con o sin código de país (ej. 11 4450-1001 o 011-15...). Se normalizará automáticamente.
+            </span>
+          )}
 
           {/* Active status toggle */}
           <div className="flex items-center justify-between rounded-xl border border-outline bg-surface p-3.5">

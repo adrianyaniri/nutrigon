@@ -121,7 +121,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     expect(screen.getByText(/Sucursal Castelar Norte/i)).toBeInTheDocument();
   });
 
-  it("opens edit branch modal and updates contact info", async () => {
+  it("opens edit branch modal and updates contact info and opening hours", async () => {
     renderBranchesPage(Role.ADMIN_GENERAL);
 
     await screen.findByText(/Sucursal Origone/i);
@@ -136,6 +136,15 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     const addressInput = screen.getByLabelText(/Dirección Física/i);
     fireEvent.change(addressInput, { target: { value: "Av. Origone 1234 (Renovada)" } });
 
+    const hoursInput = screen.getByLabelText(/Horarios de Atención/i);
+    fireEvent.change(hoursInput, { target: { value: "Lun a Vie 8:30 a 20:30" } });
+
+    const whatsappInput = screen.getByLabelText(/WhatsApp de Pedidos/i);
+    fireEvent.change(whatsappInput, { target: { value: "011-15-4450-9999" } });
+
+    // Live validation feedback should be visible
+    expect(await screen.findByText(/Válido/i)).toBeInTheDocument();
+
     const submitBtn = screen.getByRole("button", { name: "Guardar Cambios" });
     fireEvent.click(submitBtn);
 
@@ -143,6 +152,7 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     expect(statusBanner).toHaveTextContent(/actualizada correctamente/i);
 
     expect(screen.getByText("Av. Origone 1234 (Renovada)")).toBeInTheDocument();
+    expect(screen.getByText("Lun a Vie 8:30 a 20:30")).toBeInTheDocument();
   });
 
   it("toggles branch active/pause status", async () => {

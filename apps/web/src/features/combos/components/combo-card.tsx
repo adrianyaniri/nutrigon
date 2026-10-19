@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
+import { ProductImage } from "@/components/atoms/product-image";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 import type { BranchComboAdminItem } from "../types";
@@ -35,14 +35,10 @@ export function ComboCard({
       <div className="space-y-3">
         {/* Image & Status Badge */}
         <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-surface border border-outline/60 flex items-center justify-center">
-          <img
-            src={hasImage ? combo.imageUrls[0] : DEFAULT_PRODUCT_IMAGE}
+          <ProductImage
+            src={hasImage ? combo.imageUrls[0] : null}
             alt={combo.name}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = "/Logo.jpeg";
-            }}
           />
 
           {!hasImage && (
@@ -67,11 +63,11 @@ export function ComboCard({
 
         {/* Title & Description */}
         <div>
-          <h3 className="font-headline text-base font-bold text-white line-clamp-1">
+          <h3 className="font-headline text-base font-bold text-foreground line-clamp-1">
             {combo.name}
           </h3>
           {combo.description && (
-            <p className="mt-1 text-xs text-zinc-400 line-clamp-2">
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
               {combo.description}
             </p>
           )}
@@ -82,7 +78,7 @@ export function ComboCard({
           <span className="text-[11px] font-bold uppercase tracking-wider text-brand-gold">
             Contenido ({combo.items.length} productos):
           </span>
-          <ul className="space-y-1 text-xs text-zinc-300">
+          <ul className="space-y-1 text-xs text-foreground/90">
             {combo.items.map((item, idx) => {
               const qtyLabel =
                 item.saleUnit === "WEIGHT"
@@ -94,7 +90,7 @@ export function ComboCard({
               return (
                 <li key={idx} className="flex items-center justify-between text-xs">
                   <span className="truncate pr-2 font-medium">{item.productName}</span>
-                  <span className="shrink-0 text-white font-mono text-[11px] bg-surface-elevated px-1.5 py-0.5 rounded">
+                  <span className="shrink-0 text-foreground font-mono text-[11px] bg-surface-elevated px-1.5 py-0.5 rounded border border-outline/40">
                     {qtyLabel}
                   </span>
                 </li>
@@ -107,14 +103,14 @@ export function ComboCard({
       {/* Footer with Price & Actions */}
       <div className="mt-4 pt-3 border-t border-outline flex items-center justify-between gap-2">
         <div>
-          <span className="text-[11px] uppercase font-mono text-zinc-400">Precio combo</span>
+          <span className="text-[11px] uppercase font-mono text-muted-foreground">Precio combo</span>
           <p className="font-headline text-lg font-bold text-brand-gold">
             {formatPrice(combo.price)}
           </p>
         </div>
 
         {isReadOnly ? (
-          <span className="rounded-lg border border-outline bg-surface-elevated px-2.5 py-1 text-[11px] font-medium text-zinc-400 select-none">
+          <span className="rounded-lg border border-outline bg-surface-elevated px-2.5 py-1 text-[11px] font-medium text-muted-foreground select-none">
             Solo Lectura
           </span>
         ) : (
@@ -124,9 +120,9 @@ export function ComboCard({
               onClick={() => onToggleAvailability(combo)}
               disabled={isToggling}
               className={cn(
-                "min-h-[44px] px-3.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer",
+                "min-h-[44px] px-3.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
                 combo.isAvailable
-                  ? "border-outline bg-surface text-zinc-300 hover:text-amber-300 hover:border-amber-500/40"
+                  ? "border-outline bg-surface text-foreground/80 hover:text-amber-300 hover:border-amber-500/40"
                   : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
               )}
               title={combo.isAvailable ? "Pausar este combo" : "Habilitar para el público"}
@@ -139,7 +135,7 @@ export function ComboCard({
               type="button"
               onClick={() => onRequestDelete(combo)}
               disabled={isDeleting}
-              className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl border border-outline bg-surface text-zinc-400 hover:text-red-400 hover:border-red-500/40 transition-colors flex items-center justify-center cursor-pointer"
+              className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl border border-outline bg-surface text-muted-foreground hover:text-red-400 hover:border-red-500/40 transition-colors flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none"
               title="Eliminar combo"
               aria-label={`Eliminar combo ${combo.name}`}
             >

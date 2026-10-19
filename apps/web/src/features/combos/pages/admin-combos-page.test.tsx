@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role } from "@/features/auth/types";
+import { resetMockCombosRepository } from "../data/combos-repository";
 import { AdminCombosPage } from "./admin-combos-page";
 
 function renderAdminCombosPage() {
@@ -40,6 +41,10 @@ function renderAdminCombosPage() {
 }
 
 describe("AdminCombosPage (Branch Combos Management)", () => {
+  beforeEach(() => {
+    resetMockCombosRepository();
+  });
+
   it("renders branch combos list and metrics strip", async () => {
     renderAdminCombosPage();
 
@@ -58,14 +63,18 @@ describe("AdminCombosPage (Branch Combos Management)", () => {
     renderAdminCombosPage();
 
     await screen.findByText("Pack Desayuno Saludable");
-    const pauseButton = screen.getByRole("button", { name: /pausar/i });
+    const pauseButton = screen.getByRole("button", {
+      name: /Pausar combo Pack Desayuno Saludable/i,
+    });
     fireEvent.click(pauseButton);
 
     expect(
       await screen.findByText(/El combo "Pack Desayuno Saludable" ahora está pausado/i)
     ).toBeInTheDocument();
 
-    const activateButton = await screen.findByRole("button", { name: /activar/i });
+    const activateButton = await screen.findByRole("button", {
+      name: /Activar combo Pack Desayuno Saludable/i,
+    });
     expect(activateButton).toBeInTheDocument();
   });
 
@@ -84,12 +93,12 @@ describe("AdminCombosPage (Branch Combos Management)", () => {
     fireEvent.change(nameInput, { target: { value: "Mix Frutos Secos Premium" } });
 
     // Add first product from the search/picker
-    const addButtons = await screen.findAllByRole("button", { name: "+ Agregar" });
+    const addButtons = await screen.findAllByRole("button", { name: /Agregar/i });
     expect(addButtons.length).toBeGreaterThanOrEqual(2);
     fireEvent.click(addButtons[0]!);
 
     // Add second product
-    const updatedAddButtons = await screen.findAllByRole("button", { name: "+ Agregar" });
+    const updatedAddButtons = await screen.findAllByRole("button", { name: /Agregar/i });
     fireEvent.click(updatedAddButtons[0]!);
 
     // Verify at least 2 items added
@@ -176,7 +185,7 @@ describe("AdminCombosPage (Branch Combos Management)", () => {
       await screen.findByText(/Modo Auditoría de Sucursal \(Solo Lectura\)/i)
     ).toBeInTheDocument();
 
-    expect(await screen.findByText("Mix Frutos Secos Premium")).toBeInTheDocument();
+    expect(await screen.findByText("Pack Desayuno Saludable")).toBeInTheDocument();
     expect(screen.getAllByText("Solo Lectura").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /Nuevo Combo/i })).not.toBeInTheDocument();
     expect(

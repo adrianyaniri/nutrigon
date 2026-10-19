@@ -34,6 +34,7 @@ class InMemoryBranchesRepository implements IBranchesRepository {
       address: data.address ?? null,
       phone: data.phone ?? null,
       whatsappNumber: data.whatsappNumber ?? null,
+      openingHours: data.openingHours ?? null,
       isActive: data.isActive ?? true,
       createdAt: new Date(),
       updatedAt: new Date(),

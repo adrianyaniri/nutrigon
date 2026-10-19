@@ -5,6 +5,7 @@ export interface BranchAdminItem {
   address: string | null;
   phone: string | null;
   whatsappNumber: string | null;
+  openingHours?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -16,6 +17,7 @@ export interface CreateBranchInput {
   address?: string | null;
   phone?: string | null;
   whatsappNumber?: string | null;
+  openingHours?: string | null;
 }
 
 export interface UpdateBranchInput {
@@ -24,6 +26,7 @@ export interface UpdateBranchInput {
   address?: string | null;
   phone?: string | null;
   whatsappNumber?: string | null;
+  openingHours?: string | null;
   isActive?: boolean;
 }
 

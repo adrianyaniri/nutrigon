@@ -13,6 +13,7 @@ const INITIAL_MOCK_BRANCHES: BranchAdminItem[] = [
     address: "Tte. Manuel Origone 196, Villa Tesei",
     phone: "11-4450-1001",
     whatsappNumber: "5491144501001",
+    openingHours: "Lun a Sáb 9:00 a 13:00 y 16:30 a 20:30",
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -24,6 +25,7 @@ const INITIAL_MOCK_BRANCHES: BranchAdminItem[] = [
     address: "Av. Gral. Pedro Díaz 1265, Hurlingham",
     phone: "11-4450-1002",
     whatsappNumber: "5491144501002",
+    openingHours: "Lun a Sáb 9:00 a 13:00 y 16:30 a 20:30",
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -35,6 +37,7 @@ const INITIAL_MOCK_BRANCHES: BranchAdminItem[] = [
     address: "Gdor. Vergara 4210, William C. Morris",
     phone: "11-4450-1003",
     whatsappNumber: "5491144501003",
+    openingHours: "Lun a Sáb 9:00 a 13:00 y 16:30 a 20:30",
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -67,6 +70,7 @@ export function createInMemoryBranchesRepository(
         address: input.address ?? null,
         phone: input.phone ?? null,
         whatsappNumber: input.whatsappNumber ?? null,
+        openingHours: input.openingHours ?? null,
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -100,6 +104,8 @@ export function createInMemoryBranchesRepository(
         phone: input.phone !== undefined ? input.phone : current.phone,
         whatsappNumber:
           input.whatsappNumber !== undefined ? input.whatsappNumber : current.whatsappNumber,
+        openingHours:
+          input.openingHours !== undefined ? input.openingHours : current.openingHours,
         isActive: input.isActive !== undefined ? input.isActive : current.isActive,
         updatedAt: new Date().toISOString(),
       };

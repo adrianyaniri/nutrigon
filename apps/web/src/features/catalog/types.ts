@@ -9,6 +9,7 @@ export interface CatalogBranch {
   address: string | null;
   phone: string | null;
   whatsappNumber: string | null;
+  openingHours?: string | null;
 }
 
 export interface CatalogCategory {

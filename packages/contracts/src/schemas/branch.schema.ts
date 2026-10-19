@@ -8,6 +8,7 @@ export const branchSchema = z
     address: z.string().nullable(),
     phone: z.string().nullable(),
     whatsappNumber: z.string().nullable(),
+    openingHours: z.string().nullable().optional(),
     isActive: z.boolean(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
@@ -32,6 +33,7 @@ export const createBranchSchema = z
       .regex(/^\+?[1-9]\d{7,14}$/, 'Invalid WhatsApp number format (e.g. 5491112345678)')
       .optional()
       .nullable(),
+    openingHours: z.string().trim().max(255).optional().nullable(),
   })
   .strict();
 

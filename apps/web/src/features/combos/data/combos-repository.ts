@@ -60,12 +60,40 @@ const INITIAL_MOCK_COMBOS: BranchComboAdminItem[] = [
       },
     ],
   },
+  {
+    id: "combo-degustacion",
+    branchId: "b-centro",
+    name: "Mix Degustación Frutos Secos",
+    description: "Nueces Chandler + Castañas de Cajú + Pasas de Uva.",
+    imageUrls: ["https://cdn.nutrigon.com/combos/degustacion.webp"],
+    price: 14500,
+    isAvailable: true,
+    isActive: true,
+    items: [
+      {
+        productId: "p-nueces",
+        productName: "Nueces Chandler",
+        quantity: 0.5,
+        saleUnit: "WEIGHT",
+      },
+      {
+        productId: "p-castanas",
+        productName: "Castañas de Cajú",
+        quantity: 0.5,
+        saleUnit: "WEIGHT",
+      },
+    ],
+  },
 ];
+
+export interface InMemoryCombosRepository extends CombosRepository {
+  reset: () => void;
+}
 
 export function createInMemoryCombosRepository(
   seed: BranchComboAdminItem[] = INITIAL_MOCK_COMBOS
-): CombosRepository {
-  const store = new Map<string, BranchComboAdminItem[]>(
+): InMemoryCombosRepository {
+  let store = new Map<string, BranchComboAdminItem[]>(
     [["default", seed.map((c) => ({ ...c }))]]
   );
 
@@ -80,6 +108,12 @@ export function createInMemoryCombosRepository(
   }
 
   return {
+    reset() {
+      store = new Map<string, BranchComboAdminItem[]>(
+        [["default", seed.map((c) => ({ ...c }))]]
+      );
+    },
+
     async listForBranch(branchId) {
       const combos = getBranchCombos(branchId);
       return combos.filter((c) => c.isActive);
@@ -302,3 +336,7 @@ export const combosRepository: CombosRepository = isTestEnv
         return httpCombosRepo.uploadComboImage(token, file);
       },
     };
+
+export function resetMockCombosRepository(): void {
+  mockCombosRepo.reset();
+}
