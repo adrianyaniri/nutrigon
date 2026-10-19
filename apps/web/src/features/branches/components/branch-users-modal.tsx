@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogFocusTrap } from "@/hooks";
 import { useAuth } from "@/features/auth/context/auth-context";
 import { usersRepository } from "@/features/users/data/users-repository";
 import type { BranchAdminItem } from "../types";
@@ -38,6 +39,19 @@ export function BranchUsersModal({
 
   const [isCreating, setIsCreating] = useState(false);
   const [resetTargetUser, setResetTargetUser] = useState<UserItem | null>(null);
+
+  const modalRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose: () => {
+      if (resetTargetUser) {
+        setResetTargetUser(null);
+      } else if (isCreating) {
+        setIsCreating(false);
+      } else {
+        onClose();
+      }
+    },
+  });
 
   // Form states for creating a new branch manager
   const [fullName, setFullName] = useState("");
@@ -70,22 +84,6 @@ export function BranchUsersModal({
       setResetError(null);
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && isOpen) {
-        if (resetTargetUser) {
-          setResetTargetUser(null);
-        } else if (isCreating) {
-          setIsCreating(false);
-        } else {
-          onClose();
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isCreating, resetTargetUser, onClose]);
 
   const createUserMutation = useMutation({
     mutationFn: (data: { email: string; fullName: string; password: string }) =>
@@ -182,6 +180,7 @@ export function BranchUsersModal({
       aria-labelledby="branch-users-title"
     >
       <div
+        ref={modalRef}
         className="w-full max-w-lg rounded-2xl border border-outline bg-surface-card p-6 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -236,8 +235,8 @@ export function BranchUsersModal({
               </div>
 
               {formError && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-200">
-                  <AlertCircle className="size-4 shrink-0 text-red-400 mt-0.5" />
+                <div className="flex items-start gap-2 rounded-lg border border-status-destructive/30 bg-status-destructive/10 p-2.5 text-xs text-status-destructive">
+                  <AlertCircle className="size-4 shrink-0 text-status-destructive mt-0.5" />
                   <span>{formError}</span>
                 </div>
               )}
@@ -367,8 +366,8 @@ export function BranchUsersModal({
               </div>
 
               {resetError && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-200">
-                  <AlertCircle className="size-4 shrink-0 text-red-400 mt-0.5" />
+                <div className="flex items-start gap-2 rounded-lg border border-status-destructive/30 bg-status-destructive/10 p-2.5 text-xs text-status-destructive">
+                  <AlertCircle className="size-4 shrink-0 text-status-destructive mt-0.5" />
                   <span>{resetError}</span>
                 </div>
               )}

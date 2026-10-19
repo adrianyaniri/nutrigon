@@ -414,7 +414,7 @@ export function AdminMasterCatalogPage() {
           <div className="pt-2">
             <Link
               to="/admin/productos"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold text-surface hover:bg-brand-gold/90"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold text-brand-dark hover:bg-brand-gold/90"
             >
               Ir a Precios y Ofertas de mi Sucursal
             </Link>
@@ -438,8 +438,8 @@ export function AdminMasterCatalogPage() {
           className={cn(
             "flex items-center justify-between gap-3 p-4 rounded-xl border text-sm transition-all",
             feedbackBanner.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-red-500/10 border-red-500/30 text-red-300"
+              ? "bg-status-success/10 border-status-success/30 text-status-success"
+              : "bg-status-destructive/10 border-status-destructive/30 text-status-destructive"
           )}
         >
           <div className="flex items-center gap-2.5">
@@ -494,7 +494,7 @@ export function AdminMasterCatalogPage() {
           <Button
             type="button"
             onClick={openCreateProductModal}
-            className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold px-5 text-xs sm:text-sm gap-2 shadow-sm"
+            className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold/90 font-semibold px-5 text-xs sm:text-sm gap-2 shadow-sm"
           >
             <Plus className="size-4" />
             <span>Nuevo Producto Maestro</span>
@@ -584,7 +584,7 @@ export function AdminMasterCatalogPage() {
             className={cn(
               "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ALL"
-                ? "bg-brand-gold text-surface"
+                ? "bg-brand-gold text-brand-dark"
                 : "text-zinc-400 hover:text-white"
             )}
           >
@@ -624,9 +624,9 @@ export function AdminMasterCatalogPage() {
           <p className="text-sm">Cargando catálogo maestro...</p>
         </div>
       ) : productsQuery.isError ? (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center space-y-3">
-          <AlertCircle className="size-8 text-red-400 mx-auto" />
-          <p className="text-sm text-red-200">
+        <div className="rounded-xl border border-status-destructive/30 bg-status-destructive/10 p-6 text-center space-y-3">
+          <AlertCircle className="size-8 text-status-destructive mx-auto" />
+          <p className="text-sm text-status-destructive">
             {productsQuery.error instanceof Error
               ? productsQuery.error.message
               : "No se pudo cargar el catálogo maestro."}
@@ -673,7 +673,7 @@ export function AdminMasterCatalogPage() {
             <Button
               type="button"
               onClick={openCreateProductModal}
-              className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 text-xs font-semibold px-4"
+              className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold/90 text-xs font-semibold px-4"
             >
               <Plus className="size-4 mr-1" />
               Crear Producto Maestro

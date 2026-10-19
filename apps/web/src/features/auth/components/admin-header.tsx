@@ -73,10 +73,10 @@ export function AdminHeader() {
               <Store className="size-4" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-headline text-sm font-semibold tracking-tight text-white">
+              <span className="font-headline text-sm font-semibold tracking-tight text-foreground">
                 Nutrigon
               </span>
-              <span className="text-[11px] font-medium text-white/60 px-1.5 py-0.5 rounded bg-surface-elevated font-mono">
+              <span className="text-[11px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-surface-elevated font-mono">
                 Admin
               </span>
             </div>
@@ -92,7 +92,7 @@ export function AdminHeader() {
                     "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                     isActive
                       ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                      : "text-zinc-400 hover:text-white hover:bg-surface-hover"
+                      : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                   )
                 }
               >
@@ -109,7 +109,7 @@ export function AdminHeader() {
                     "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                     isActive
                       ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                      : "text-zinc-400 hover:text-white hover:bg-surface-hover"
+                      : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                   )
                 }
               >
@@ -125,7 +125,7 @@ export function AdminHeader() {
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                   isActive
                     ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                    : "text-zinc-400 hover:text-white hover:bg-surface-hover"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                 )
               }
             >
@@ -140,7 +140,7 @@ export function AdminHeader() {
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
                   isActive
                     ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30 shadow-xs"
-                    : "text-zinc-400 hover:text-white hover:bg-surface-hover"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                 )
               }
             >
@@ -159,17 +159,17 @@ export function AdminHeader() {
             <select
               value={activeBranch?.slug ?? selectedBranchSlug}
               onChange={(e) => setSelectedBranchSlug(e.target.value)}
-              className="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent text-foreground text-xs font-medium focus:outline-none cursor-pointer pr-1"
               aria-label="Seleccionar sucursal activa para gestionar"
             >
               {branches.map((b) => (
-                <option key={b.slug} value={b.slug} className="bg-surface text-white">
+                <option key={b.slug} value={b.slug} className="bg-surface text-foreground">
                   Sucursal {b.name}
                 </option>
               ))}
             </select>
           ) : (
-            <span className="text-white text-xs font-medium">
+            <span className="text-foreground text-xs font-medium">
               Sucursal {activeBranch?.name ?? selectedBranchSlug}
             </span>
           )}
@@ -180,7 +180,7 @@ export function AdminHeader() {
           to={`/catalogo/${selectedBranchSlug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden md:flex items-center gap-1 text-xs text-white/50 hover:text-brand-gold transition-colors"
+          className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors"
           title="Ver cómo lo ve el cliente en esta sucursal"
         >
           <span>Ver Tienda</span>
@@ -199,10 +199,10 @@ export function AdminHeader() {
           </div>
 
           <div className="hidden lg:flex flex-col text-left">
-            <span className="text-xs font-semibold text-white leading-tight">
+            <span className="text-xs font-semibold text-foreground leading-tight">
               {user?.fullName || "Administrador"}
             </span>
-            <span className="text-[11px] text-white/60 font-mono">
+            <span className="text-[11px] text-muted-foreground font-mono">
               {user?.role === Role.ADMIN_GENERAL ? "Admin General" : "Admin Sucursal"}
             </span>
           </div>
@@ -211,7 +211,7 @@ export function AdminHeader() {
           <button
             type="button"
             onClick={() => setIsChangePasswordOpen(true)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/60 hover:text-brand-gold p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-brand-gold p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
             title="Cambiar mi contraseña"
             aria-label="Cambiar mi contraseña"
           >
@@ -223,7 +223,7 @@ export function AdminHeader() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-white/50 hover:text-red-400 p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-status-destructive p-2 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
@@ -236,8 +236,8 @@ export function AdminHeader() {
 
       {/* Floating Password Changed Feedback Toast */}
       {passwordNotification && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-xl border border-emerald-500/40 bg-surface-card p-4 text-xs font-semibold text-emerald-300 shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="size-4.5 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-xl border border-status-success/30 bg-surface-card p-4 text-xs font-semibold text-status-success shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="size-4.5 text-status-success shrink-0" />
           <span>{passwordNotification}</span>
           <button
             type="button"
@@ -270,7 +270,7 @@ export function AdminHeader() {
                 "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
                 isActive
                   ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                  : "text-zinc-400 hover:text-white"
+                  : "text-muted-foreground hover:text-foreground"
               )
             }
           >
@@ -287,7 +287,7 @@ export function AdminHeader() {
                 "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
                 isActive
                   ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                  : "text-zinc-400 hover:text-white"
+                  : "text-muted-foreground hover:text-foreground"
               )
             }
           >
@@ -303,7 +303,7 @@ export function AdminHeader() {
               "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )
           }
         >
@@ -318,7 +318,7 @@ export function AdminHeader() {
               "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )
           }
         >

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { KeyRound, Lock, Loader2, X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogFocusTrap } from "@/hooks";
 import { useAuth } from "../context/auth-context";
 import { usersRepository } from "@/features/users/data/users-repository";
 
@@ -24,6 +25,13 @@ export function ChangePasswordModal({
 
   const initialInputRef = useRef<HTMLInputElement>(null);
 
+  const modalRef = useDialogFocusTrap<HTMLDivElement>({
+    isOpen,
+    onClose: () => {
+      if (!isSubmitting) onClose();
+    },
+  });
+
   useEffect(() => {
     if (isOpen) {
       setCurrentPassword("");
@@ -34,16 +42,6 @@ export function ChangePasswordModal({
       setTimeout(() => initialInputRef.current?.focus(), 50);
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && isOpen && !isSubmitting) {
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isSubmitting, onClose]);
 
   if (!isOpen) return null;
 
@@ -90,6 +88,7 @@ export function ChangePasswordModal({
       aria-labelledby="change-password-title"
     >
       <div
+        ref={modalRef}
         className="w-full max-w-md rounded-2xl border border-outline bg-surface-card p-6 shadow-2xl animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -124,8 +123,8 @@ export function ChangePasswordModal({
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">
-              <AlertCircle className="size-4 shrink-0 text-red-400 mt-0.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-status-destructive/30 bg-status-destructive/10 p-3 text-xs text-status-destructive">
+              <AlertCircle className="size-4 shrink-0 text-status-destructive mt-0.5" />
               <span>{error}</span>
             </div>
           )}

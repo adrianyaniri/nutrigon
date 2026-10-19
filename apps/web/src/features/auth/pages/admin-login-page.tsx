@@ -217,7 +217,7 @@ export function AdminLoginPage() {
               <button
                 type="button"
                 onClick={() => setShowRecoveryHint((prev) => !prev)}
-                className="text-xs text-muted-foreground hover:text-brand-gold transition-colors font-medium"
+                className="text-xs text-muted-foreground hover:text-brand-gold transition-colors font-medium min-h-[44px] inline-flex items-center cursor-pointer"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -237,9 +237,9 @@ export function AdminLoginPage() {
             {errorMessage && (
               <div
                 role="alert"
-                className="flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-xs text-red-200 animate-in fade-in-50 duration-200"
+                className="flex items-center gap-2.5 rounded-xl border border-status-destructive/30 bg-status-destructive/10 px-3.5 py-2.5 text-xs text-status-destructive animate-in fade-in-50 duration-200"
               >
-                <AlertCircle className="size-4 shrink-0 text-red-400" aria-hidden="true" />
+                <AlertCircle className="size-4 shrink-0 text-status-destructive" aria-hidden="true" />
                 <span>{errorMessage}</span>
               </div>
             )}

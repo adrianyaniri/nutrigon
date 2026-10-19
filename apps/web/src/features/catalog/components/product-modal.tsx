@@ -204,6 +204,19 @@ export function ProductModal({
                   <div
                     role="radiogroup"
                     aria-labelledby={portionLabelId}
+                    onKeyDown={(e) => {
+                      if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+                        e.preventDefault();
+                        const currentIndex = PORTION_OPTIONS.findIndex((o) => o.value === selectedPortion);
+                        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          const nextIndex = (currentIndex + 1) % PORTION_OPTIONS.length;
+                          setSelectedPortion(PORTION_OPTIONS[nextIndex].value);
+                        } else {
+                          const prevIndex = (currentIndex - 1 + PORTION_OPTIONS.length) % PORTION_OPTIONS.length;
+                          setSelectedPortion(PORTION_OPTIONS[prevIndex].value);
+                        }
+                      }
+                    }}
                     className="grid grid-cols-2 gap-2 sm:gap-2.5"
                   >
                     {PORTION_OPTIONS.map((option) => {
@@ -216,6 +229,7 @@ export function ProductModal({
                           type="button"
                           role="radio"
                           aria-checked={isSelected}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => setSelectedPortion(option.value)}
                           className={cn(
                             "flex flex-col justify-between p-3 rounded-xl border text-left transition-all active:scale-[0.98]",

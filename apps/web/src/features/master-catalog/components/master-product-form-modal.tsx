@@ -108,8 +108,8 @@ export function MasterProductFormModal({
 
         <form onSubmit={onSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {formError && (
-            <div className="p-3.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs flex items-center gap-2">
-              <AlertCircle className="size-4 shrink-0 text-red-400" />
+            <div className="p-3.5 rounded-xl border border-status-destructive/30 bg-status-destructive/10 text-status-destructive text-xs flex items-center gap-2">
+              <AlertCircle className="size-4 shrink-0 text-status-destructive" />
               <span>{formError}</span>
             </div>
           )}
@@ -300,7 +300,7 @@ export function MasterProductFormModal({
             <Button
               type="submit"
               disabled={isSaving || isUploadingImage || productName.trim().length < 2}
-              className="min-h-[44px] bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold text-xs px-5"
+              className="min-h-[44px] bg-brand-gold text-brand-dark hover:bg-brand-gold/90 font-semibold text-xs px-5"
             >
               {isSaving ? (
                 <div className="flex items-center gap-2">

@@ -336,12 +336,19 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                 <div
                   role="radiogroup"
                   aria-labelledby={fulfillmentLabelId}
+                  onKeyDown={(e) => {
+                    if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+                      e.preventDefault();
+                      setFulfillment(fulfillment === "pickup" ? "delivery" : "pickup");
+                    }
+                  }}
                   className="grid grid-cols-2 gap-2 bg-brand-surface/60 p-1.5 rounded-xl border border-border"
                 >
                   <button
                     type="button"
                     role="radio"
                     aria-checked={fulfillment === "pickup"}
+                    tabIndex={fulfillment === "pickup" ? 0 : -1}
                     onClick={() => setFulfillment("pickup")}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-lg text-center transition-all min-h-[44px]",
@@ -359,6 +366,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                     type="button"
                     role="radio"
                     aria-checked={fulfillment === "delivery"}
+                    tabIndex={fulfillment === "delivery" ? 0 : -1}
                     onClick={() => setFulfillment("delivery")}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-lg text-center transition-all min-h-[44px]",

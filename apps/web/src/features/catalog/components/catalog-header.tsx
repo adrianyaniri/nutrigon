@@ -38,9 +38,9 @@ export function CatalogHeader({
   }, [cartItemCount]);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-4 md:px-6">
+      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-3 sm:px-4 md:px-6">
         {/* Left Column: Mobile Menu Toggle & Read-Only Branch Badge */}
-        <div className="flex w-1/3 md:w-1/4 items-center justify-start gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center justify-start gap-1.5 sm:gap-2">
           {onOpenCategories && (
             <button
               type="button"
@@ -59,7 +59,7 @@ export function CatalogHeader({
               className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 py-1.5 text-xs text-muted-foreground shadow-2xs"
             >
               <MapPin className="size-3.5 text-brand-gold-text shrink-0" aria-hidden="true" />
-              <span className="font-medium text-foreground max-w-[85px] sm:max-w-none truncate">
+              <span className="font-medium text-foreground max-w-[80px] sm:max-w-none truncate">
                 <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
                 {branchName}
               </span>
@@ -68,12 +68,12 @@ export function CatalogHeader({
         </div>
 
         {/* Center Column: Prominent Centered Brand Logo */}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-center justify-center px-1 min-w-0">
           <Link
             to={branchSlug ? `/catalogo/${branchSlug}` : "/catalogo"}
-            className="flex items-center gap-2.5 sm:gap-3 group"
+            className="flex items-center gap-2 sm:gap-3 group max-w-full"
           >
-            <span className="relative flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 shadow-md bg-brand-surface transition-transform group-hover:scale-105">
+            <span className="relative flex size-9 sm:size-11 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 shadow-md bg-brand-surface transition-transform group-hover:scale-105">
               <img
                 src="/Logo.jpeg"
                 alt="Nutrigon"
@@ -84,11 +84,11 @@ export function CatalogHeader({
                 className="size-full object-cover"
               />
             </span>
-            <div className="flex flex-col leading-tight text-center sm:text-left">
-              <span className="font-headline text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            <div className="flex flex-col leading-tight text-center sm:text-left min-w-0">
+              <span className="font-headline text-base sm:text-xl font-bold tracking-tight text-foreground truncate">
                 Nutrigon
               </span>
-              <span className="text-[11px] font-semibold tracking-wider text-brand-gold-text uppercase">
+              <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-gold-text uppercase hidden xs:inline sm:inline truncate">
                 Dietética &amp; Cerealera
               </span>
             </div>
@@ -96,7 +96,7 @@ export function CatalogHeader({
         </div>
 
         {/* Right Column: Admin Access & Cart Button */}
-        <div className="flex w-1/4 items-center justify-end gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
           <Link
             to="/admin"
             title="Acceso al panel de administración"

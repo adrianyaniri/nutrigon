@@ -224,7 +224,7 @@ export function AdminBranchesPage() {
         <Button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 font-semibold shadow-sm bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs sm:text-sm"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 font-semibold shadow-sm bg-brand-gold text-brand-dark hover:bg-brand-gold/90 px-5 text-xs sm:text-sm"
         >
           <Plus className="size-4" />
           <span>Nueva Sucursal</span>
@@ -296,7 +296,7 @@ export function AdminBranchesPage() {
             className={cn(
               "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "all"
-                ? "bg-brand-gold text-surface shadow-xs"
+                ? "bg-brand-gold text-brand-dark shadow-xs"
                 : "text-zinc-400 hover:text-white"
             )}
           >
@@ -335,7 +335,7 @@ export function AdminBranchesPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-64 rounded-2xl border border-outline bg-surface-card p-6 animate-pulse"
+              className="h-64 rounded-2xl border border-outline bg-surface-card p-6 animate-pulse motion-reduce:animate-none"
             />
           ))}
         </div>

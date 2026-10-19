@@ -202,11 +202,12 @@ export function CatalogPage() {
                     <button
                       type="button"
                       onClick={() => setCategory(null)}
-                      className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-0.5 text-xs font-semibold text-brand-gold-text hover:bg-brand-gold/25 transition-colors"
+                      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-brand-gold/15 px-3 py-1.5 text-xs font-semibold text-brand-gold-text hover:bg-brand-gold/25 transition-colors cursor-pointer"
                       title="Quitar filtro de categoría"
+                      aria-label="Quitar filtro de categoría"
                     >
                       <span>Quitar filtro</span>
-                      <X className="size-3" />
+                      <X className="size-3.5" aria-hidden="true" />
                     </button>
                   )}
                 </div>

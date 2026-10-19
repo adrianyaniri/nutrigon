@@ -390,15 +390,15 @@ export function AdminCombosPage() {
           className={cn(
             "fixed bottom-6 right-6 z-50 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-xs sm:text-sm font-medium shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200 max-w-sm sm:max-w-md",
             feedbackBanner.type === "success"
-              ? "border-emerald-500/50 bg-surface-card text-emerald-200 shadow-emerald-950/40"
-              : "border-red-500/50 bg-surface-card text-red-200 shadow-red-950/40"
+              ? "border-status-success/30 bg-surface-card text-status-success shadow-lg"
+              : "border-status-destructive/30 bg-surface-card text-status-destructive shadow-lg"
           )}
         >
           <div className="flex items-center gap-2.5">
             {feedbackBanner.type === "success" ? (
-              <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="size-4 text-status-success shrink-0" />
             ) : (
-              <AlertCircle className="size-4 text-red-400 shrink-0" />
+              <AlertCircle className="size-4 text-status-destructive shrink-0" />
             )}
             <span>{feedbackBanner.text}</span>
           </div>
@@ -556,9 +556,9 @@ export function AdminCombosPage() {
           <p className="text-sm">Cargando combos de la sucursal...</p>
         </div>
       ) : combosQuery.isError ? (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center space-y-3">
-          <AlertCircle className="size-8 text-red-400 mx-auto" />
-          <p className="text-sm text-red-200">
+        <div className="rounded-xl border border-status-destructive/30 bg-status-destructive/10 p-6 text-center space-y-3">
+          <AlertCircle className="size-8 text-status-destructive mx-auto" />
+          <p className="text-sm text-status-destructive">
             {combosQuery.error instanceof Error
               ? combosQuery.error.message
               : "No se pudieron cargar los combos."}

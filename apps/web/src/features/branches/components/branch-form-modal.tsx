@@ -270,7 +270,7 @@ export function CreateBranchModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="min-h-[44px] font-semibold bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs"
+              className="min-h-[44px] font-semibold bg-brand-gold text-brand-dark hover:bg-brand-gold/90 px-5 text-xs"
             >
               {isSubmitting ? "Creando..." : "Crear Sucursal"}
             </Button>
@@ -521,7 +521,7 @@ export function EditBranchModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="min-h-[44px] font-semibold bg-brand-gold text-surface hover:bg-brand-gold/90 px-5 text-xs"
+              className="min-h-[44px] font-semibold bg-brand-gold text-brand-dark hover:bg-brand-gold/90 px-5 text-xs"
             >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </Button>
