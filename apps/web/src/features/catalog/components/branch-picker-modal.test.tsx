@@ -4,8 +4,8 @@ import type { CatalogBranch } from "../types";
 import { BranchPickerModal } from "./branch-picker-modal";
 
 const branches: CatalogBranch[] = [
-  { id: "b1", name: "Centro", slug: "centro", address: "San Martín 450", phone: "123" },
-  { id: "b2", name: "Norte", slug: "norte", address: "Av. Libertad 1200", phone: "456" },
+  { id: "b1", name: "Centro", slug: "centro", address: "San Martín 450", phone: "123", whatsappNumber: "5493514210001" },
+  { id: "b2", name: "Norte", slug: "norte", address: "Av. Libertad 1200", phone: "456", whatsappNumber: "5493514210002" },
 ];
 
 describe("BranchPickerModal", () => {

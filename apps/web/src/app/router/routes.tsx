@@ -1,42 +1,89 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { PublicLayout } from "@/app/layouts/public-layout";
-import { AdminLayout } from "@/app/layouts/admin-layout";
-import { AdminIndexRedirect, AdminLoginPage, ProtectedRoute } from "@/features/auth";
-import { AdminProductsPage, CatalogLandingPage, CatalogPage } from "@/features/catalog";
-import { AdminBranchesPage } from "@/features/branches";
-import { AdminCombosPage } from "@/features/combos";
-import { AdminMasterCatalogPage } from "@/features/master-catalog";
+import { AdminIndexRedirect, ProtectedRoute } from "@/features/auth";
+import { CatalogLandingPage, CatalogPage } from "@/features/catalog";
+import { AdminLoadingFallback } from "./admin-loading-fallback";
 import { NotFoundPage } from "./not-found-page";
+
+const AdminLoginPage = lazy(() =>
+  import("@/features/auth/pages/admin-login-page").then((m) => ({ default: m.AdminLoginPage }))
+);
+const AdminLayout = lazy(() =>
+  import("@/app/layouts/admin-layout").then((m) => ({ default: m.AdminLayout }))
+);
+const AdminMasterCatalogPage = lazy(() =>
+  import("@/features/master-catalog/pages/admin-master-catalog-page").then((m) => ({
+    default: m.AdminMasterCatalogPage,
+  }))
+);
+const AdminBranchesPage = lazy(() =>
+  import("@/features/branches/pages/admin-branches-page").then((m) => ({
+    default: m.AdminBranchesPage,
+  }))
+);
+const AdminProductsPage = lazy(() =>
+  import("@/features/catalog/pages/admin-products-page").then((m) => ({
+    default: m.AdminProductsPage,
+  }))
+);
+const AdminCombosPage = lazy(() =>
+  import("@/features/combos/pages/admin-combos-page").then((m) => ({
+    default: m.AdminCombosPage,
+  }))
+);
 
 export const router = createBrowserRouter([
   {
     path: "/admin/login",
-    element: <AdminLoginPage />,
+    element: (
+      <Suspense fallback={<AdminLoadingFallback />}>
+        <AdminLoginPage />
+      </Suspense>
+    ),
   },
   {
     path: "/admin",
     element: (
       <ProtectedRoute>
-        <AdminLayout />
+        <Suspense fallback={<AdminLoadingFallback />}>
+          <AdminLayout />
+        </Suspense>
       </ProtectedRoute>
     ),
     children: [
       { index: true, element: <AdminIndexRedirect /> },
       {
         path: "catalogo-maestro",
-        element: <AdminMasterCatalogPage />,
+        element: (
+          <Suspense fallback={<AdminLoadingFallback />}>
+            <AdminMasterCatalogPage />
+          </Suspense>
+        ),
       },
       {
         path: "sucursales",
-        element: <AdminBranchesPage />,
+        element: (
+          <Suspense fallback={<AdminLoadingFallback />}>
+            <AdminBranchesPage />
+          </Suspense>
+        ),
       },
       {
         path: "productos",
-        element: <AdminProductsPage />,
+        element: (
+          <Suspense fallback={<AdminLoadingFallback />}>
+            <AdminProductsPage />
+          </Suspense>
+        ),
       },
       {
         path: "combos",
-        element: <AdminCombosPage />,
+        element: (
+          <Suspense fallback={<AdminLoadingFallback />}>
+            <AdminCombosPage />
+          </Suspense>
+        ),
       },
     ],
   },
