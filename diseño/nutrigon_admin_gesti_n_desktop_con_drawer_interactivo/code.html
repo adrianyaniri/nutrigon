@@ -1,0 +1,449 @@
+<!DOCTYPE html><html class="dark" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nutrigon Admin • Gestión de Catálogo &amp; Precios</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Public+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration with Brand Tokens -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#F5B731",
+              hover: "#E5A820",
+              container: "#2B220C",
+              onPrimary: "#121316",
+              dim: "rgba(245, 183, 49, 0.12)"
+            },
+            surface: {
+              DEFAULT: "#121316",
+              card: "#1A1C20",
+              elevated: "#22252B",
+              hover: "#2A2E36"
+            },
+            outline: {
+              DEFAULT: "#2F333D",
+              variant: "#3F4452"
+            },
+            status: {
+              success: "#34D399",
+              successDim: "rgba(52, 211, 153, 0.15)",
+              warning: "#FBBF24",
+              info: "#60A5FA"
+            }
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Public Sans", "sans-serif"],
+            display: ["Public Sans", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #121316;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2F333D;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #3F4452;
+    }
+  </style>
+</head>
+<body class="bg-surface text-gray-200 font-body antialiased min-h-screen flex flex-col selection:bg-primary selection:text-surface overflow-x-hidden">
+<!-- 1. TOP NAVBAR (Shared Component Brand Anchor) -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-6 py-3 w-full bg-surface border-b border-outline/70 shadow-sm"><div class="flex items-center gap-6"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-xl" data-icon="storefront">storefront</span></div><div class="flex items-center gap-2"><span class="font-headline text-sm font-semibold tracking-tight text-white">Nutrigon</span><span class="text-[11px] font-medium text-gray-400 font-label">Admin</span></div></div><div class="h-4 w-[1px] bg-white/[0.08]"></div><div class="flex items-center gap-2 text-xs text-gray-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span class="text-gray-300 font-medium">Centro &amp; Norte conectadas</span></div></div><div class="flex items-center gap-4"><div class="flex items-center gap-1.5 text-xs text-gray-400"><span class="material-symbols-outlined text-sm text-gray-400" data-icon="sync">sync</span><span class="font-mono text-gray-400">18:42</span></div><div class="h-4 w-[1px] bg-white/[0.08]"></div><div class="w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.08] text-white font-medium text-xs flex items-center justify-center">SG</div></div></header>
+<!-- 2. CONTROL TOOLBAR -->
+<section class="bg-surface-card/60 border-b border-outline px-6 py-3.5 backdrop-blur-sm"><div class="flex items-center justify-between gap-6 max-w-full"><div class="relative w-96"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none" data-icon="search">search</span><input class="w-full bg-white/[0.03] border border-white/[0.08] text-xs text-gray-100 pl-9 pr-9 py-2 rounded-lg focus:outline-none focus:border-primary/60 placeholder-gray-500 transition-colors" placeholder="Buscar producto, SKU..." type="text" value="Almendras"><kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.08]">⌘K</kbd></div><div class="flex items-center gap-3"><div class="flex items-center gap-1 bg-white/[0.03] border border-white/[0.06] rounded-lg p-0.5 text-xs text-gray-400"><button class="px-2.5 py-1 rounded bg-white/[0.08] text-white font-medium">Todos</button><button class="px-2.5 py-1 rounded hover:text-white transition-colors">Granel</button><button class="px-2.5 py-1 rounded hover:text-white transition-colors">Envasado</button></div><button class="bg-primary hover:bg-primary-hover active:scale-95 text-stone-950 font-medium text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-all" id="btn-nuevo-producto"><span class="material-symbols-outlined text-base font-bold" data-icon="add">add</span><span>Nuevo Producto</span></button></div></div></section>
+<!-- MAIN WORKSPACE: BENTO / DUAL-PANE SPLIT -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- LEFT PANE: MASTER TABLE (Flexible, takes full width when drawer is closed) -->
+<div class="flex-1 flex flex-col border-r border-outline/70 bg-surface/90 min-w-0 transition-all duration-300 ease-in-out" id="table-pane">
+<!-- Table Quick Header Metrics Bar -->
+<div class="px-6 py-3 border-b border-outline flex items-center justify-between text-xs text-gray-400 bg-surface-card/40"><div class="flex items-center gap-3"><span class="font-medium text-xs text-gray-300">Productos (142)</span><button class="hidden items-center gap-1 text-[11px] text-primary hover:text-primary-hover bg-primary/10 px-2.5 py-1 rounded transition-colors" id="btn-reopen-drawer"><span class="material-symbols-outlined text-xs">edit_note</span><span>Ver Panel</span></button></div><div class="flex items-center gap-2 text-xs text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="swap_vert">swap_vert</span><span>Orden: <span class="text-gray-300 font-medium">Recientes</span></span></div></div>
+<!-- Table Container Scrollable -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<table class="w-full text-left border-collapse"><thead><tr class="border-b border-white/[0.06] text-[11px] uppercase tracking-wider text-gray-400 bg-white/[0.01]"><th class="py-3.5 px-6 font-medium">Producto</th><th class="py-3.5 px-4 font-medium">Modalidad</th><th class="py-3.5 px-5 font-medium text-right">Precio Centro</th><th class="py-3.5 px-5 font-medium text-right">Precio Norte</th><th class="py-3.5 px-5 font-medium">Stock</th><th class="py-3.5 px-4 font-medium text-center">Web</th><th class="py-3.5 px-6 font-medium text-right"></th></tr></thead><tbody class="divide-y divide-white/[0.04] text-xs">
+<tr class="product-row bg-white/[0.02] border-l-2 border-primary transition-colors cursor-pointer" data-category="Frutos Secos" data-img="https://lh3.googleusercontent.com/aida-public/AB6AXuDOeAoWGUES04HevBfSVV06Q0Q3pJQTZ5jcOmilRwrK3Z80YRqiJz8hs18b8YJLNm_UTLnMlK0JfdflvvaDPvZDR9x-Xa31XUTLlx9XLf-y2xXXeGsNclHt9FohtO6BBzNhF9XuwekYCurLS_5hJMOXqUzXCl1r11q9uuCQbX4eS7tBtgYRgugi8EnQRLVM9w7pgPemYGd7lZUD2f6841uSxmord2JPaPc-vm4NCZX5sT7s-ftpTR-T3CMjzL0SUmjv0roGYs96Bpw" data-modality="Granel fraccionado" data-name="Almendras Nonpareil Tostadas" data-price-centro="2.850" data-price-norte="2.990" data-sku="NUT-ALM-01" data-stock-centro="48" data-stock-norte="22" data-unit="Bolsa 250g" data-web="true"><td class="py-4 px-6"><div class="flex items-center gap-3.5"><img alt="Almendras Nonpareil Tostadas" class="w-10 h-10 rounded-lg object-cover bg-white/[0.05] border border-white/[0.08] flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOeAoWGUES04HevBfSVV06Q0Q3pJQTZ5jcOmilRwrK3Z80YRqiJz8hs18b8YJLNm_UTLnMlK0JfdflvvaDPvZDR9x-Xa31XUTLlx9XLf-y2xXXeGsNclHt9FohtO6BBzNhF9XuwekYCurLS_5hJMOXqUzXCl1r11q9uuCQbX4eS7tBtgYRgugi8EnQRLVM9w7pgPemYGd7lZUD2f6841uSxmord2JPaPc-vm4NCZX5sT7s-ftpTR-T3CMjzL0SUmjv0roGYs96Bpw"><div><div class="font-medium text-white hover:text-primary transition-colors product-title-btn">Almendras Nonpareil Tostadas</div><div class="text-gray-400 text-[11px] mt-0.5">NUT-ALM-01 • 250g / 1kg</div></div></div></td><td class="py-4 px-4"><span class="text-gray-300 bg-white/[0.05] px-2 py-0.5 rounded text-[11px]">Granel</span></td><td class="py-4 px-5 text-right font-medium text-white">$ 2.850</td><td class="py-4 px-5 text-right font-medium text-white">$ 2.990</td><td class="py-4 px-5"><span class="text-gray-300 font-medium">70 kg</span> <span class="text-gray-400 text-[11px]">(48 / 22)</span></td><td class="py-4 px-4 text-center"><button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center toggle-web-btn"><span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform"></span></button></td><td class="py-4 px-6 text-right"><button class="btn-edit-row text-primary hover:text-white transition-colors" title="Editar producto"><span class="material-symbols-outlined text-base">edit</span></button></td></tr>
+<tr class="product-row hover:bg-white/[0.02] border-l-2 border-transparent transition-colors cursor-pointer" data-category="Harinas &amp; Granos" data-img="https://lh3.googleusercontent.com/aida-public/AB6AXuB0ZFVkNQTcuKkHjVjPVovMKcMo9KCC0B8TrvsXm20Dm4Gq8wv4ZiaHHOpL0y_mhel29uJgWJX7KfEAxOu1wokK8-W9eF0IT8Y3rdpdzu1zvurYLxxQ7cuQ_MbZuKM7yBwap7CBQ-4tvVj5qoLFi57gQBAkEEDrlICzKxa7NvQhS4bewmNsJQTUYxh5j8Q0mCmxwSo1NR_OygzmAzA6ICSrGGmkSHrVb-WHjmn-9usxB-Noe5lZ80sCHw9lKFbbEkoBW2YogZchGc4" data-modality="Granel fraccionado" data-name="Harina de Avena Integral" data-price-centro="1.400" data-price-norte="1.400" data-sku="NUT-AVE-04" data-stock-centro="85" data-stock-norte="90" data-unit="Bolsa 500g" data-web="true"><td class="py-4 px-6"><div class="flex items-center gap-3.5"><img alt="Harina de Avena Integral" class="w-10 h-10 rounded-lg object-cover bg-white/[0.05] border border-white/[0.08] flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0ZFVkNQTcuKkHjVjPVovMKcMo9KCC0B8TrvsXm20Dm4Gq8wv4ZiaHHOpL0y_mhel29uJgWJX7KfEAxOu1wokK8-W9eF0IT8Y3rdpdzu1zvurYLxxQ7cuQ_MbZuKM7yBwap7CBQ-4tvVj5qoLFi57gQBAkEEDrlICzKxa7NvQhS4bewmNsJQTUYxh5j8Q0mCmxwSo1NR_OygzmAzA6ICSrGGmkSHrVb-WHjmn-9usxB-Noe5lZ80sCHw9lKFbbEkoBW2YogZchGc4"><div><div class="font-medium text-gray-200 hover:text-primary transition-colors product-title-btn">Harina de Avena Integral</div><div class="text-gray-400 text-[11px] mt-0.5">NUT-AVE-04 • 500g / 1kg</div></div></div></td><td class="py-4 px-4"><span class="text-gray-300 bg-white/[0.05] px-2 py-0.5 rounded text-[11px]">Granel</span></td><td class="py-4 px-5 text-right font-medium text-white">$ 1.400</td><td class="py-4 px-5 text-right font-medium text-white">$ 1.400</td><td class="py-4 px-5"><span class="text-gray-300 font-medium">175 kg</span> <span class="text-gray-400 text-[11px]">(85 / 90)</span></td><td class="py-4 px-4 text-center"><button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center toggle-web-btn"><span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform"></span></button></td><td class="py-4 px-6 text-right"><button class="btn-edit-row text-gray-400 hover:text-white transition-colors" title="Editar producto"><span class="material-symbols-outlined text-base">edit</span></button></td></tr>
+<tr class="product-row hover:bg-white/[0.02] border-l-2 border-transparent transition-colors cursor-pointer" data-category="Frutos Secos" data-img="https://lh3.googleusercontent.com/aida-public/AB6AXuBvxp561awCadPG4Xrsf4x-PGxhARFuJzOnnRnrDBoee0CiCbdETMIT_UEj6tO74yYE6iY1_Luar5T3D77Ss6FhG_P7yYjoCRyaOLS0vQVcmS_kBUj8lnJMa_nH2tbxLP-n1hI-qEkCOm_Hf3KBS8WIFsn7Ru02mUuiorqODlicHRcF-ozq2o4EN5QQ7KAq-wMEqCRPJ1-DaqK-vYzT3ZaBU4bWRgyRVEqbWLNT5hGbvYsERnA4gUbdbUtMlwPD-wzXfqNSi-LKOWM" data-modality="Granel fraccionado" data-name="Nuez Mariposa Extra Blanca" data-price-centro="3.200" data-price-norte="3.450" data-sku="NUT-NUEZ-02" data-stock-centro="15" data-stock-norte="18" data-unit="Bolsa 500g" data-web="true"><td class="py-4 px-6"><div class="flex items-center gap-3.5"><img alt="Nuez Mariposa Extra Blanca" class="w-10 h-10 rounded-lg object-cover bg-white/[0.05] border border-white/[0.08] flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvxp561awCadPG4Xrsf4x-PGxhARFuJzOnnRnrDBoee0CiCbdETMIT_UEj6tO74yYE6iY1_Luar5T3D77Ss6FhG_P7yYjoCRyaOLS0vQVcmS_kBUj8lnJMa_nH2tbxLP-n1hI-qEkCOm_Hf3KBS8WIFsn7Ru02mUuiorqODlicHRcF-ozq2o4EN5QQ7KAq-wMEqCRPJ1-DaqK-vYzT3ZaBU4bWRgyRVEqbWLNT5hGbvYsERnA4gUbdbUtMlwPD-wzXfqNSi-LKOWM"><div><div class="font-medium text-gray-200 hover:text-primary transition-colors product-title-btn">Nuez Mariposa Extra Blanca</div><div class="text-gray-400 text-[11px] mt-0.5">NUT-NUEZ-02 • Granel fraccionado</div></div></div></td><td class="py-4 px-4"><span class="text-gray-300 bg-white/[0.05] px-2 py-0.5 rounded text-[11px]">Granel</span></td><td class="py-4 px-5 text-right font-medium text-white">$ 3.200</td><td class="py-4 px-5 text-right font-medium text-white">$ 3.450</td><td class="py-4 px-5"><span class="text-gray-300 font-medium">33 kg</span> <span class="text-gray-400 text-[11px]">(15 / 18)</span></td><td class="py-4 px-4 text-center"><button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center toggle-web-btn"><span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform"></span></button></td><td class="py-4 px-6 text-right"><button class="btn-edit-row text-gray-400 hover:text-white transition-colors" title="Editar producto"><span class="material-symbols-outlined text-base">edit</span></button></td></tr>
+<tr class="product-row hover:bg-white/[0.02] border-l-2 border-transparent transition-colors cursor-pointer" data-category="Sin TACC" data-img="https://lh3.googleusercontent.com/aida-public/AB6AXuBwKeYxF__aqy8mwU8kKIjUYoGa0eEXMcYiISIVVuYCr65x7B_jr4AsrV49vRT19VzIrhOwk23opr3bnZX9tdXlI9c8Pa5oLmtxpITG5YewV0LtFIIcOtV2Ros_Y8nka9lqGAia7s8jLz-3MkxzSOeJvvFvpnF8Xx-Vl8s1MljedZKo0ITg1PE3YBX4DK60V3qmMBKB_P8qNDd9CwIJol7m5gmqBKGtp-XAyV8eGuAwF0alAZufHmvMNoodL9d5cceT51cQb95n474" data-modality="Unidad envasada" data-name="Galletas Sin TACC Semillas" data-price-centro="2.800" data-price-norte="2.800" data-sku="NUT-GAL-11" data-stock-centro="35" data-stock-norte="20" data-unit="Paquete 200g" data-web="true"><td class="py-4 px-6"><div class="flex items-center gap-3.5"><img alt="Galletas Sin TACC Semillas" class="w-10 h-10 rounded-lg object-cover bg-white/[0.05] border border-white/[0.08] flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwKeYxF__aqy8mwU8kKIjUYoGa0eEXMcYiISIVVuYCr65x7B_jr4AsrV49vRT19VzIrhOwk23opr3bnZX9tdXlI9c8Pa5oLmtxpITG5YewV0LtFIIcOtV2Ros_Y8nka9lqGAia7s8jLz-3MkxzSOeJvvFvpnF8Xx-Vl8s1MljedZKo0ITg1PE3YBX4DK60V3qmMBKB_P8qNDd9CwIJol7m5gmqBKGtp-XAyV8eGuAwF0alAZufHmvMNoodL9d5cceT51cQb95n474"><div><div class="font-medium text-gray-200 hover:text-primary transition-colors product-title-btn">Galletas Sin TACC Semillas</div><div class="text-gray-400 text-[11px] mt-0.5">NUT-GAL-11 • Paquete 200g</div></div></div></td><td class="py-4 px-4"><span class="text-gray-300 bg-white/[0.05] px-2 py-0.5 rounded text-[11px]">Unidad</span></td><td class="py-4 px-5 text-right font-medium text-white">$ 2.800</td><td class="py-4 px-5 text-right font-medium text-white">$ 2.800</td><td class="py-4 px-5"><span class="text-gray-300 font-medium">55 un</span> <span class="text-gray-400 text-[11px]">(35 / 20)</span></td><td class="py-4 px-4 text-center"><button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center toggle-web-btn"><span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform"></span></button></td><td class="py-4 px-6 text-right"><button class="btn-edit-row text-gray-400 hover:text-white transition-colors" title="Editar producto"><span class="material-symbols-outlined text-base">edit</span></button></td></tr>
+<tr class="product-row hover:bg-white/[0.02] border-l-2 border-transparent transition-colors cursor-pointer" data-category="Suplementos" data-img="https://lh3.googleusercontent.com/aida-public/AB6AXuAINW7dMX19LJj4wNm5z-sz_EcDHG8Z5qiq-m5uvu6SAN4R2a4kUO7LVg-ix6EwXZaC0UjCMixgN25jGQVbh1aECqds1FzlBlU0T6eH5M2Ga6rfT3uxZnyCQQztOsECPK_T2yf4_ioX8nch0DUrf3dpCLsnwwWrwKQMVzquTYZFuDR0BjB5mUYKGx9dNxWUExGUxqSW38AAY2idZa843BjSLelJJUQXWYtKu5vNAtYZ7TtimiZ_PAnh7DbV4NvgSDwyrkeZZjAfyus" data-modality="Unidad envasada" data-name="Proteína Vegetal Neutra 500g" data-price-centro="8.900" data-price-norte="9.200" data-sku="NUT-PROT-08" data-stock-centro="12" data-stock-norte="8" data-unit="Doypack 500g" data-web="true"><td class="py-4 px-6"><div class="flex items-center gap-3.5"><img alt="Proteína Vegetal Neutra 500g" class="w-10 h-10 rounded-lg object-cover bg-white/[0.05] border border-white/[0.08] flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAINW7dMX19LJj4wNm5z-sz_EcDHG8Z5qiq-m5uvu6SAN4R2a4kUO7LVg-ix6EwXZaC0UjCMixgN25jGQVbh1aECqds1FzlBlU0T6eH5M2Ga6rfT3uxZnyCQQztOsECPK_T2yf4_ioX8nch0DUrf3dpCLsnwwWrwKQMVzquTYZFuDR0BjB5mUYKGx9dNxWUExGUxqSW38AAY2idZa843BjSLelJJUQXWYtKu5vNAtYZ7TtimiZ_PAnh7DbV4NvgSDwyrkeZZjAfyus"><div><div class="font-medium text-gray-200 hover:text-primary transition-colors product-title-btn">Proteína Vegetal Neutra 500g</div><div class="text-gray-400 text-[11px] mt-0.5">NUT-PROT-08 • Doypack sellado</div></div></div></td><td class="py-4 px-4"><span class="text-gray-300 bg-white/[0.05] px-2 py-0.5 rounded text-[11px]">Unidad</span></td><td class="py-4 px-5 text-right font-medium text-white">$ 8.900</td><td class="py-4 px-5 text-right font-medium text-white">$ 9.200</td><td class="py-4 px-5"><span class="text-gray-300 font-medium">20 un</span> <span class="text-gray-400 text-[11px]">(12 / 8)</span></td><td class="py-4 px-4 text-center"><button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center toggle-web-btn"><span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform"></span></button></td><td class="py-4 px-6 text-right"><button class="btn-edit-row text-gray-400 hover:text-white transition-colors" title="Editar producto"><span class="material-symbols-outlined text-base">edit</span></button></td></tr>
+</tbody></table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="p-4 border-t border-outline bg-surface-card/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400"><span class="text-xs text-gray-400">Mostrando 5 de 142</span><div class="flex items-center gap-1.5"><button class="px-2 py-1 rounded border border-white/[0.08] text-gray-400 hover:text-white text-xs disabled:opacity-40" disabled=""><span class="material-symbols-outlined text-xs">chevron_left</span></button><span class="px-2.5 py-1 rounded bg-white/[0.08] text-white font-medium text-xs">1</span><button class="px-2.5 py-1 rounded text-gray-400 hover:text-white text-xs">2</button><button class="px-2.5 py-1 rounded text-gray-400 hover:text-white text-xs">3</button><button class="px-2.5 py-1 rounded border border-white/[0.08] text-gray-400 hover:text-white text-xs"><span class="material-symbols-outlined text-xs">chevron_right</span></button></div></div>
+</div>
+<!-- RIGHT PANE: SLIDE-OVER EDIT / NEW DRAWER -->
+<aside class="w-full lg:w-[35%] xl:w-[34%] bg-surface-card flex flex-col h-full border-l border-outline shadow-2xl relative z-20 transition-all duration-300 ease-in-out transform translate-x-0" id="product-drawer">
+<div class="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between sticky top-0 bg-surface z-10">
+<div class="flex items-center gap-2">
+<h2 class="font-medium text-sm text-white" id="drawer-title">Editar Producto</h2>
+<span class="text-[11px] font-mono text-gray-400" id="drawer-sku">NUT-ALM-01</span>
+</div>
+<button class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/[0.04]" id="btn-close-drawer" title="Cerrar panel">
+<span class="material-symbols-outlined text-base">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto px-6 py-5 space-y-5 text-xs custom-scrollbar">
+<div class="flex items-center gap-3.5">
+<img alt="Almendras" class="w-12 h-12 rounded-lg object-cover bg-white/[0.04] border border-white/[0.08] flex-shrink-0" id="drawer-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO7uDfY1Ft5fqGKC2KQ6ebx9Sv_0uRwE7x0Hr-uolxWN2NRvW4_5jDtfrhu0GrSoPzhUFtDC_nRdmrnnuXc0zKhA3-5aMpuOlmhEY6p7biipdWiyIKdXa3w2O-aC1RF-tbAARLzJnp4xWIUu5pB0xv1JgHXFj8mFuIeN5Wi72VYG9Wzmjtg1fGdhf2aZlHTb_qNp34-VP8a4yVd7gpqg1F6bINqEEQr4JI_Rd6hF3aOv8is8t_3iUD35BUZD2nJOi-vyteBYhpji4">
+<div>
+<div class="text-gray-200 font-medium">Imagen de Catálogo</div>
+<button class="mt-0.5 text-primary hover:underline text-[11px] font-medium" type="button">Cambiar imagen</button>
+</div>
+</div>
+<div class="space-y-3.5">
+<div>
+<label class="block text-[11px] text-gray-400 mb-1.5">Nombre del Producto</label>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/60 transition-colors" id="input-name" type="text" value="Almendras Nonpareil Tostadas">
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-[11px] text-gray-400 mb-1.5">Categoría</label>
+<select class="w-full bg-surface-elevated border border-white/[0.08] rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-primary/60" id="select-category">
+<option value="Frutos Secos">Frutos Secos</option>
+<option value="Harinas &amp; Granos">Harinas &amp; Granos</option>
+<option value="Sin TACC">Sin TACC</option>
+<option value="Suplementos">Suplementos</option>
+</select>
+</div>
+<div>
+<label class="block text-[11px] text-gray-400 mb-1.5">Unidad Base</label>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/60" id="input-unit" type="text" value="Bolsa 250g">
+</div>
+</div>
+<div>
+<label class="block text-[11px] text-gray-400 mb-1.5">Modalidad</label>
+<div class="grid grid-cols-2 gap-1.5 bg-white/[0.03] p-1 rounded-lg border border-white/[0.06]" id="modality-group">
+<button class="py-1.5 text-xs font-medium rounded-md bg-white/[0.08] text-white transition-all" id="btn-mod-granel" type="button">Granel fraccionado</button>
+<button class="py-1.5 text-xs text-gray-400 hover:text-white transition-all" id="btn-mod-unidad" type="button">Unidad envasada</button>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-white/[0.06] space-y-3">
+<span class="text-[11px] font-medium text-gray-300 block">Precios por Sucursal</span>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-[11px] text-gray-400 mb-1">Sucursal Centro</label>
+<div class="relative">
+<span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg pl-6 pr-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-primary/60 font-medium" id="input-price-centro" type="text" value="2.850">
+</div>
+</div>
+<div>
+<label class="block text-[11px] text-gray-400 mb-1">Sucursal Norte</label>
+<div class="relative">
+<span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg pl-6 pr-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-primary/60 font-medium" id="input-price-norte" type="text" value="2.990">
+</div>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-white/[0.06] space-y-3">
+<span class="text-[11px] font-medium text-gray-300 block">Stock por Sucursal</span>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-[11px] text-gray-400 mb-1">Centro (kg / un)</label>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-primary/60" id="input-stock-centro" type="number" value="48">
+</div>
+<div>
+<label class="block text-[11px] text-gray-400 mb-1">Norte (kg / un)</label>
+<input class="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-primary/60" id="input-stock-norte" type="number" value="22">
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-white/[0.06] flex items-center justify-between">
+<div class="text-xs text-gray-300 font-medium">Visibilidad Web</div>
+<button class="w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center transition-colors" id="btn-toggle-web" type="button">
+<span class="w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform" id="web-toggle-dot"></span>
+</button>
+</div>
+</div>
+<div class="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between sticky bottom-0 bg-surface">
+<button class="text-xs text-gray-400 hover:text-white transition-colors" id="btn-discard" type="button">Descartar</button>
+<button class="bg-primary hover:bg-primary-hover active:scale-95 text-stone-950 font-medium text-xs px-4 py-2 rounded-lg transition-all" id="btn-submit-drawer" type="button">Guardar Cambios</button>
+</div>
+</aside>
+</main>
+<!-- NOTIFICATION TOAST DEMO (Bottom Right) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-300 ease-out flex items-center gap-2.5 px-4 py-3 bg-surface-elevated border border-primary/30 text-white rounded-lg shadow-xl shadow-black/50 text-xs" id="toast-container">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-medium" id="toast-message">Producto guardado correctamente</span>
+<span class="material-symbols-outlined text-primary text-sm ml-1">check_circle</span>
+</div>
+<script>
+  // DOM Elements
+  const drawer = document.getElementById('product-drawer');
+  const btnCloseDrawer = document.getElementById('btn-close-drawer');
+  const btnDiscard = document.getElementById('btn-discard');
+  const btnSubmitDrawer = document.getElementById('btn-submit-drawer');
+  const btnNuevoProducto = document.getElementById('btn-nuevo-producto');
+  const btnReopenDrawer = document.getElementById('btn-reopen-drawer');
+  
+  const drawerTitle = document.getElementById('drawer-title');
+  const drawerSku = document.getElementById('drawer-sku');
+  const drawerImg = document.getElementById('drawer-img');
+  
+  const inputName = document.getElementById('input-name');
+  const selectCategory = document.getElementById('select-category');
+  const inputUnit = document.getElementById('input-unit');
+  const inputPriceCentro = document.getElementById('input-price-centro');
+  const inputPriceNorte = document.getElementById('input-price-norte');
+  const inputStockCentro = document.getElementById('input-stock-centro');
+  const inputStockNorte = document.getElementById('input-stock-norte');
+  
+  const btnModGranel = document.getElementById('btn-mod-granel');
+  const btnModUnidad = document.getElementById('btn-mod-unidad');
+  const btnToggleWeb = document.getElementById('btn-toggle-web');
+  const webToggleDot = document.getElementById('web-toggle-dot');
+  
+  const toastContainer = document.getElementById('toast-container');
+  const toastMessage = document.getElementById('toast-message');
+  
+  let currentMode = 'edit'; // 'edit' or 'new'
+  let isWebVisible = true;
+  let selectedModality = 'Granel fraccionado';
+  let activeRowElement = document.querySelector('.product-row'); // currently selected row
+  
+  const defaultPlaceholderImg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCO7uDfY1Ft5fqGKC2KQ6ebx9Sv_0uRwE7x0Hr-uolxWN2NRvW4_5jDtfrhu0GrSoPzhUFtDC_nRdmrnnuXc0zKhA3-5aMpuOlmhEY6p7biipdWiyIKdXa3w2O-aC1RF-tbAARLzJnp4xWIUu5pB0xv1JgHXFj8mFuIeN5Wi72VYG9Wzmjtg1fGdhf2aZlHTb_qNp34-VP8a4yVd7gpqg1F6bINqEEQr4JI_Rd6hF3aOv8is8t_3iUD35BUZD2nJOi-vyteBYhpji4';
+  
+  // Show Toast Function
+  let toastTimeout;
+  function showToast(text) {
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastMessage.textContent = text;
+    toastContainer.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
+    toastContainer.classList.add('translate-y-0', 'opacity-100');
+    
+    toastTimeout = setTimeout(() => {
+      toastContainer.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+      toastContainer.classList.remove('translate-y-0', 'opacity-100');
+    }, 2800);
+  }
+
+  // Open Drawer Function
+  function openDrawer(mode = 'edit') {
+    currentMode = mode;
+    drawer.classList.remove('hidden');
+    // slight delay to let DOM render before sliding in if hidden was applied
+    requestAnimationFrame(() => {
+      drawer.classList.remove('translate-x-full');
+      drawer.classList.add('translate-x-0');
+    });
+    btnReopenDrawer.classList.add('hidden');
+    btnReopenDrawer.classList.remove('inline-flex');
+  }
+
+  // Close Drawer Function
+  function closeDrawer() {
+    drawer.classList.remove('translate-x-0');
+    drawer.classList.add('translate-x-full');
+    
+    // When drawer closes, show quick access button in table header
+    setTimeout(() => {
+      btnReopenDrawer.classList.remove('hidden');
+      btnReopenDrawer.classList.add('inline-flex');
+    }, 200);
+  }
+
+  // Modality buttons toggle helper
+  function setModality(mod) {
+    selectedModality = mod;
+    if (mod === 'Granel fraccionado' || mod === 'Granel') {
+      btnModGranel.className = 'py-1.5 text-xs font-medium rounded-md bg-white/[0.08] text-white transition-all';
+      btnModUnidad.className = 'py-1.5 text-xs text-gray-400 hover:text-white transition-all';
+    } else {
+      btnModUnidad.className = 'py-1.5 text-xs font-medium rounded-md bg-white/[0.08] text-white transition-all';
+      btnModGranel.className = 'py-1.5 text-xs text-gray-400 hover:text-white transition-all';
+    }
+  }
+
+  btnModGranel.addEventListener('click', () => setModality('Granel fraccionado'));
+  btnModUnidad.addEventListener('click', () => setModality('Unidad envasada'));
+
+  // Web Visibility toggle helper
+  function setWebVisibility(state) {
+    isWebVisible = state;
+    if (isWebVisible) {
+      btnToggleWeb.className = 'w-7 h-4 bg-primary rounded-full p-0.5 relative inline-flex items-center transition-colors';
+      webToggleDot.className = 'w-3 h-3 rounded-full bg-stone-950 transform translate-x-3 transition-transform';
+    } else {
+      btnToggleWeb.className = 'w-7 h-4 bg-white/[0.12] rounded-full p-0.5 relative inline-flex items-center transition-colors';
+      webToggleDot.className = 'w-3 h-3 rounded-full bg-gray-400 transform translate-x-0 transition-transform';
+    }
+  }
+
+  btnToggleWeb.addEventListener('click', () => {
+    setWebVisibility(!isWebVisible);
+  });
+
+  // Load product data into drawer
+  function loadProductData(row) {
+    // Highlight selected row in table
+    document.querySelectorAll('.product-row').forEach(r => {
+      r.classList.remove('bg-white/[0.02]', 'border-primary');
+      r.classList.add('border-transparent');
+    });
+    row.classList.add('bg-white/[0.02]', 'border-primary');
+    row.classList.remove('border-transparent');
+    activeRowElement = row;
+
+    const sku = row.dataset.sku || 'NUT-GEN-01';
+    const name = row.dataset.name || '';
+    const cat = row.dataset.category || 'Frutos Secos';
+    const unit = row.dataset.unit || 'Bolsa';
+    const modality = row.dataset.modality || 'Granel fraccionado';
+    const pCentro = row.dataset.priceCentro || '';
+    const pNorte = row.dataset.priceNorte || '';
+    const sCentro = row.dataset.stockCentro || '';
+    const sNorte = row.dataset.stockNorte || '';
+    const img = row.dataset.img || defaultPlaceholderImg;
+    const web = row.dataset.web !== 'false';
+
+    drawerTitle.textContent = 'Editar Producto';
+    drawerSku.textContent = sku;
+    drawerSku.classList.remove('hidden');
+    drawerImg.src = img;
+    btnSubmitDrawer.textContent = 'Guardar Cambios';
+
+    inputName.value = name;
+    selectCategory.value = cat;
+    inputUnit.value = unit;
+    inputPriceCentro.value = pCentro;
+    inputPriceNorte.value = pNorte;
+    inputStockCentro.value = sCentro;
+    inputStockNorte.value = sNorte;
+
+    setModality(modality);
+    setWebVisibility(web);
+    openDrawer('edit');
+  }
+
+  // Set Drawer in 'Nuevo Producto' mode
+  function setupNewProductMode() {
+    // Unhighlight table rows
+    document.querySelectorAll('.product-row').forEach(r => {
+      r.classList.remove('bg-white/[0.02]', 'border-primary');
+      r.classList.add('border-transparent');
+    });
+    activeRowElement = null;
+
+    drawerTitle.textContent = 'Nuevo Producto';
+    drawerSku.textContent = 'NUEVO-SKU';
+    drawerSku.classList.remove('hidden');
+    drawerImg.src = defaultPlaceholderImg;
+    btnSubmitDrawer.textContent = 'Crear Producto';
+
+    inputName.value = '';
+    inputName.placeholder = 'Ej: Castañas de Cajú W1';
+    selectCategory.selectedIndex = 0;
+    inputUnit.value = 'Bolsa 250g';
+    inputPriceCentro.value = '';
+    inputPriceCentro.placeholder = '0.00';
+    inputPriceNorte.value = '';
+    inputPriceNorte.placeholder = '0.00';
+    inputStockCentro.value = '';
+    inputStockCentro.placeholder = '0';
+    inputStockNorte.value = '';
+    inputStockNorte.placeholder = '0';
+
+    setModality('Granel fraccionado');
+    setWebVisibility(true);
+    openDrawer('new');
+    inputName.focus();
+  }
+
+  // Attach table event listeners
+  document.querySelectorAll('.product-row').forEach(row => {
+    // Click on Edit pencil button
+    const editBtn = row.querySelector('.btn-edit-row');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loadProductData(row);
+      });
+    }
+
+    // Click on Product Title
+    const titleBtn = row.querySelector('.product-title-btn');
+    if (titleBtn) {
+      titleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loadProductData(row);
+      });
+    }
+
+    // Clicking row opens editor
+    row.addEventListener('click', () => {
+      loadProductData(row);
+    });
+  });
+
+  // Top action buttons
+  btnNuevoProducto.addEventListener('click', () => {
+    setupNewProductMode();
+  });
+
+  btnReopenDrawer.addEventListener('click', () => {
+    if (activeRowElement) {
+      loadProductData(activeRowElement);
+    } else {
+      openDrawer(currentMode);
+    }
+  });
+
+  // Drawer buttons
+  btnCloseDrawer.addEventListener('click', () => {
+    closeDrawer();
+  });
+
+  btnDiscard.addEventListener('click', () => {
+    closeDrawer();
+  });
+
+  btnSubmitDrawer.addEventListener('click', () => {
+    if (currentMode === 'new') {
+      showToast('Producto creado exitosamente');
+    } else {
+      // update active row text if existing
+      if (activeRowElement && inputName.value.trim()) {
+        const titleEl = activeRowElement.querySelector('.product-title-btn');
+        if (titleEl) titleEl.textContent = inputName.value.trim();
+        activeRowElement.dataset.name = inputName.value.trim();
+      }
+      showToast('Producto guardado correctamente');
+    }
+    closeDrawer();
+  });
+</script>
+</body></html>

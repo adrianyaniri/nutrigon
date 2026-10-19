@@ -1,0 +1,22 @@
+meta {
+  name: 3. Update Branch (Admin)
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/branches/{{branchId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "address": "Origone 1234, Hurlingham",
+    "whatsappNumber": "5491122334455"
+  }
+}

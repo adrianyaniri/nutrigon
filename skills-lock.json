@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "cloudflare": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cloudflare/SKILL.md",
+      "computedHash": "b2728f312765a471f7cac26e3df02b97520c597adccaee943c7c373223b9a0f2"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

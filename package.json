@@ -12,6 +12,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "db:seed": "pnpm --filter @nutrigon/api db:seed",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

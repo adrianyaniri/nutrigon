@@ -14,6 +14,7 @@
 | `stitch-responsive-design` | Flujo de diseño dual (Mobile + Desktop Web) en Google Stitch mediante Stitch MCP | [.agents/skills/stitch-responsive-design/SKILL.md](.agents/skills/stitch-responsive-design/SKILL.md) |
 | `nestjs-drizzle-tdd` | Arquitectura NestJS, Drizzle ORM, validación con Zod y ciclo TDD | [.agents/skills/nestjs-drizzle-tdd/SKILL.md](.agents/skills/nestjs-drizzle-tdd/SKILL.md) |
 | `cloudflare-r2-storage` | Almacenamiento y subida directa de imágenes mediante Presigned URLs hacia Cloudflare R2 | [.agents/skills/cloudflare-r2-storage/SKILL.md](.agents/skills/cloudflare-r2-storage/SKILL.md) |
+| `docker-api` | Contenerización, Dockerfiles, Docker Compose y validación de la API NestJS | [.agents/skills/docker-api/SKILL.md](.agents/skills/docker-api/SKILL.md) |
 
 
 # Reglas del Backend (apps/api)

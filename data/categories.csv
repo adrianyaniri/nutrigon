@@ -1,0 +1,21 @@
+name,slug,order_index,is_active
+"FRUTOS SECOS","frutos-secos",1,true
+"HARINAS","harinas",2,true
+"CEREALES","cereales",3,true
+"LEGUMBRE","legumbre",4,true
+"SUELTO","suelto",5,true
+"CONDIMENTOS","condimentos",6,true
+"YERBAS","yerbas",7,true
+"HIERBAS","hierbas",8,true
+"GALLETITAS","galletitas",9,true
+"SNACKS","snacks",10,true
+"PANADERIA","panaderia",11,true
+"GOLOSINAS","golosinas",12,true
+"ENVASADOS","envasados",13,true
+"FRASCOS","frascos",14,true
+"BOTELLAS","botellas",15,true
+"ORGANICO","organico",16,true
+"HUMEDOS","humedos",17,true
+"HELADERA","heladera",18,true
+"FARMACIA","farmacia",19,true
+"SIN DEPARTAMENTO","sin-departamento",20,true

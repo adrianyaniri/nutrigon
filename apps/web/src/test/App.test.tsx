@@ -1,20 +1,28 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { App } from "@/App";
 
 describe("Application Bootstrap", () => {
-  it("renders main branding and home page heading without errors", () => {
-    render(<App />);
-
-    expect(screen.getByText("Nutrigon")).toBeInTheDocument();
-    expect(screen.getByText("Sistema de Gestión para Dietética")).toBeInTheDocument();
+  afterEach(() => {
+    cleanup();
   });
 
-  it("renders the 3 branches placeholders", () => {
+  it("renders main branding, catalog landing, and admin access button without errors", async () => {
     render(<App />);
 
-    expect(screen.getByText("Sucursal 1")).toBeInTheDocument();
-    expect(screen.getByText("Sucursal 2")).toBeInTheDocument();
-    expect(screen.getByText("Sucursal 3")).toBeInTheDocument();
+    expect(screen.getAllByText("Nutrigon").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Dietética & Cerealera/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Escaneá el código QR en tu sucursal/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Acceso Gestión/i })).toBeInTheDocument();
+
+    await screen.findByRole("heading", { name: /Sucursal (Centro|Origone)/i });
+  });
+
+  it("renders the business branches and QR actions", async () => {
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", { name: /Sucursal (Centro|Origone)/i })
+    ).toBeInTheDocument();
   });
 });

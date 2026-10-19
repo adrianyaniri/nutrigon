@@ -1,0 +1,15 @@
+meta {
+  name: 6. Delete Product (Atomic Soft Delete)
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/products/{{productId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

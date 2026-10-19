@@ -1,0 +1,15 @@
+meta {
+  name: 2. Search Products by Name
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/products?search=almendra
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: 5. Delete Branch (Soft Delete)
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/branches/{{branchId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,16 @@
+meta {
+  name: 1. List Public Branches
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/branches
+  body: none
+  auth: none
+}
+
+vars:post-response {
+  branchId: res.body[0].id
+  branchSlug: res.body[0].slug
+}

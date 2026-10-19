@@ -1,0 +1,25 @@
+meta {
+  name: 4. Create Product (Admin General)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "categoryId": "{{categoryId}}",
+    "name": "Nuez Pecan Tostada",
+    "saleUnit": "WEIGHT",
+    "description": "Nuez de producción nacional primera calidad",
+    "imageUrls": []
+  }
+}

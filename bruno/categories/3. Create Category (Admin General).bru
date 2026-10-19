@@ -1,0 +1,23 @@
+meta {
+  name: 3. Create Category (Admin General)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/categories
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZjA2MTk0Mi1hYzBkLTQ4YTgtOTkyZC05YzAzNmEwYTc5MzUiLCJlbWFpbCI6ImFkbWluQG51dHJpZ29uLmNvbSIsInJvbGUiOiJBRE1JTl9HRU5FUkFMIiwiYnJhbmNoSWQiOm51bGwsImlhdCI6MTc5MjEwMTYzOSwiZXhwIjoxNzkyMTMwNDM5fQ.wIOef4nu_amEfIVUvubeEhAjCaQV8fRSNndJLAFazoQ
+}
+
+body:json {
+  {
+    "name": "Superalimentos",
+    "slug": "superalimentos",
+    "orderIndex": 21
+  }
+}

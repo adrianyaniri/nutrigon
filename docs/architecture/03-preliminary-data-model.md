@@ -1,151 +1,141 @@
-# Propuesta Preliminar del Modelo de Datos — Dietética (3 Sucursales)
+# Modelo Entidad-Relación (MER) — Nutrigon MVP
 
-> [!WARNING]
-> **ESTADO DEL DOCUMENTO: BORRADOR PRELIMINAR DE VALIDACIÓN TÉCNICA**
-> Este modelo de datos representa una propuesta de diseño para estructurar la separación entre catálogo maestro y las 3 sucursales. **NO ES EL MODELO FINAL DEFINITIVO**. Está sujeto a ajustes y validación técnica una vez analizados los archivos Excel reales y definidas las decisiones comerciales pendientes (D-01 a D-10).
+**Estado:** Aprobado y alineado con los contratos y semillas CSV  
+**Fecha:** 15 de Octubre de 2026  
+**Motor:** PostgreSQL 16 (Drizzle ORM)  
 
 ---
 
-## 1. Diagrama Entidad-Relación Conceptual
+## 1. Diagrama Entidad-Relación (MER)
 
 ```mermaid
 erDiagram
-    BRANCHES ||--o{ BRANCH_PRICES : "fija precios en"
-    BRANCHES ||--o{ BRANCH_INVENTORY : "mantiene stock en"
-    BRANCHES ||--o{ INVENTORY_MOVEMENTS : "registra movimientos en"
-    BRANCHES ||--o{ SALES : "registra ventas en"
+    BRANCHES ||--o{ BRANCH_PRODUCTS : "configura precio y disponibilidad"
+    BRANCHES ||--o{ BRANCH_COMBOS : "configura precio combo"
+    BRANCHES ||--o{ USERS : "asigna personal"
 
     CATEGORIES ||--o{ PRODUCTS : "clasifica"
 
-    PRODUCTS ||--o{ BRANCH_PRICES : "tiene precio por sucursal"
-    PRODUCTS ||--o{ BRANCH_INVENTORY : "tiene existencias por sucursal"
-    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : "participa en"
-    PRODUCTS ||--o{ SALE_ITEMS : "vendido en"
+    PRODUCTS ||--o{ BRANCH_PRODUCTS : "parametrizado en"
+    PRODUCTS ||--o{ COMBO_ITEMS : "compone"
 
-    SALES ||--|{ SALE_ITEMS : "contiene"
+    COMBOS ||--o{ COMBO_ITEMS : "contiene"
+    COMBOS ||--o{ BRANCH_COMBOS : "parametrizado en"
 
     BRANCHES {
-        uuid id PK
-        text code "sucursal-1, sucursal-2, sucursal-3"
-        text name
-        text address
-        text phone
-        text whatsapp_number
-        boolean is_active
-        timestamp created_at
+        uuid id PK "Identificador único"
+        varchar name "Nombre (Origone, Pedro Diaz, W Morris)"
+        varchar slug UK "Slug único (origone, pedro-diaz, w-morris)"
+        varchar address "Dirección física de la sucursal"
+        varchar phone "Teléfono fijo / contacto"
+        varchar whatsapp_number "Número de WhatsApp para pedidos"
+        boolean is_active "Soft delete (true por defecto)"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de modificación"
     }
 
     CATEGORIES {
-        uuid id PK
-        text name
-        text slug
-        text description
-        boolean is_active
-        timestamp created_at
+        uuid id PK "Identificador único"
+        varchar name "Nombre (ej. FRUTOS SECOS, HARINAS)"
+        varchar slug UK "Slug único (ej. frutos-secos, harinas)"
+        integer order_index "Orden de prioridad en navegación"
+        boolean is_active "Soft delete (true por defecto)"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de modificación"
     }
 
     PRODUCTS {
-        uuid id PK
-        uuid category_id FK
-        text sku "Opcional hasta auditar Excel"
-        text name
-        text description
-        text sale_unit "unit, weight_kg, weight_g"
-        boolean is_visible_web
-        boolean is_active
-        timestamp created_at
+        uuid id PK "Identificador único"
+        uuid category_id FK "FK -> categories.id"
+        varchar code "Código numérico o SKU visible"
+        varchar barcode "Código de barras EAN-13 para escáner"
+        varchar name "Nombre maestro del producto"
+        text description "Descripción comercial o nutricional"
+        varchar sale_unit "Modalidad: 'UNIT' o 'WEIGHT'"
+        text_array image_urls "Imágenes en Cloudflare R2"
+        boolean is_active "Soft delete (true por defecto)"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de modificación"
     }
 
-    BRANCH_PRICES {
-        uuid id PK
-        uuid product_id FK
-        uuid branch_id FK
-        numeric price "12, 2"
-        timestamp updated_at
-        uuid updated_by
+    BRANCH_PRODUCTS {
+        uuid id PK "Identificador único de configuración"
+        uuid branch_id FK "FK -> branches.id"
+        uuid product_id FK "FK -> products.id"
+        numeric price "Precio de venta de la sucursal ($ o $/kg)"
+        numeric promotional_price "Precio de oferta (nullable)"
+        boolean is_on_sale "Flag para precio tachado y badge de oferta"
+        boolean is_available "Visible en el catálogo público"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de actualización de precio/estado"
     }
 
-    BRANCH_INVENTORY {
-        uuid id PK
-        uuid product_id FK
-        uuid branch_id FK
-        numeric current_stock "12, 3"
-        numeric min_stock_alert "12, 3"
-        timestamp updated_at
+    COMBOS {
+        uuid id PK "Identificador único del combo"
+        varchar name "Nombre maestro del combo"
+        text description "Descripción del paquete promocional"
+        text_array image_urls "Imágenes en Cloudflare R2"
+        boolean is_active "Soft delete (true por defecto)"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de modificación"
     }
 
-    INVENTORY_MOVEMENTS {
-        uuid id PK
-        uuid product_id FK
-        uuid branch_id FK
-        text movement_type "in, out, adjustment, transfer"
-        numeric quantity "12, 3"
-        text reason
-        uuid created_by
-        timestamp created_at
+    COMBO_ITEMS {
+        uuid id PK "Identificador único del ítem"
+        uuid combo_id FK "FK -> combos.id"
+        uuid product_id FK "FK -> products.id"
+        numeric quantity "Cantidad del producto (unidades o kg)"
     }
 
-    SALES {
-        uuid id PK
-        uuid branch_id FK
-        text sale_number
-        numeric total_amount "12, 2"
-        text payment_method "efectivo, debito, transferencia"
-        text status "completed, cancelled"
-        uuid created_by
-        timestamp created_at
+    BRANCH_COMBOS {
+        uuid id PK "Identificador único de precio del combo"
+        uuid branch_id FK "FK -> branches.id"
+        uuid combo_id FK "FK -> combos.id"
+        numeric price "Precio del combo en la sucursal"
+        boolean is_available "Visible en el catálogo público"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de actualización de precio/estado"
     }
 
-    SALE_ITEMS {
-        uuid id PK
-        uuid sale_id FK
-        uuid product_id FK
-        numeric quantity "12, 3"
-        numeric unit_price "12, 2"
-        numeric subtotal "12, 2"
+    USERS {
+        uuid id PK "Identificador único"
+        varchar email UK "Email de acceso"
+        text password_hash "Hash Argon2id"
+        varchar full_name "Nombre y apellido"
+        varchar role "ADMIN_GENERAL | BRANCH_ADMIN"
+        uuid branch_id FK "FK -> branches.id (null si es ADMIN_GENERAL)"
+        boolean is_active "Estado de la cuenta"
+        timestamp created_at "Fecha de alta"
+        timestamp updated_at "Fecha de modificación"
     }
 ```
 
 ---
 
-## 2. Descripción de Entidades
+## 2. Restricciones de Integridad y Claves Únicas
 
-### 2.1. `branches` (Sucursales)
-Representa los tres puntos de venta físicos del negocio. Permite asignar usuarios, segmentar precios, controlar existencias e indicar el número de WhatsApp comercial de cada una si la atención es descentralizada.
-
-### 2.2. `categories` (Categorías)
-Estructura taxonómica para organizar productos en el catálogo web y en el buscador administrativo (ej. Frutos Secos, Harinas, Suplementos, Especias).
-
-### 2.3. `products` (Catálogo Maestro)
-**Fuente única de verdad de los productos.** No se duplica por sucursal.
-- `sale_unit`: define si se comercializa por unidad entera (`unit`), por kilogramo (`weight_kg`) o por gramos (`weight_g`).
-- `is_visible_web`: flag para controlar qué productos se publican en el catálogo digital.
-
-### 2.4. `branch_prices` (Precios Segregados)
-Resuelve el requerimiento de precios diferenciados entre sucursales. Posee una restricción `UNIQUE (product_id, branch_id)` para asegurar un único precio activo por producto en cada sucursal.
-
-### 2.5. `branch_inventory` (Existencias Segregadas)
-Mantiene el balance de stock actual e indicador de alerta de reposición. Utiliza precisión de 3 decimales (`numeric(12, 3)`) para soportar fraccionamiento por peso.
-
-### 2.6. `inventory_movements` (Auditoría de Movimientos)
-Tabla histórica e inmutable. Registra cada ingreso, egreso, merma o ajuste manual con su responsable y justificación.
-
-### 2.7. `sales` y `sale_items` (Ventas Administrativas)
-Registro transaccional de ventas realizadas en mostrador. Permite vincular los ítems vendidos para consolidar reportes de venta por fecha y sucursal.
+1. **`BRANCH_PRODUCTS`:**
+   - `UNIQUE(branch_id, product_id)`: Garantiza que un producto tenga una única configuración comercial por sucursal.
+2. **`BRANCH_COMBOS`:**
+   - `UNIQUE(branch_id, combo_id)`: Garantiza que un combo tenga un único precio y disponibilidad por sucursal.
+3. **`CATEGORIES`:**
+   - `UNIQUE(slug)`: Garantiza que las rutas web del catálogo (`/categoria/:slug`) sean unívocas.
+4. **`BRANCHES`:**
+   - `UNIQUE(slug)`: Garantiza que el acceso web por sucursal (`/sucursal/:slug`) sea determinista.
+5. **`USERS`:**
+   - `UNIQUE(email)`: Autenticación única.
+6. **`PRODUCTS`:**
+   - Índice sobre `code` y `barcode` para búsquedas instantáneas en el panel de administración y punto de venta.
 
 ---
 
-## 3. Matriz Preliminar de Seguridad y RLS
+## 3. Alineación con las Semillas CSV (`data/`)
 
-| Rol | Catálogo (`products`, `categories`) | Precios (`branch_prices`) | Inventario (`branch_inventory`) | Ventas (`sales`) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Público (Anónimo Web)** | Solo lectura (`is_visible_web = true`) | Solo lectura de sucursal seleccionada | No visible (o solo indicador de disponibilidad) | Sin acceso |
-| **Personal de Sucursal** | Lectura completa | Lectura de su sucursal | Lectura y ajustes de su sucursal | Registro y consulta de su sucursal |
-| **Administrador General** | Lectura y Escritura total | Lectura y Escritura total | Lectura y Escritura total | Lectura y Reportes consolidados |
-
----
-
-## 4. Preguntas Abiertas para Validación con el Cliente
-1. ¿El SKU actual en las planillas Excel es único entre todas las sucursales o difiere?
-2. Para productos por peso: ¿se cobrará siempre por 100g o por 1kg como precio base visible?
-3. ¿Las anulaciones de venta reintegran el stock automáticamente mediante un movimiento compensatorio?
+| Tabla | Archivo Semilla | Cobertura |
+|---|---|---|
+| `branches` | `data/branches.csv` | 3 sucursales fundacionales: Origone, Pedro Diaz, W Morris |
+| `categories` | `data/categories.csv` | 20 categorías normalizadas (Frutos Secos, Harinas, etc.) |
+| `products` | `data/products.csv` | 2.257 productos maestros con código, nombre, categoría y modalidad (`UNIT` / `WEIGHT`) |
+| `branch_products` | — | Se parametriza desde el panel de administración o seed inicial |
+| `combos` / `combo_items` | — | Se administran desde el panel de administración |
+| `users` | — | Seed de administradores iniciales con credenciales hash Argon2id |

@@ -1,0 +1,26 @@
+meta {
+  name: 1. Login Admin General
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@nutrigon.com",
+    "password": "AdminNutrigon2026!"
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000/api/v1
+}
+
+vars:post-response {
+  token: res.body.accessToken
+}

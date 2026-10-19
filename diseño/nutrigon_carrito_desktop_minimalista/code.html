@@ -1,0 +1,292 @@
+<!DOCTYPE html><html class="dark" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nutrigon • Checkout y Pedido</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Public+Sans:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Google Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#121316",
+            "surface-container": "#18191e",
+            "surface-container-high": "#1e2027",
+            "surface-container-highest": "#26282e",
+            "primary": "#F5B731",
+            "on-primary": "#121316",
+            "primary-container": "#33260a",
+            "on-primary-container": "#F5B731",
+            "outline": "#393c45",
+            "outline-variant": "rgba(255, 255, 255, 0.08)",
+            "on-surface": "#F3F4F6",
+            "on-surface-variant": "#9CA3AF",
+            "emerald-brand": "#10B981"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Public Sans", "sans-serif"],
+            display: ["Public Sans", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121316;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #26282e;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #393c45;
+    }
+  </style>
+</head>
+<body class="bg-[#0d0e11] text-on-surface font-body min-h-screen flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
+<!-- ========================================== -->
+<!-- 1. FULL-WIDTH DESKTOP HEADER               -->
+<!-- ========================================== -->
+<header class="sticky top-0 z-40 w-full bg-[#121316]/95 backdrop-blur-md border-b border-outline-variant">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
+<!-- Brand & Back Action -->
+<div class="flex items-center gap-6">
+<a class="flex items-center gap-2.5 group" href="#">
+<div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-surface transition-all duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="storefront">storefront</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 font-headline font-bold text-xl tracking-tight text-on-surface">
+<span class="">Nutrigon</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</div>
+<p class="text-[11px] font-medium tracking-wide uppercase text-on-surface-variant font-label">Dietética &amp; Cerealera</p>
+</div>
+</a>
+<div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+<a class="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors py-1.5 px-3 rounded-lg hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="arrow_back">arrow_back</span>
+<span class="">Volver al Catálogo</span>
+</a>
+</div>
+<!-- Center: Branch Status Pill Indicator -->
+<div class="hidden lg:flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-primary text-base">location_on</span>
+<span class="text-on-surface font-semibold">Sucursal Centro</span>
+<span class="text-outline-variant">·</span>
+<span class="">Belgrano</span>
+</div>
+<!-- Right: Cart Status Badge -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2.5 bg-surface-container-high border border-outline-variant px-3.5 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="shopping_bag">shopping_bag</span>
+<span class="text-xs font-headline font-bold text-on-surface tracking-wide uppercase">2 items</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="text-xs text-on-surface-variant font-medium">En proceso</span>
+</div>
+</div>
+</div>
+</header>
+<!-- ========================================== -->
+<!-- 2. MAIN BODY CONTAINER                     -->
+<!-- ========================================== -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+<!-- Title Row -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-6 border-b border-outline-variant"><div class="flex items-baseline gap-3">
+<h1 class="font-headline text-3xl md:text-4xl font-extrabold tracking-tight text-on-surface">Tu Pedido</h1>
+<span class="text-sm text-on-surface-variant font-medium">· 2 ítems</span>
+</div>
+<button class="inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-container border border-transparent hover:border-outline-variant" type="button">
+<span class="material-symbols-outlined text-base">delete_sweep</span>
+<span class="">Vaciar carrito</span>
+</button></div>
+<!-- Layout: Two Columns (60% / 40%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- ========================================== -->
+<!-- LEFT COLUMN (~60% width -> 7 cols)         -->
+<!-- ========================================== -->
+<section class="lg:col-span-7 flex flex-col gap-6"><div class="bg-surface-container rounded-2xl border border-outline-variant divide-y divide-outline-variant overflow-hidden shadow-sm">
+<!-- Item 1: Almendras Nonpareil Tostadas -->
+<div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-surface-container-high/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-xl overflow-hidden border border-outline-variant bg-[#16171b] flex-shrink-0">
+<img alt="Almendras Nonpareil Tostadas" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTsnds3mL8D0ENYgp3Pns0ma0GretP068OboP4_Ue88vTthKYAD_se-2oCa6ewTmgMtLjBtjYIZS8ABNqrgFCKAox7bmeFKRdghGozPSKcL4lJ6dNHJ9gy-xji4hr6fV-N18405MGQSrDLeh9uGtBG6WXqtD_D05Ygc5M3qVUJHQUDOlmW0xidiBJSuqrvEsClY21wNpT0NrplNxmxytLuh8NcxgPybhxj1zwvI3KeCGy8fTM9TzsQMOq9Gfn0ZD-57IpXEYVt5tM">
+</div>
+<div>
+<h3 class="font-headline font-bold text-base text-on-surface group-hover:text-primary transition-colors">
+          Almendras Nonpareil Tostadas
+        </h3>
+<p class="text-xs text-on-surface-variant mt-1 font-mono">
+          Granel 250g
+        </p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+<div class="flex items-center bg-surface-container-highest rounded-xl border border-outline-variant p-1">
+<button class="w-7 h-7 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<span class="w-8 text-center font-headline font-bold text-sm text-on-surface">1</span>
+<button class="w-7 h-7 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+</div>
+<div class="text-right min-w-[80px]">
+<div class="font-headline font-bold text-lg text-primary tracking-tight">$2.850</div>
+</div>
+<button class="text-on-surface-variant hover:text-red-400 p-2 rounded-lg hover:bg-surface-container transition-colors" title="Quitar producto" type="button">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Harina de Avena Integral -->
+<div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-surface-container-high/30 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-xl overflow-hidden border border-outline-variant bg-[#16171b] flex-shrink-0">
+<img alt="Harina de Avena Integral" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzGzRx2kz7OWXYvT7SZJW864nR5SM5AOTsfloRCAWEnI5b37YozRkeNTndQfWpZNyqXb8IHLvFESI3MLWPAGoNqeDcpUaivJ2ta1xIrti-URipl-5o3Z6nSipD9_cHOEWh5WCH_Lzix7JLpFciWke9TJDYomIXHqUcKI_gwtGM1ofIVnp5E746zmcDfmeY8EIOVVTf_-iqPnLAXMPvuphPSwBi5iMe4XBfn53u9hRinME4aOGwCigj7lzptt5_zNGmSDjgoKNthB4">
+</div>
+<div>
+<h3 class="font-headline font-bold text-base text-on-surface group-hover:text-primary transition-colors">
+          Harina de Avena Integral
+        </h3>
+<p class="text-xs text-on-surface-variant mt-1 font-mono">
+          Granel 500g
+        </p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+<div class="flex items-center bg-surface-container-highest rounded-xl border border-outline-variant p-1">
+<button class="w-7 h-7 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<span class="w-8 text-center font-headline font-bold text-sm text-on-surface">1</span>
+<button class="w-7 h-7 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+</div>
+<div class="text-right min-w-[80px]">
+<div class="font-headline font-bold text-lg text-primary tracking-tight">$1.400</div>
+</div>
+<button class="text-on-surface-variant hover:text-red-400 p-2 rounded-lg hover:bg-surface-container transition-colors" title="Quitar producto" type="button">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-2">
+<a class="inline-flex items-center gap-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span class="">Continuar agregando productos</span>
+</a>
+</div></section>
+<!-- ========================================== -->
+<!-- RIGHT COLUMN (~40% width -> 5 cols, Sticky)-->
+<!-- ========================================== -->
+<section class="lg:col-span-5 sticky top-28 flex flex-col gap-5"><div class="bg-surface-container rounded-2xl border border-outline-variant p-6 shadow-xl relative flex flex-col gap-6">
+<!-- Branch Tag -->
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant">
+<div class="flex items-center gap-2 text-xs text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary text-base">location_on</span>
+<span class="">Sucursal Centro</span>
+</div>
+<button class="text-xs text-primary hover:underline font-medium transition-colors" type="button">
+      Cambiar
+    </button>
+</div>
+<!-- Form Fields -->
+<div class="flex flex-col gap-2"><label class="block text-xs text-on-surface-variant font-medium">Modalidad de Entrega</label><div class="grid grid-cols-2 p-1 bg-surface-container-highest border border-outline-variant rounded-xl gap-1"><button type="button" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-surface-container text-primary shadow-sm border border-outline-variant transition-all"><span class="material-symbols-outlined text-base">storefront</span><span class="">Retiro en mostrador</span></button><button type="button" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-all"><span class="material-symbols-outlined text-base">two_wheeler</span><span class="">Envío a domicilio</span></button></div></div><div class="space-y-4">
+<div>
+<label class="block text-xs text-on-surface-variant mb-1.5 font-medium">Tu Nombre</label>
+<input class="w-full bg-surface-container-highest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 text-sm text-on-surface font-medium transition-colors" id="custName" type="text" value="Sofía Gómez">
+</div>
+<div>
+<label class="block text-xs text-on-surface-variant mb-1.5 font-medium">Notas</label>
+<textarea class="w-full bg-surface-container-highest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3 text-xs text-on-surface resize-none transition-colors" id="custNotes" rows="2">Paso a retirar hoy a las 18:30 hs</textarea>
+</div>
+</div>
+<!-- Total Row -->
+<div class="pt-4 border-t border-outline-variant flex items-baseline justify-between">
+<span class="text-xs uppercase font-label font-bold text-on-surface-variant tracking-wider">Total Estimado</span>
+<div class="font-headline text-3xl font-extrabold text-primary tracking-tight">$4.250</div>
+</div>
+<!-- Action CTA -->
+<div>
+<button class="w-full bg-primary hover:bg-[#ffc647] active:scale-[0.99] text-surface font-headline font-bold text-sm md:text-base py-4 px-6 rounded-xl shadow-[0_8px_25px_rgba(245,183,49,0.25)] flex items-center justify-center gap-2.5 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-xl">send</span>
+<span class="">Enviar Pedido por WhatsApp</span>
+</button>
+<p class="text-[11px] text-center text-on-surface-variant mt-3">
+      Se abrirá WhatsApp con el pedido listo para confirmar
+    </p>
+</div>
+</div></section>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- 3. FULL-WIDTH CLEAN DESKTOP FOOTER         -->
+<!-- ========================================== -->
+<footer class="mt-20 border-t border-outline-variant bg-[#101114]"><div class="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+<div class="flex items-center gap-6">
+<span class="">📍 Centro: Av. Cabildo 2140</span>
+<span class="text-outline-variant">·</span>
+<span class="">📍 Norte: Av. del Libertador 6320</span>
+</div>
+<div class="">
+    © 2024 Nutrigon Dietética &amp; Cerealera
+  </div>
+</div></footer>
+<!-- Micro-interaction JS to sync input live with the WhatsApp preview -->
+<script>
+    const custName = document.getElementById('custName');
+    const custNotes = document.getElementById('custNotes');
+    const previewName = document.getElementById('previewName');
+    const previewNote = document.getElementById('previewNote');
+
+    if (custName && previewName) {
+      custName.addEventListener('input', (e) => {
+        previewName.textContent = e.target.value || '(Nombre no especificado)';
+      });
+    }
+
+    if (custNotes && previewNote) {
+      custNotes.addEventListener('input', (e) => {
+        previewNote.textContent = e.target.value ? `"${e.target.value}"` : 'Sin notas';
+      });
+    }
+  </script>
+
+
+</body></html>

@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nutrigon-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # ggignore
+      POSTGRES_DB: nutrigon
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d nutrigon']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nutrigon-network
+
+  migration:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: nutrigon-migration
+    restart: 'no'
+    env_file:
+      - apps/api/.env
+    command: ['node', 'dist/core/database/migrate.js']
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nutrigon
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nutrigon-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: nutrigon-api
+    restart: unless-stopped
+    env_file:
+      - apps/api/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nutrigon
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    networks:
+      - nutrigon-network
+
+networks:
+  nutrigon-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
