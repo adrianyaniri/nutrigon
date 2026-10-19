@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Info,
   Loader2,
   Package,
   Search,
@@ -230,10 +231,15 @@ export function AdminProductsPage() {
     }));
   }
 
-  function handleSavePrice(
-    item: BranchProductAdminItem,
-    nextAvailable?: boolean
-  ) {
+  function handleSavePrice(item: BranchProductAdminItem) {
+    if (isGeneralAdmin) {
+      showFeedback(
+        "error",
+        "Los administradores generales no pueden modificar los precios de las sucursales."
+      );
+      return;
+    }
+
     const raw = getDraftPrice(item).trim();
     const numericPrice = Number(raw);
 
@@ -243,11 +249,7 @@ export function AdminProductsPage() {
     }
 
     const isAvailable =
-      nextAvailable !== undefined
-        ? nextAvailable
-        : item.status === "UNCONFIGURED"
-        ? numericPrice > 0
-        : item.isAvailable;
+      item.status === "UNCONFIGURED" ? numericPrice > 0 : item.isAvailable;
 
     if (isAvailable && numericPrice <= 0) {
       showFeedback(
@@ -266,7 +268,41 @@ export function AdminProductsPage() {
     });
   }
 
+  function handleToggleAvailability(item: BranchProductAdminItem) {
+    if (isGeneralAdmin) {
+      showFeedback(
+        "error",
+        "Los administradores generales no pueden modificar la disponibilidad de los productos de la sucursal."
+      );
+      return;
+    }
+
+    if (item.price === null || item.price <= 0) {
+      showFeedback(
+        "error",
+        `Para activar "${item.name}" en la sucursal, primero configurá un precio mayor a $0.`
+      );
+      return;
+    }
+
+    upsertMutation.mutate({
+      productId: item.productId,
+      price: item.price,
+      isAvailable: !item.isAvailable,
+      isFeatured: item.isFeatured,
+      productName: item.name,
+    });
+  }
+
   function handleToggleFeatured(item: BranchProductAdminItem) {
+    if (isGeneralAdmin) {
+      showFeedback(
+        "error",
+        "Los administradores generales no pueden destacar productos en la sucursal."
+      );
+      return;
+    }
+
     if (item.price === null || item.price <= 0) {
       showFeedback(
         "error",
@@ -284,6 +320,14 @@ export function AdminProductsPage() {
   }
 
   function openOfferModal(item: BranchProductAdminItem) {
+    if (isGeneralAdmin) {
+      showFeedback(
+        "error",
+        "Los administradores generales no pueden configurar ofertas en la sucursal."
+      );
+      return;
+    }
+
     setOfferModalItem(item);
     setOfferModalError(null);
     setPromoPriceInput(
@@ -360,6 +404,25 @@ export function AdminProductsPage() {
           </p>
         </div>
 
+        {/* Audit Mode Banner for General Admins */}
+        {isGeneralAdmin && (
+          <aside
+            role="status"
+            aria-label="Aviso de modo auditoría"
+            className="mt-4 flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-xs sm:text-sm text-sky-200"
+          >
+            <Info className="size-5 shrink-0 text-sky-400 mt-0.5" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="font-semibold text-white">
+                Modo Auditoría de Sucursal (Solo Lectura)
+              </p>
+              <p className="text-sky-200/90 leading-relaxed">
+                Como administrador general podés consultar los precios, ofertas y disponibilidad de cada sucursal. La fijación de precios, activación de ofertas y cambios de disponibilidad son potestad exclusiva de los administradores locales.
+              </p>
+            </div>
+          </aside>
+        )}
+
         {/* Status Counter Tabs */}
         <div
           role="tablist"
@@ -425,7 +488,7 @@ export function AdminProductsPage() {
             type="button"
             onClick={() => setFeedbackBanner(null)}
             aria-label="Cerrar notificación"
-            className="p-1 text-white/60 hover:text-white"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-white/60 hover:text-white transition-colors"
           >
             <X className="size-4" />
           </button>
@@ -524,8 +587,10 @@ export function AdminProductsPage() {
                 item={item}
                 draftValue={getDraftPrice(item)}
                 isSaving={upsertMutation.isPending}
+                isReadOnly={isGeneralAdmin}
                 onDraftPriceChange={handleDraftPriceChange}
                 onSavePrice={handleSavePrice}
+                onToggleAvailability={handleToggleAvailability}
                 onToggleFeatured={handleToggleFeatured}
                 onOpenOfferModal={openOfferModal}
               />

@@ -58,14 +58,14 @@ describe("AdminCombosPage (Branch Combos Management)", () => {
     renderAdminCombosPage();
 
     await screen.findByText("Pack Desayuno Saludable");
-    const pauseButton = screen.getByRole("button", { name: "Pausar" });
+    const pauseButton = screen.getByRole("button", { name: /pausar/i });
     fireEvent.click(pauseButton);
 
     expect(
       await screen.findByText(/El combo "Pack Desayuno Saludable" ahora está pausado/i)
     ).toBeInTheDocument();
 
-    const activateButton = await screen.findByRole("button", { name: "Activar" });
+    const activateButton = await screen.findByRole("button", { name: /activar/i });
     expect(activateButton).toBeInTheDocument();
   });
 
@@ -138,5 +138,49 @@ describe("AdminCombosPage (Branch Combos Management)", () => {
     await waitFor(() => {
       expect(screen.queryByText("Pack Desayuno Saludable")).not.toBeInTheDocument();
     });
+  });
+
+  it("renders read-only mode for ADMIN_GENERAL and hides create button", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthContext.Provider
+          value={{
+            user: {
+              id: "u-admin-general",
+              email: "admin.general@nutrigon.com",
+              fullName: "Admin General",
+              role: Role.ADMIN_GENERAL,
+              branchId: null,
+            },
+            token: "mock-jwt-token-general",
+            selectedBranchSlug: "centro",
+            setSelectedBranchSlug: () => {},
+            isLoading: false,
+            isAuthenticated: true,
+            login: async () => ({} as never),
+            logout: () => {},
+          }}
+        >
+          <MemoryRouter initialEntries={["/admin/combos"]}>
+            <AdminCombosPage />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+
+    expect(
+      await screen.findByText(/Modo Auditoría de Sucursal \(Solo Lectura\)/i)
+    ).toBeInTheDocument();
+
+    expect(await screen.findByText("Mix Frutos Secos Premium")).toBeInTheDocument();
+    expect(screen.getAllByText("Solo Lectura").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Nuevo Combo/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Eliminar combo/i })
+    ).not.toBeInTheDocument();
   });
 });

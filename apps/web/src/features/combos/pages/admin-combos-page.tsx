@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   CheckCircle2,
+  Info,
   Loader2,
   Package,
   Plus,
@@ -116,6 +117,11 @@ export function AdminCombosPage() {
       comboId: string;
       isAvailable: boolean;
     }) => {
+      if (isGeneralAdmin) {
+        throw new Error(
+          "Los administradores generales no pueden modificar la disponibilidad de los combos."
+        );
+      }
       return combosRepository.updateForBranch(branchId, comboId, authToken, {
         isAvailable,
       });
@@ -147,6 +153,11 @@ export function AdminCombosPage() {
   // Delete Mutation
   const deleteMutation = useMutation({
     mutationFn: async (comboId: string) => {
+      if (isGeneralAdmin) {
+        throw new Error(
+          "Los administradores generales no pueden eliminar combos."
+        );
+      }
       return combosRepository.deleteForBranch(branchId, comboId, authToken);
     },
     onSuccess: () => {
@@ -173,6 +184,11 @@ export function AdminCombosPage() {
   // Create Combo Mutation
   const createMutation = useMutation({
     mutationFn: async (input: CreateComboInput) => {
+      if (isGeneralAdmin) {
+        throw new Error(
+          "Los administradores generales no pueden crear combos ni packs."
+        );
+      }
       return combosRepository.createForBranch(branchId, authToken, input);
     },
     onSuccess: (newCombo) => {
@@ -207,6 +223,13 @@ export function AdminCombosPage() {
   }
 
   function handleOpenCreateModal() {
+    if (isGeneralAdmin) {
+      setFeedbackBanner({
+        type: "error",
+        text: "Los administradores generales no pueden crear combos ni packs.",
+      });
+      return;
+    }
     resetCreateForm();
     setIsCreateModalOpen(true);
   }
@@ -375,12 +398,31 @@ export function AdminCombosPage() {
           <button
             type="button"
             onClick={() => setFeedbackBanner(null)}
-            className="p-1 rounded-md hover:bg-white/[0.08] text-white/60 hover:text-white"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
             aria-label="Cerrar notificación"
           >
             <X className="size-4" />
           </button>
         </div>
+      )}
+
+      {/* Audit Mode Banner for General Admins */}
+      {isGeneralAdmin && (
+        <aside
+          role="status"
+          aria-label="Aviso de modo auditoría"
+          className="flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-xs sm:text-sm text-sky-200"
+        >
+          <Info className="size-5 shrink-0 text-sky-400 mt-0.5" aria-hidden="true" />
+          <div className="space-y-1">
+            <p className="font-semibold text-white">
+              Modo Auditoría de Sucursal (Solo Lectura)
+            </p>
+            <p className="text-sky-200/90 leading-relaxed">
+              Como administrador general podés consultar los combos y packs vigentes de cada sucursal. La creación, edición y activación de promociones combinadas es potestad exclusiva de los administradores locales.
+            </p>
+          </div>
+        </aside>
       )}
 
       {/* Page Header */}
@@ -401,16 +443,18 @@ export function AdminCombosPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            onClick={handleOpenCreateModal}
-            className="min-h-[44px] w-full sm:w-auto bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold px-5 text-sm gap-2 shadow-sm"
-          >
-            <Plus className="size-4" />
-            <span>Nuevo Combo</span>
-          </Button>
-        </div>
+        {!isGeneralAdmin && (
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              onClick={handleOpenCreateModal}
+              className="min-h-[44px] w-full sm:w-auto bg-brand-gold text-surface hover:bg-brand-gold/90 font-semibold px-5 text-sm gap-2 shadow-sm"
+            >
+              <Plus className="size-4" />
+              <span>Nuevo Combo</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* KPI Stats Strip */}
@@ -534,7 +578,7 @@ export function AdminCombosPage() {
                 : "Armá promociones combinando al menos 2 productos para impulsar las ventas en esta sucursal."}
             </p>
           </div>
-          {!searchTerm && (
+          {!searchTerm && !isGeneralAdmin && (
             <Button
               type="button"
               onClick={handleOpenCreateModal}
@@ -553,6 +597,7 @@ export function AdminCombosPage() {
               combo={combo}
               isToggling={toggleAvailabilityMutation.isPending}
               isDeleting={deleteMutation.isPending}
+              isReadOnly={isGeneralAdmin}
               onToggleAvailability={(target) =>
                 toggleAvailabilityMutation.mutate({
                   comboId: target.id,

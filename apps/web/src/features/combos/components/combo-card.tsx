@@ -8,6 +8,7 @@ export interface ComboCardProps {
   combo: BranchComboAdminItem;
   isToggling: boolean;
   isDeleting: boolean;
+  isReadOnly?: boolean;
   onToggleAvailability: (combo: BranchComboAdminItem) => void;
   onRequestDelete: (combo: BranchComboAdminItem) => void;
 }
@@ -16,6 +17,7 @@ export function ComboCard({
   combo,
   isToggling,
   isDeleting,
+  isReadOnly = false,
   onToggleAvailability,
   onRequestDelete,
 }: ComboCardProps) {
@@ -111,33 +113,40 @@ export function ComboCard({
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => onToggleAvailability(combo)}
-            disabled={isToggling}
-            className={cn(
-              "min-h-[40px] px-3 rounded-xl border text-xs font-semibold transition-colors cursor-pointer",
-              combo.isAvailable
-                ? "border-outline bg-surface text-zinc-300 hover:text-amber-300 hover:border-amber-500/40"
-                : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-            )}
-            title={combo.isAvailable ? "Pausar este combo" : "Habilitar para el público"}
-          >
-            {combo.isAvailable ? "Pausar" : "Activar"}
-          </button>
+        {isReadOnly ? (
+          <span className="rounded-lg border border-outline bg-surface-elevated px-2.5 py-1 text-[11px] font-medium text-zinc-400 select-none">
+            Solo Lectura
+          </span>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onToggleAvailability(combo)}
+              disabled={isToggling}
+              className={cn(
+                "min-h-[44px] px-3.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer",
+                combo.isAvailable
+                  ? "border-outline bg-surface text-zinc-300 hover:text-amber-300 hover:border-amber-500/40"
+                  : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+              )}
+              title={combo.isAvailable ? "Pausar este combo" : "Habilitar para el público"}
+              aria-label={combo.isAvailable ? `Pausar combo ${combo.name}` : `Activar combo ${combo.name}`}
+            >
+              {combo.isAvailable ? "Pausar" : "Activar"}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => onRequestDelete(combo)}
-            disabled={isDeleting}
-            className="min-h-[40px] p-2.5 rounded-xl border border-outline bg-surface text-zinc-400 hover:text-red-400 hover:border-red-500/40 transition-colors"
-            title="Eliminar combo"
-            aria-label={`Eliminar combo ${combo.name}`}
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => onRequestDelete(combo)}
+              disabled={isDeleting}
+              className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl border border-outline bg-surface text-zinc-400 hover:text-red-400 hover:border-red-500/40 transition-colors flex items-center justify-center cursor-pointer"
+              title="Eliminar combo"
+              aria-label={`Eliminar combo ${combo.name}`}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );

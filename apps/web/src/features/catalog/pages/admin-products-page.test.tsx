@@ -61,7 +61,7 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     const priceInput = screen.getByLabelText("Precio de Almendras Nonpareil");
     fireEvent.change(priceInput, { target: { value: "15900" } });
 
-    const saveButtons = screen.getAllByRole("button", { name: "Guardar precio" });
+    const saveButtons = screen.getAllByRole("button", { name: /guardar precio/i });
     fireEvent.click(saveButtons[0]!);
 
     expect(
@@ -75,7 +75,7 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     await screen.findByText("Almendras Nonpareil");
 
     // Click "Oferta" button on the first item (Almendras Nonpareil)
-    const offerButtons = screen.getAllByRole("button", { name: /^Oferta$/i });
+    const offerButtons = screen.getAllByRole("button", { name: /oferta/i });
     fireEvent.click(offerButtons[0]!);
 
     expect(
@@ -120,7 +120,7 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     await screen.findByText("Nueces Mariposa Extra Light");
 
     // Click Destacar button for Nueces Mariposa
-    const destacarButtons = screen.getAllByRole("button", { name: /^Destacar$/i });
+    const destacarButtons = screen.getAllByRole("button", { name: /destacar/i });
     fireEvent.click(destacarButtons[0]!);
 
     expect(
@@ -168,5 +168,47 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     await waitFor(() => {
       expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
     });
+  });
+
+  it("renders read-only mode for ADMIN_GENERAL without edit controls", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthContext.Provider
+          value={{
+            user: {
+              id: "u-admin-general",
+              email: "admin.general@nutrigon.com",
+              fullName: "Admin General",
+              role: Role.ADMIN_GENERAL,
+              branchId: null,
+            },
+            token: "mock-jwt-token-general",
+            selectedBranchSlug: "centro",
+            setSelectedBranchSlug: () => {},
+            isLoading: false,
+            isAuthenticated: true,
+            login: async () => ({} as never),
+            logout: () => {},
+          }}
+        >
+          <MemoryRouter initialEntries={["/admin/productos"]}>
+            <AdminProductsPage />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+
+    expect(
+      await screen.findByText(/Modo Auditoría de Sucursal \(Solo Lectura\)/i)
+    ).toBeInTheDocument();
+
+    expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
+    expect(screen.getAllByText("Solo Lectura").length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Precio de Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /guardar precio/i })).not.toBeInTheDocument();
   });
 });
