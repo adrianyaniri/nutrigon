@@ -135,7 +135,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               type="button"
               aria-label={`Elegir gramos de ${product.name}`}
               onClick={handleAdd}
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-brand-gold-text hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 transition-all shadow-2xs"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-brand-gold-text hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 motion-reduce:transform-none transition-all shadow-2xs"
             >
               <Scale className="size-3.5 shrink-0" aria-hidden="true" />
               <span>Elegir</span>
@@ -149,7 +149,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               }
               onClick={handleAdd}
               className={cn(
-                "transition-all duration-200 active:scale-95",
+                "transition-all duration-200 active:scale-95 motion-reduce:transform-none",
                 isAddedFeedback
                   ? "bg-status-success text-white hover:bg-status-success/90 scale-105"
                   : "hover:scale-105"

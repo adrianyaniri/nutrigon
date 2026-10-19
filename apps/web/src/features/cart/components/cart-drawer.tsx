@@ -54,6 +54,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
 
   const nameInputId = useId();
   const notesInputId = useId();
+  const fulfillmentLabelId = useId();
 
   // Map cart lines to rich catalog items
   const cartItems = useMemo(() => {
@@ -326,12 +327,21 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
             <>
               {/* Delivery Fulfillment Selector */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span
+                  id={fulfillmentLabelId}
+                  className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   Modalidad de entrega
-                </label>
-                <div className="grid grid-cols-2 gap-2 bg-brand-surface/60 p-1.5 rounded-xl border border-border">
+                </span>
+                <div
+                  role="radiogroup"
+                  aria-labelledby={fulfillmentLabelId}
+                  className="grid grid-cols-2 gap-2 bg-brand-surface/60 p-1.5 rounded-xl border border-border"
+                >
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={fulfillment === "pickup"}
                     onClick={() => setFulfillment("pickup")}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-lg text-center transition-all min-h-[44px]",
@@ -340,13 +350,15 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Store className="size-4 text-primary" />
+                    <Store className="size-4 text-primary" aria-hidden="true" />
                     <span className="text-xs font-semibold leading-tight">Retiro en mostrador</span>
                     <span className="text-[11px] text-muted-foreground font-normal">Sin costo</span>
                   </button>
 
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={fulfillment === "delivery"}
                     onClick={() => setFulfillment("delivery")}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-lg text-center transition-all min-h-[44px]",
@@ -355,7 +367,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Bike className="size-4 text-primary" />
+                    <Bike className="size-4 text-primary" aria-hidden="true" />
                     <span className="text-xs font-semibold leading-tight">Envío a domicilio</span>
                     <span className="text-[11px] text-muted-foreground font-normal">A coordinar</span>
                   </button>

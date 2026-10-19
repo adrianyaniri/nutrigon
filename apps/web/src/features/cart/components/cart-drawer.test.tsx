@@ -94,6 +94,17 @@ describe("CartDrawer", () => {
     expect(screen.getAllByText(/Sucursal Centro/).length).toBeGreaterThan(0);
     expect(screen.getByText("Total Estimado")).toBeInTheDocument();
 
+    // Delivery fulfillment radiogroup is accessible
+    expect(screen.getByRole("radiogroup", { name: "Modalidad de entrega" })).toBeInTheDocument();
+    const pickupRadio = screen.getByRole("radio", { name: /Retiro en mostrador/i });
+    const deliveryRadio = screen.getByRole("radio", { name: /Envío a domicilio/i });
+    expect(pickupRadio).toHaveAttribute("aria-checked", "true");
+    expect(deliveryRadio).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(deliveryRadio);
+    expect(pickupRadio).toHaveAttribute("aria-checked", "false");
+    expect(deliveryRadio).toHaveAttribute("aria-checked", "true");
+
     // Increase quantity with stepper
     const incrementBtn = screen.getByRole("button", {
       name: "Aumentar cantidad de Almendras Nonpareil",
