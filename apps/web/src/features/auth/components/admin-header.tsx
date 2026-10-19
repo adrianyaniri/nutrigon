@@ -11,8 +11,10 @@ import {
   Building2,
   KeyRound,
   CheckCircle2,
+  QrCode,
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { BranchQrModal } from "@/features/catalog/components/branch-qr-modal";
 import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "../context/auth-context";
@@ -27,6 +29,7 @@ export function AdminHeader() {
 
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [passwordNotification, setPasswordNotification] = useState<string | null>(null);
@@ -216,18 +219,31 @@ export function AdminHeader() {
           )}
         </div>
 
-        {/* View Public Storefront Link (only if branches exist) */}
-        {branches.length > 0 && selectedBranchSlug && (
-          <Link
-            to={`/catalogo/${selectedBranchSlug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors"
-            title="Ver cómo lo ve el cliente en esta sucursal"
-          >
-            <span>Ver Tienda</span>
-            <ExternalLink className="size-3" aria-hidden="true" />
-          </Link>
+        {/* Branch QR & Public Storefront Actions (only if activeBranch exists) */}
+        {activeBranch && (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              aria-label={`Ver código QR de Sucursal ${activeBranch.name}`}
+              title={`Ver, descargar o imprimir QR de Sucursal ${activeBranch.name}`}
+              className="flex min-h-[38px] items-center gap-1.5 rounded-lg border border-outline bg-surface-card px-2.5 py-1.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors cursor-pointer"
+            >
+              <QrCode className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline">QR Sucursal</span>
+            </button>
+
+            <Link
+              to={`/catalogo/${activeBranch.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors px-1.5"
+              title="Ver cómo lo ve el cliente en esta sucursal"
+            >
+              <span>Ver Tienda</span>
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </Link>
+          </div>
         )}
 
         <div className="h-4 w-[1px] bg-outline" aria-hidden="true" />
@@ -295,6 +311,21 @@ export function AdminHeader() {
 
               {/* Menu Actions */}
               <div className="py-1">
+                {activeBranch && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      setIsQrModalOpen(true);
+                    }}
+                    className="flex w-full min-h-[44px] items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-surface-hover rounded-xl transition-colors cursor-pointer text-left"
+                  >
+                    <QrCode className="size-4 text-brand-gold shrink-0" aria-hidden="true" />
+                    <span>Código QR de {activeBranch.name}</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   role="menuitem"
@@ -355,6 +386,15 @@ export function AdminHeader() {
           setTimeout(() => setPasswordNotification(null), 4000);
         }}
       />
+
+      {/* Branch QR Modal for Active Branch */}
+      {activeBranch && (
+        <BranchQrModal
+          isOpen={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          branch={activeBranch}
+        />
+      )}
 
 
       {/* Mobile Navigation Row */}

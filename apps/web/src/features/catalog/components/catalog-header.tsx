@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Menu, Shield, ShoppingBag } from "lucide-react";
+import { MapPin, Menu, QrCode, Shield, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IconButton } from "@/components/atoms/icon-button";
 import { cn } from "@/lib/utils/cn";
@@ -10,13 +10,14 @@ export interface CatalogHeaderProps {
   cartItemCount: number;
   onOpenCategories?: () => void;
   onOpenCart?: () => void;
+  onOpenQr?: () => void;
 }
 
 /**
  * Editorial header with perfectly centered branding.
  * Left: Mobile category drawer toggle & static read-only branch badge.
  * Center: Nutrigon Logo and brand identity.
- * Right: Cart button.
+ * Right: QR Share button, Admin Access & Cart button.
  */
 export function CatalogHeader({
   branchSlug,
@@ -24,6 +25,7 @@ export function CatalogHeader({
   cartItemCount,
   onOpenCategories,
   onOpenCart,
+  onOpenQr,
 }: CatalogHeaderProps) {
   const [animateBadge, setAnimateBadge] = useState(false);
   const prevCountRef = useRef(cartItemCount);
@@ -95,8 +97,21 @@ export function CatalogHeader({
           </Link>
         </div>
 
-        {/* Right Column: Admin Access & Cart Button */}
+        {/* Right Column: QR Share, Admin Access & Cart Button */}
         <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+          {onOpenQr && (
+            <button
+              type="button"
+              onClick={onOpenQr}
+              title={branchName ? `Ver y compartir QR de Sucursal ${branchName}` : "Ver código QR de la sucursal"}
+              aria-label={branchName ? `Ver y compartir QR de Sucursal ${branchName}` : "Ver código QR de la sucursal"}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/60 px-2.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs cursor-pointer"
+            >
+              <QrCode className="size-4 text-brand-gold-text shrink-0" aria-hidden="true" />
+              <span className="hidden md:inline">QR</span>
+            </button>
+          )}
+
           <Link
             to="/admin"
             title="Acceso al panel de administración"

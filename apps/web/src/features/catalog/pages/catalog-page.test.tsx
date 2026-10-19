@@ -202,4 +202,17 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog", { name: "Categorías" })).not.toBeInTheDocument();
   });
+
+  it("opens the branch QR modal when clicking the QR share button in the public catalog header", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras Nonpareil");
+
+    const qrBtn = screen.getByRole("button", { name: /Ver y compartir QR de Sucursal Centro/i });
+    fireEvent.click(qrBtn);
+
+    expect(await screen.findByRole("dialog", { name: /QR Catálogo Sucursal Centro/i })).toBeInTheDocument();
+    expect(screen.getByText(/Escaneá con la cámara para acceder al catálogo/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Copiar enlace/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Imprimir cartel/i })).toBeInTheDocument();
+  });
 });

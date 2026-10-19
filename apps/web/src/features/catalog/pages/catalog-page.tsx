@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format/price";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
 import { CatalogHero } from "../components/catalog-hero";
+import { BranchQrModal } from "../components/branch-qr-modal";
 import { CategoryChips } from "../components/category-chips";
 import { CategoryDrawer } from "../components/category-drawer";
 import { CategoryNav } from "../components/category-nav";
@@ -37,6 +38,7 @@ export function CatalogPage() {
 
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
 
   const branchesQuery = useBranches();
@@ -135,6 +137,7 @@ export function CatalogPage() {
         cartItemCount={itemCount}
         onOpenCategories={() => setIsCategoryDrawerOpen(true)}
         onOpenCart={() => setIsCartOpen(true)}
+        onOpenQr={catalog?.branch ? () => setIsQrModalOpen(true) : undefined}
       />
 
       <main
@@ -312,6 +315,14 @@ export function CatalogPage() {
         branch={catalog?.branch}
         categories={catalog?.categories ?? []}
       />
+
+      {catalog?.branch && (
+        <BranchQrModal
+          isOpen={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          branch={catalog.branch}
+        />
+      )}
 
       <CatalogFooter currentBranch={catalog?.branch} branches={branches} />
     </div>
