@@ -19,6 +19,21 @@ services:
     networks:
       - nutrigon-network
 
+  migration:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: nutrigon-migration
+    restart: 'no'
+    command: ['node', 'dist/core/database/migrate.js']
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nutrigon
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nutrigon-network
+
   api:
     build:
       context: .
@@ -42,6 +57,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     networks:
       - nutrigon-network
 
