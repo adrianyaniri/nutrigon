@@ -63,4 +63,21 @@ describe('MediaController (TDD)', () => {
     );
     expect(res.key).toBe('combos/1.webp');
   });
+
+  it('forbids ADMIN_GENERAL from uploading to the combos folder', async () => {
+    const generalAdmin = {
+      id: 'u-gen',
+      email: 'general@nutrigon.com',
+      fullName: 'General Admin',
+      role: Role.ADMIN_GENERAL,
+      branchId: null,
+    };
+
+    await expect(
+      controller.generateUploadUrl(
+        { fileName: 'combo.webp', contentType: 'image/webp', folder: 'combos' },
+        generalAdmin,
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
 });

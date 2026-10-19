@@ -211,4 +211,32 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     expect(screen.queryByLabelText("Precio de Almendras Nonpareil")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /guardar precio/i })).not.toBeInTheDocument();
   });
+
+  it("shows dirty state and allows reverting price to original value", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Almendras Nonpareil");
+    const priceInput = screen.getByLabelText("Precio de Almendras Nonpareil");
+
+    // Modify price
+    fireEvent.change(priceInput, { target: { value: "19500" } });
+
+    expect(screen.getByText(/· Sin guardar/i)).toBeInTheDocument();
+    const revertBtn = screen.getByRole("button", { name: /Revertir precio de Almendras Nonpareil/i });
+    expect(revertBtn).toBeInTheDocument();
+
+    // Revert changes
+    fireEvent.click(revertBtn);
+    expect(screen.queryByText(/· Sin guardar/i)).not.toBeInTheDocument();
+  });
+
+  it("sanitizes Argentine decimal comma into period in price input", async () => {
+    renderAdminProductsPage();
+
+    await screen.findByText("Almendras Nonpareil");
+    const priceInput = screen.getByLabelText("Precio de Almendras Nonpareil") as HTMLInputElement;
+
+    fireEvent.change(priceInput, { target: { value: "17200,50" } });
+    expect(priceInput.value).toBe("17200.50");
+  });
 });

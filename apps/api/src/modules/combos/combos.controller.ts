@@ -12,7 +12,7 @@ import {
 import { CombosService } from './combos.service.js';
 import { CreateComboDto, UpdateComboDto } from './dto/combo.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
-import { AuthBranchScoped } from '../../common/decorators/auth-roles.decorator.js';
+import { AuthBranchScoped, AuthBranchMutate } from '../../common/decorators/auth-roles.decorator.js';
 
 @Controller('branches')
 export class CombosController {
@@ -30,7 +30,7 @@ export class CombosController {
     return this.combosService.listForBranch(branchId);
   }
 
-  @AuthBranchScoped()
+  @AuthBranchMutate()
   @Post(':branchId/combos')
   @HttpCode(HttpStatus.CREATED)
   async createForBranch(
@@ -40,7 +40,7 @@ export class CombosController {
     return this.combosService.createForBranch(branchId, dto);
   }
 
-  @AuthBranchScoped()
+  @AuthBranchMutate()
   @Patch(':branchId/combos/:comboId')
   async updateForBranch(
     @Param('branchId') branchId: string,
@@ -50,7 +50,7 @@ export class CombosController {
     return this.combosService.updateForBranch(branchId, comboId, dto);
   }
 
-  @AuthBranchScoped()
+  @AuthBranchMutate()
   @Delete(':branchId/combos/:comboId')
   async softDeleteForBranch(
     @Param('branchId') branchId: string,

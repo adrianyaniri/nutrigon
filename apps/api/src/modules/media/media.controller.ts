@@ -29,6 +29,12 @@ export class MediaController {
       );
     }
 
+    if (user?.role === Role.ADMIN_GENERAL && dto.folder === 'combos') {
+      throw new ForbiddenException(
+        'General administrators are not permitted to upload images for branch combos',
+      );
+    }
+
     return this.mediaService.generateUploadUrl(dto);
   }
 }

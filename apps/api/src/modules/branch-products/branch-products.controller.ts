@@ -14,7 +14,7 @@ import {
   BranchProductQueryDto,
 } from './dto/branch-product.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
-import { AuthBranchScoped } from '../../common/decorators/auth-roles.decorator.js';
+import { AuthBranchScoped, AuthBranchMutate } from '../../common/decorators/auth-roles.decorator.js';
 
 @Controller('branches')
 export class BranchProductsController {
@@ -50,7 +50,7 @@ export class BranchProductsController {
     return this.branchProductsService.countByStatus(branchId);
   }
 
-  @AuthBranchScoped()
+  @AuthBranchMutate()
   @Put(':branchId/products/:productId')
   async upsert(
     @Param('branchId') branchId: string,
@@ -60,7 +60,7 @@ export class BranchProductsController {
     return this.branchProductsService.upsert(branchId, productId, dto);
   }
 
-  @AuthBranchScoped()
+  @AuthBranchMutate()
   @Patch(':branchId/products/:productId/offer')
   async updateOffer(
     @Param('branchId') branchId: string,

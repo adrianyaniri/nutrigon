@@ -1,4 +1,4 @@
-import { Check, Sparkles, Star, Tag } from "lucide-react";
+import { Check, Sparkles, Star, Tag, Undo2 } from "lucide-react";
 import { ProductImage } from "@/components/atoms/product-image";
 import { Button } from "@/components/ui/button";
 import type { BranchProductAdminItem } from "@/features/pricing/data/branch-pricing-repository";
@@ -34,6 +34,8 @@ export function BranchProductRow({
       ? "Granel · Precio por 1 kg"
       : "Venta por unidad";
   const isConfigured = item.price !== null && item.price > 0;
+  const savedPriceStr = item.price !== null && item.price !== undefined ? String(item.price) : "";
+  const isDirty = draftValue.trim() !== "" && draftValue.trim() !== savedPriceStr;
 
   return (
     <article className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl border border-outline bg-surface-card p-4 sm:p-5 transition-colors hover:border-outline-variant">
@@ -76,7 +78,7 @@ export function BranchProductRow({
 
             {/* Promo Chips */}
             {item.isOnSale && item.promotionalPrice !== null && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-gold shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold shrink-0">
                 <Sparkles className="size-2.5 shrink-0" aria-hidden="true" />
                 <span>
                   Oferta {formatPrice(item.promotionalPrice)} {unitSuffix}
@@ -85,7 +87,7 @@ export function BranchProductRow({
             )}
 
             {item.isFeatured && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300 shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-300 shrink-0">
                 <Star
                   className="size-2.5 fill-amber-300 text-amber-300 shrink-0"
                   aria-hidden="true"
@@ -139,12 +141,16 @@ export function BranchProductRow({
                     $
                   </span>
                   <input
-                    type="number"
-                    min="0"
-                    step="10"
+                    type="text"
+                    inputMode="decimal"
                     aria-label={`Precio de ${item.name}`}
                     value={draftValue}
-                    onChange={(e) => onDraftPriceChange(item.productId, e.target.value)}
+                    onChange={(e) => {
+                      const sanitized = e.target.value.replace(/,/g, ".");
+                      if (/^[0-9]*\.?[0-9]*$/.test(sanitized)) {
+                        onDraftPriceChange(item.productId, sanitized);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -152,19 +158,39 @@ export function BranchProductRow({
                       }
                     }}
                     placeholder="0"
-                    className="h-11 min-h-[44px] w-28 sm:w-32 rounded-xl border border-outline bg-surface pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-white placeholder:text-zinc-500 caret-brand-gold focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                    className={cn(
+                      "h-11 min-h-[44px] w-28 sm:w-32 rounded-xl border bg-surface pl-6 pr-10 text-xs sm:text-sm font-semibold tabular-nums text-white placeholder:text-zinc-500 caret-brand-gold focus:outline-none transition-all",
+                      isDirty
+                        ? "border-amber-500/70 bg-amber-500/5 ring-1 ring-amber-500/40 focus:border-amber-400 focus:ring-amber-400"
+                        : "border-outline focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+                    )}
                   />
                   <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-zinc-400">
                     {unitSuffix}
                   </span>
                 </div>
 
+                {isDirty && (
+                  <button
+                    type="button"
+                    aria-label={`Revertir precio de ${item.name}`}
+                    title="Revertir cambios al valor guardado"
+                    onClick={() => onDraftPriceChange(item.productId, savedPriceStr)}
+                    className="size-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl border border-outline bg-surface text-zinc-400 hover:text-white hover:border-zinc-500 cursor-pointer shrink-0 transition-colors"
+                  >
+                    <Undo2 className="size-4" aria-hidden="true" />
+                  </button>
+                )}
+
                 <Button
                   type="button"
                   aria-label={`Guardar precio de ${item.name}`}
                   onClick={() => onSavePrice(item)}
                   disabled={isSaving}
-                  className="h-11 min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 shrink-0"
+                  className={cn(
+                    "h-11 min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 shrink-0 transition-all",
+                    isDirty && "bg-brand-gold text-stone-950 hover:bg-brand-gold/90 shadow-lg shadow-brand-gold/20"
+                  )}
                 >
                   <Check className="size-3.5" aria-hidden="true" />
                   <span>Guardar</span>
@@ -173,10 +199,15 @@ export function BranchProductRow({
 
               {/* 100g fraction equivalence hint for bulk products */}
               {item.saleUnit === "WEIGHT" && (
-                <span className="text-[10px] text-brand-muted font-medium tabular-nums pl-1 mt-1 block">
+                <span className="text-[11px] text-brand-muted font-medium tabular-nums pl-1 mt-1 block">
                   {Number(draftValue || item.price || 0) > 0
                     ? `Equiv. ${formatPrice(Math.round(Number(draftValue || item.price || 0) / 10))} / 100g`
                     : "Ingresá precio por 1 kg"}
+                  {isDirty && (
+                    <span className="ml-1.5 text-amber-400 font-semibold text-[10px] uppercase tracking-wider">
+                      · Sin guardar
+                    </span>
+                  )}
                 </span>
               )}
             </div>

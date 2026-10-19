@@ -464,16 +464,16 @@ export function AdminProductsPage() {
         </div>
       </section>
 
-      {/* Feedback Toast / Banner */}
+      {/* Feedback Toast / Floating Notification */}
       {feedbackBanner && (
         <div
           role="status"
           aria-live="polite"
           className={cn(
-            "flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-xs sm:text-sm font-medium animate-in fade-in-50 duration-150",
+            "fixed bottom-6 right-6 z-50 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-xs sm:text-sm font-medium shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200 max-w-sm sm:max-w-md",
             feedbackBanner.type === "success"
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-              : "border-red-500/40 bg-red-500/10 text-red-200"
+              ? "border-emerald-500/50 bg-stone-900/95 text-emerald-200 shadow-emerald-950/40"
+              : "border-red-500/50 bg-stone-900/95 text-red-200 shadow-red-950/40"
           )}
         >
           <div className="flex items-center gap-2.5">
@@ -488,7 +488,7 @@ export function AdminProductsPage() {
             type="button"
             onClick={() => setFeedbackBanner(null)}
             aria-label="Cerrar notificación"
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-white/60 hover:text-white transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl text-white/60 hover:text-white transition-colors cursor-pointer"
           >
             <X className="size-4" />
           </button>
