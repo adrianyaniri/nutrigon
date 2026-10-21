@@ -16,9 +16,11 @@ import {
 export interface BranchProductRowProps {
   item: BranchProductAdminItem;
   draftValue: string;
+  priceReferenceGrams: 100 | 1000;
   isSaving: boolean;
   isReadOnly?: boolean;
   onDraftPriceChange: (productId: string, value: string) => void;
+  onPriceReferenceChange: (item: BranchProductAdminItem, reference: 100 | 1000) => void;
   onSavePrice: (item: BranchProductAdminItem) => void;
   onToggleAvailability: (item: BranchProductAdminItem) => void;
   onToggleFeatured: (item: BranchProductAdminItem) => void;
@@ -28,15 +30,20 @@ export interface BranchProductRowProps {
 export const BranchProductRow = memo(function BranchProductRow({
   item,
   draftValue,
+  priceReferenceGrams,
   isSaving,
   isReadOnly = false,
   onDraftPriceChange,
+  onPriceReferenceChange,
   onSavePrice,
   onToggleAvailability,
   onToggleFeatured,
   onOpenOfferModal,
 }: BranchProductRowProps) {
   const reference = getPriceReferenceGrams(item);
+  const inputReference = item.saleUnit === "WEIGHT" ? priceReferenceGrams : null;
+  const inputUnitSuffix =
+    inputReference === 100 ? "/ 100 g" : inputReference === 1000 ? "/ kg" : "/ un.";
   const displayPrice = (price: number) =>
     item.saleUnit === "WEIGHT" ? referencePrice(price, item) : price;
   const unitSuffix =
@@ -48,7 +55,11 @@ export const BranchProductRow = memo(function BranchProductRow({
   const isConfigured = item.price !== null && item.price > 0;
   const savedPriceStr =
     item.price !== null && item.price !== undefined
-      ? String(displayPrice(item.price))
+      ? String(
+          item.saleUnit === "WEIGHT"
+            ? calculatePortionPrice(item.price, inputReference === 100 ? "100g" : "1kg")
+            : displayPrice(item.price)
+        )
       : "";
   const isDirty = draftValue.trim() !== "" && draftValue.trim() !== savedPriceStr;
 
@@ -152,7 +163,20 @@ export const BranchProductRow = memo(function BranchProductRow({
           <>
             {/* Price Input Group */}
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {item.saleUnit === "WEIGHT" && (
+                  <select
+                    aria-label={`Unidad de precio de ${item.name}`}
+                    value={priceReferenceGrams}
+                    onChange={(event) =>
+                      onPriceReferenceChange(item, Number(event.target.value) as 100 | 1000)
+                    }
+                    className="h-11 min-h-[44px] rounded-xl border border-outline bg-surface px-2 text-xs font-semibold text-foreground focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                  >
+                    <option value={100}>Precio por 100 g</option>
+                    <option value={1000}>Precio por 1 kg</option>
+                  </select>
+                )}
                 <div className="relative flex items-center">
                   <span className="pointer-events-none absolute left-2.5 text-xs font-bold text-muted-foreground">
                     $
@@ -183,7 +207,7 @@ export const BranchProductRow = memo(function BranchProductRow({
                     )}
                   />
                   <span className="pointer-events-none absolute right-2.5 text-[11px] font-medium text-muted-foreground">
-                    {unitSuffix}
+                    {inputUnitSuffix}
                   </span>
                 </div>
 
@@ -215,14 +239,19 @@ export const BranchProductRow = memo(function BranchProductRow({
                 </Button>
               </div>
 
-              {/* 100g fraction equivalence hint for bulk products */}
+              {/* Canonical price equivalences for bulk products */}
               {item.saleUnit === "WEIGHT" && (
                 <span className="text-[11px] text-brand-muted font-medium tabular-nums pl-1 mt-1 block">
-                  {Number(draftValue || item.price || 0) > 0
-                    ? reference === 100
-                      ? `Equiv. ${formatPrice(toPricePerKg(Number(draftValue || 0), 100))} / kg`
-                      : `Equiv. ${formatPrice(calculatePortionPrice(Number(draftValue || 0), "100g"))} / 100g`
-                    : `Ingresá precio por ${formatWeight(reference)}`}
+                  {Number(draftValue || 0) > 0
+                    ? `Precio por 100 g: ${formatPrice(
+                        calculatePortionPrice(
+                          toPricePerKg(Number(draftValue), inputReference!),
+                          "100g"
+                        )
+                      )} · Precio por 1 kg: ${formatPrice(
+                        toPricePerKg(Number(draftValue), inputReference!)
+                      )}`
+                    : `Ingresá precio por ${formatWeight(inputReference!)}`}
                   {isDirty && (
                     <span className="ml-1.5 text-amber-400 font-semibold text-[10px] uppercase tracking-wider">
                       · Sin guardar

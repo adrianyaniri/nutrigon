@@ -19,3 +19,6 @@ name,slug,order_index,is_active
 "HELADERA","heladera",18,true
 "FARMACIA","farmacia",19,true
 "SIN DEPARTAMENTO","sin-departamento",20,true
+"SEMILLAS","semillas",21,true
+"FRUTAS DESHIDRATADAS","frutas-deshidratadas",22,true
+"REPOSTERIA","reposteria",23,true

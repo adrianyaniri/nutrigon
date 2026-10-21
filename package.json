@@ -13,6 +13,12 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "db:seed": "pnpm --filter @nutrigon/api db:seed",
+    "db:seed:branches": "pnpm --filter @nutrigon/api db:seed:branches",
+    "db:seed:branches:prod": "pnpm --filter @nutrigon/api db:seed:branches:prod",
+    "db:import:products": "pnpm --filter @nutrigon/api db:import:products",
+    "db:import:products:prod": "pnpm --filter @nutrigon/api db:import:products:prod",
+    "db:import:branch-prices": "pnpm --filter @nutrigon/api db:import:branch-prices",
+    "db:import:branch-prices:prod": "pnpm --filter @nutrigon/api db:import:branch-prices:prod",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -21,4 +27,3 @@
     "turbo": "^2.5.0"
   }
 }
-

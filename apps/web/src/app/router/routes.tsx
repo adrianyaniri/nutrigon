@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { PublicLayout } from "@/app/layouts/public-layout";
-import { AdminIndexRedirect, ProtectedRoute } from "@/features/auth";
+import { AdminIndexRedirect, ProtectedRoute, Role } from "@/features/auth";
 import { CatalogLandingPage, CatalogPage } from "@/features/catalog";
 import { AdminLoadingFallback } from "./admin-loading-fallback";
 import { NotFoundPage } from "./not-found-page";
@@ -56,17 +56,27 @@ export const router = createBrowserRouter([
       {
         path: "catalogo-maestro",
         element: (
-          <Suspense fallback={<AdminLoadingFallback />}>
-            <AdminMasterCatalogPage />
-          </Suspense>
+          <ProtectedRoute
+            allowedRoles={[Role.ADMIN_GENERAL]}
+            unauthorizedRedirectTo="/admin/productos"
+          >
+            <Suspense fallback={<AdminLoadingFallback />}>
+              <AdminMasterCatalogPage />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {
         path: "sucursales",
         element: (
-          <Suspense fallback={<AdminLoadingFallback />}>
-            <AdminBranchesPage />
-          </Suspense>
+          <ProtectedRoute
+            allowedRoles={[Role.ADMIN_GENERAL]}
+            unauthorizedRedirectTo="/admin/productos"
+          >
+            <Suspense fallback={<AdminLoadingFallback />}>
+              <AdminBranchesPage />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {

@@ -31,6 +31,17 @@ describe("portion-pricing", () => {
     expect(getPortionOptions({})).toEqual(PORTION_OPTIONS);
   });
 
+  it("chooses an allowed initial portion when a product has no valid default", () => {
+    expect(getDefaultPortion({ weightOptionsGrams: [25, 50, 75, 100] })).toBe("25g");
+    expect(getDefaultPortion({ weightOptionsGrams: [100, 250, 500, 1000] })).toBe("100g");
+    expect(
+      getDefaultPortion({
+        weightOptionsGrams: [100, 250, 500, 1000],
+        defaultWeightGrams: 25,
+      })
+    ).toBe("100g");
+  });
+
   it("converts per-100-g input to canonical kg prices and rejects malformed portions", () => {
     expect(toPricePerKg(1050, 100)).toBe(10500);
     expect(toPricePerKg(1050, 1000)).toBe(1050);

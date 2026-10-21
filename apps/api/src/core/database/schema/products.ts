@@ -6,6 +6,7 @@ import {
   boolean,
   timestamp,
   index,
+  uniqueIndex,
   integer,
   check,
 } from 'drizzle-orm/pg-core';
@@ -50,7 +51,7 @@ export const products = pgTable(
       sql`cardinality(${table.weightOptionsGrams}) > 0 AND 0 < ALL(${table.weightOptionsGrams}) AND ${table.defaultWeightGrams} = ANY(${table.weightOptionsGrams}) AND ${table.priceReferenceGrams} IN (100, 1000)`,
     ),
     index('idx_products_category_id').on(table.categoryId),
-    index('idx_products_code').on(table.code),
+    uniqueIndex('idx_products_code_unique').on(table.code).where(sql`${table.code} IS NOT NULL`),
     index('idx_products_barcode').on(table.barcode),
   ],
 );

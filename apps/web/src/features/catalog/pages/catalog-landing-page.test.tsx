@@ -27,29 +27,36 @@ describe("CatalogLandingPage (Public Storefront Landing)", () => {
     cleanup();
   });
 
-  it("renders Nutrigon branding, QR access instructions, and admin access button", async () => {
+  it("renders Nutrigon branding, branch selection, and admin access button", async () => {
     renderLandingPage();
 
     expect(screen.getAllByText("Nutrigon").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Dietética & Cerealera/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Escaneá el código QR en tu sucursal/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Elegí tu sucursal" })
+    ).toBeInTheDocument();
 
     const adminLink = screen.getByRole("link", { name: /Acceso Gestión/i });
     expect(adminLink).toBeInTheDocument();
     expect(adminLink).toHaveAttribute("href", "/admin");
 
     // Wait for async branches query to settle
-    await screen.findByRole("heading", { name: /Sucursal (Centro|Origone)/i });
+    await screen.findByRole("heading", { name: /^(Centro|Origone)$/i });
   });
 
-  it("renders institutional branch directory with maps links and without catalog switching buttons", async () => {
+  it("links each public branch card to its stable catalog route", async () => {
     renderLandingPage();
 
     expect(
-      await screen.findByRole("heading", { name: /Sucursal (Centro|Origone)/i })
+      await screen.findByRole("heading", { name: /^(Centro|Origone)$/i })
     ).toBeInTheDocument();
 
-    expect(screen.getAllByRole("link", { name: /Cómo llegar/i }).length).toBeGreaterThan(0);
-    expect(screen.queryByRole("button", { name: /Ver Catálogo/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Ver catálogo/i }).length).toBeGreaterThan(
+      0
+    );
+    expect(screen.getAllByRole("link", { name: /Ver catálogo/i })[0]).toHaveAttribute(
+      "href",
+      "/catalogo/centro"
+    );
   });
 });

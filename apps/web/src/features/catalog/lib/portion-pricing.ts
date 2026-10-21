@@ -53,10 +53,19 @@ export function getPortionOptions(config: WeightConfiguration): readonly Portion
 }
 
 export function getDefaultPortion(config: WeightConfiguration): WeightPortion {
-  return portionFromGrams(config.defaultWeightGrams ?? 250);
+  const options = config.weightOptionsGrams;
+  if (!options || options.length === 0) {
+    return portionFromGrams(config.defaultWeightGrams ?? 250);
+  }
+
+  if (config.defaultWeightGrams && options.includes(config.defaultWeightGrams)) {
+    return portionFromGrams(config.defaultWeightGrams);
+  }
+
+  return portionFromGrams(options[0]!);
 }
 
-export function getPriceReferenceGrams(config: WeightConfiguration): number {
+export function getPriceReferenceGrams(config: WeightConfiguration): 100 | 1000 {
   return config.priceReferenceGrams === 100 ? 100 : 1000;
 }
 

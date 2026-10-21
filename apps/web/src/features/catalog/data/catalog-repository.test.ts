@@ -1,219 +1,92 @@
 import { describe, expect, it, vi } from "vitest";
 import { createHttpCatalogRepository } from "./catalog-repository";
 
+const page = {
+  branch: {
+    id: "b-vergara",
+    name: "Nutrigon Vergara",
+    slug: "vergara",
+    address: "Av. Vergara 2395",
+    phone: null,
+    whatsappNumber: null,
+  },
+  categories: [{ id: "cat-1", name: "Semillas", slug: "semillas" }],
+  items: [
+    {
+      id: "prod-1",
+      categoryId: "cat-1",
+      name: "Ch�a",
+      description: null,
+      saleUnit: "WEIGHT" as const,
+      imageUrls: [],
+      price: 12000,
+      promotionalPrice: null,
+      isOnSale: false,
+    },
+  ],
+  total: 48,
+  page: 2,
+  limit: 24,
+  totalPages: 2,
+};
+
 describe("createHttpCatalogRepository", () => {
-  it("fetches active branches from GET /api/v1/branches", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+  it("fetches active branches from the public endpoint", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => [
-        {
-          id: "b-origone",
-          name: "Origone",
-          slug: "origone",
-          address: "Tte. Manuel Origone 196",
-          phone: "11-1111-1111",
-          whatsappNumber: "5491111111111",
-          isActive: true,
-        },
-        {
-          id: "b-inactive",
-          name: "Inactiva",
-          slug: "inactiva",
-          address: null,
-          phone: null,
-          whatsappNumber: null,
-          isActive: false,
-        },
+        { ...page.branch, isActive: true },
+        { ...page.branch, id: "inactive", slug: "inactive", isActive: false },
       ],
     });
-
-    const repo = createHttpCatalogRepository(
+    const repository = createHttpCatalogRepository(
       "http://localhost:3000",
-      mockFetch as unknown as typeof fetch
+      fetchFn as typeof fetch
     );
-    const branches = await repo.getBranches();
 
-    expect(mockFetch).toHaveBeenCalledWith("http://localhost:3000/api/v1/branches");
-    expect(branches).toEqual([
-      {
-        id: "b-origone",
-        name: "Origone",
-        slug: "origone",
-        address: "Tte. Manuel Origone 196",
-        phone: "11-1111-1111",
-        whatsappNumber: "5491111111111",
-      },
-    ]);
+    await expect(repository.getBranches()).resolves.toEqual([page.branch]);
+    expect(fetchFn).toHaveBeenCalledWith("http://localhost:3000/api/v1/branches");
   });
 
-  it("merges branch catalog products and active combos from GET /catalog and GET /combos", async () => {
-    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
-      if (url.includes("/combos")) {
-        return {
-          ok: true,
-          json: async () => [
-            {
-              id: "combo-1",
-              name: "Pack Energético",
-              description: "Almendras + Nueces",
-              imageUrls: ["https://cdn.nutrigon.com/combo.webp"],
-              price: 11500,
-              originalPrice: 14500,
-              isActive: true,
-              items: [
-                {
-                  id: "ci-1",
-                  productId: "prod-1",
-                  productName: "Almendras Nonpareil",
-                  saleUnit: "WEIGHT",
-                  quantity: 1,
-                },
-              ],
-            },
-          ],
-        };
-      }
-
-      if (url.includes("/catalog")) {
-        return {
-          ok: true,
-          json: async () => ({
-            branch: {
-              id: "b-origone",
-              name: "Origone",
-              slug: "origone",
-              address: "Tte. Manuel Origone 196",
-              phone: "11-1111-1111",
-              whatsappNumber: "5491111111111",
-            },
-            categories: [{ id: "cat-1", name: "Frutos Secos", slug: "frutos-secos" }],
-            items: [
-              {
-                id: "prod-1",
-                categoryId: "cat-1",
-                name: "Almendras Nonpareil",
-                description: "Tostadas",
-                saleUnit: "WEIGHT",
-                weightOptionsGrams: [25, 50, 75, 100],
-                defaultWeightGrams: 25,
-                priceReferenceGrams: 100,
-                imageUrls: ["https://cdn.nutrigon.com/almendras.webp"],
-                price: 14500,
-                promotionalPrice: 12900,
-                isOnSale: true,
-              },
-            ],
-            total: 1,
-            page: 1,
-            limit: 100,
-            totalPages: 1,
-          }),
-        };
-      }
-
-      return { ok: false, status: 404 };
-    });
-
-    const repo = createHttpCatalogRepository(
+  it("requests one filtered catalog page without preloading remaining pages", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: async () => page });
+    const repository = createHttpCatalogRepository(
       "http://localhost:3000",
-      mockFetch as unknown as typeof fetch
+      fetchFn as typeof fetch
     );
-    const catalog = await repo.getBranchCatalog("origone");
 
-    expect(catalog.branch.slug).toBe("origone");
-    expect(catalog.categories).toHaveLength(1);
-    expect(catalog.products).toHaveLength(2);
-
-    const [comboItem, regularItem] = catalog.products;
-    expect(comboItem).toMatchObject({
-      id: "combo-1",
-      name: "Pack Energético",
-      isCombo: true,
-      price: 14500,
-      promotionalPrice: 11500,
-      saleUnit: "UNIT",
+    const catalog = await repository.getBranchCatalogPage("vergara", {
+      page: 2,
+      limit: 24,
+      search: "chia",
+      categorySlug: "semillas",
     });
-    expect(regularItem).toMatchObject({
-      id: "prod-1",
-      name: "Almendras Nonpareil",
-      price: 14500,
-      weightOptionsGrams: [25, 50, 75, 100],
-      defaultWeightGrams: 25,
-      priceReferenceGrams: 100,
-      promotionalPrice: 12900,
-      saleUnit: "WEIGHT",
-      imageUrl: "https://cdn.nutrigon.com/almendras.webp",
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith(
+      "http://localhost:3000/api/v1/branches/vergara/catalog?page=2&limit=24&search=chia&categorySlug=semillas"
+    );
+    expect(catalog).toMatchObject({
+      page: 2,
+      limit: 24,
+      total: 48,
+      totalPages: 2,
+      products: [{ id: "prod-1", imageUrl: expect.any(String) }],
     });
   });
 
-  it("falls back to DEFAULT_PRODUCT_IMAGE when products or combos have no images", async () => {
-    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
-      if (url.includes("/combos")) {
-        return {
-          ok: true,
-          json: async () => [
-            {
-              id: "combo-no-img",
-              name: "Combo Simple",
-              description: null,
-              imageUrls: [],
-              price: 5000,
-              isActive: true,
-              items: [],
-            },
-          ],
-        };
-      }
+  it("sends offer filtering to the API", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: async () => page });
+    const repository = createHttpCatalogRepository("", fetchFn as typeof fetch);
 
-      if (url.includes("/catalog")) {
-        return {
-          ok: true,
-          json: async () => ({
-            branch: {
-              id: "b-origone",
-              name: "Origone",
-              slug: "origone",
-              address: null,
-              phone: null,
-              whatsappNumber: null,
-            },
-            categories: [],
-            items: [
-              {
-                id: "prod-no-img",
-                categoryId: "cat-1",
-                name: "Nueces Chandler",
-                description: null,
-                saleUnit: "WEIGHT",
-                imageUrls: [],
-                price: 8000,
-                promotionalPrice: null,
-                isOnSale: false,
-              },
-            ],
-            total: 1,
-            page: 1,
-            limit: 100,
-            totalPages: 1,
-          }),
-        };
-      }
-
-      return { ok: false, status: 404 };
+    await repository.getBranchCatalogPage("vergara", {
+      page: 1,
+      limit: 24,
+      isOnSale: true,
     });
 
-    const repo = createHttpCatalogRepository(
-      "http://localhost:3000",
-      mockFetch as unknown as typeof fetch
-    );
-    const catalog = await repo.getBranchCatalog("origone");
-
-    const [comboItem, regularItem] = catalog.products;
-    expect(comboItem?.imageUrl).toBe(
-      "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
-    );
-    expect(regularItem?.imageUrl).toBe(
-      "https://pub-3df551b85a3a4afaa8eb83412eb15375.r2.dev/products/test-connection-1792155403129.jpg"
+    expect(fetchFn).toHaveBeenCalledWith(
+      "/api/v1/branches/vergara/catalog?page=1&limit=24&isOnSale=true"
     );
   });
 });

@@ -1,8 +1,9 @@
 import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import type {
-  BranchCatalog,
+  BranchCatalogPage,
   CatalogBranch,
   CatalogCategory,
+  CatalogPageRequest,
   CatalogProduct,
   SaleUnit,
 } from "../types";
@@ -10,7 +11,10 @@ import { getMockBranchCatalog, getMockBranches } from "./mock-catalog";
 
 export interface CatalogRepository {
   getBranches(): Promise<CatalogBranch[]>;
-  getBranchCatalog(branchSlug: string): Promise<BranchCatalog>;
+  getBranchCatalogPage(
+    branchSlug: string,
+    request: CatalogPageRequest
+  ): Promise<BranchCatalogPage>;
 }
 
 interface ApiBranchItem {
@@ -49,39 +53,6 @@ interface ApiPublicCatalogResponse {
   totalPages: number;
 }
 
-interface ApiComboItem {
-  id?: string;
-  productId: string;
-  productName: string;
-  saleUnit: SaleUnit;
-  quantity: number;
-}
-
-interface ApiComboResponse {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrls?: string[];
-  imageUrl?: string | null;
-  price: number;
-  originalPrice?: number;
-  isActive?: boolean;
-  items: ApiComboItem[];
-}
-
-export const mockCatalogRepository: CatalogRepository = {
-  async getBranches() {
-    return getMockBranches();
-  },
-  async getBranchCatalog(branchSlug) {
-    const catalog = getMockBranchCatalog(branchSlug);
-    if (!catalog) {
-      throw new Error(`Branch "${branchSlug}" was not found.`);
-    }
-    return catalog;
-  },
-};
-
 function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProduct {
   return {
     id: item.id,
@@ -99,50 +70,59 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
   };
 }
 
-function mapApiComboToCatalogProduct(
-  combo: ApiComboResponse,
-  productMap?: Map<string, { price: number }>
-): CatalogProduct {
-  const imageUrl = combo.imageUrls?.[0] || combo.imageUrl || DEFAULT_PRODUCT_IMAGE;
+function createMockPage(
+  branchSlug: string,
+  request: CatalogPageRequest
+): BranchCatalogPage {
+  const catalog = getMockBranchCatalog(branchSlug);
+  if (!catalog) throw new Error(`Branch "${branchSlug}" was not found.`);
 
-  let originalPrice = combo.originalPrice;
-  if (!originalPrice && productMap && combo.items.length > 0) {
-    const sum = combo.items.reduce((acc, item) => {
-      const prod = productMap.get(item.productId);
-      return acc + (prod ? prod.price * item.quantity : 0);
-    }, 0);
-    if (sum > 0) {
-      originalPrice = sum;
+  const search = request.search?.trim().toLocaleLowerCase("es");
+  const category = request.categorySlug;
+  const matchingProducts = catalog.products.filter((product) => {
+    if (search && !product.name.toLocaleLowerCase("es").includes(search)) return false;
+    if (category) {
+      const categoryId = catalog.categories.find((item) => item.slug === category)?.id;
+      if (!categoryId || product.categoryId !== categoryId) return false;
     }
-  }
-
-  const price =
-    originalPrice !== undefined && originalPrice > combo.price
-      ? originalPrice
-      : combo.price;
-  const hasDiscount = price > combo.price;
-
+    if (request.isOnSale && product.promotionalPrice === null) return false;
+    return true;
+  });
+  const start = (request.page - 1) * request.limit;
   return {
-    id: combo.id,
-    categoryId: "__combos__",
-    name: combo.name,
-    description: combo.description,
-    saleUnit: "UNIT",
-    imageUrl,
-    price,
-    promotionalPrice: hasDiscount ? combo.price : null,
-    isCombo: true,
-    comboItems: combo.items.map((item) => {
-      const prod = productMap?.get(item.productId);
-      return {
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        saleUnit: item.saleUnit,
-        unitPrice: prod?.price,
-      };
-    }),
+    branch: catalog.branch,
+    categories: catalog.categories,
+    products: matchingProducts.slice(start, start + request.limit),
+    total: matchingProducts.length,
+    page: request.page,
+    limit: request.limit,
+    totalPages: Math.max(1, Math.ceil(matchingProducts.length / request.limit)),
   };
+}
+
+export const mockCatalogRepository: CatalogRepository = {
+  async getBranches() {
+    return getMockBranches();
+  },
+  async getBranchCatalogPage(branchSlug, request) {
+    return createMockPage(branchSlug, request);
+  },
+};
+
+function createCatalogUrl(
+  baseUrl: string,
+  branchSlug: string,
+  request: CatalogPageRequest
+): string {
+  const params = new URLSearchParams({
+    page: String(request.page),
+    limit: String(request.limit),
+  });
+  if (request.search?.trim()) params.set("search", request.search.trim());
+  if (request.categorySlug) params.set("categorySlug", request.categorySlug);
+  if (typeof request.isOnSale === "boolean")
+    params.set("isOnSale", String(request.isOnSale));
+  return `${baseUrl}/api/v1/branches/${encodeURIComponent(branchSlug)}/catalog?${params.toString()}`;
 }
 
 export function createHttpCatalogRepository(
@@ -155,98 +135,44 @@ export function createHttpCatalogRepository(
     async getBranches(): Promise<CatalogBranch[]> {
       try {
         const res = await fetchFn(`${normalizedBase}/api/v1/branches`);
-        if (!res.ok) {
-          throw new Error(`Failed to fetch branches (status ${res.status})`);
-        }
+        if (!res.ok) throw new Error(`Failed to fetch branches (status ${res.status})`);
         const data = (await res.json()) as ApiBranchItem[];
         return data
-          .filter((b) => b.isActive !== false)
-          .map((b) => ({
-            id: b.id,
-            name: b.name,
-            slug: b.slug,
-            address: b.address,
-            phone: b.phone,
-            whatsappNumber: b.whatsappNumber,
+          .filter((branch) => branch.isActive !== false)
+          .map(({ id, name, slug, address, phone, whatsappNumber }) => ({
+            id,
+            name,
+            slug,
+            address,
+            phone,
+            whatsappNumber,
           }));
-      } catch (err: unknown) {
+      } catch (error: unknown) {
         if (typeof window !== "undefined" && import.meta.env.MODE === "test") {
           return getMockBranches();
         }
-        throw err;
+        throw error;
       }
     },
 
-    async getBranchCatalog(branchSlug: string): Promise<BranchCatalog> {
-      const encodedSlug = encodeURIComponent(branchSlug);
-      const [catalogRes, combosRes] = await Promise.all([
-        fetchFn(
-          `${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`
-        ),
-        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog/combos`),
-      ]);
-
-      if (!catalogRes.ok) {
+    async getBranchCatalogPage(branchSlug, request): Promise<BranchCatalogPage> {
+      const response = await fetchFn(
+        createCatalogUrl(normalizedBase, branchSlug, request)
+      );
+      if (!response.ok) {
         throw new Error(
-          `Branch "${branchSlug}" was not found (status ${catalogRes.status}).`
+          `Branch "${branchSlug}" catalog failed (status ${response.status}).`
         );
       }
-
-      const firstPage = (await catalogRes.json()) as ApiPublicCatalogResponse;
-      const allItems: ApiCatalogProductItem[] = [...firstPage.items];
-
-      if (firstPage.totalPages > 1) {
-        const pagePromises: Promise<ApiPublicCatalogResponse>[] = [];
-        for (let page = 2; page <= firstPage.totalPages; page += 1) {
-          pagePromises.push(
-            fetchFn(
-              `${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=${page}&limit=100`
-            ).then((r) => {
-              if (!r.ok) {
-                throw new Error(`Failed to load catalog page ${page}`);
-              }
-              return r.json() as Promise<ApiPublicCatalogResponse>;
-            })
-          );
-        }
-        const remainingPages = await Promise.all(pagePromises);
-        for (const pageData of remainingPages) {
-          allItems.push(...pageData.items);
-        }
-      }
-
-      const productMap = new Map<string, { price: number }>();
-      for (const item of allItems) {
-        productMap.set(item.id, { price: item.price });
-      }
-
-      let comboProducts: CatalogProduct[] = [];
-      if (combosRes.ok) {
-        try {
-          const rawCombos = (await combosRes.json()) as unknown;
-          const comboList: ApiComboResponse[] = Array.isArray(rawCombos)
-            ? (rawCombos as ApiComboResponse[])
-            : rawCombos &&
-                typeof rawCombos === "object" &&
-                "combos" in rawCombos &&
-                Array.isArray((rawCombos as { combos: unknown[] }).combos)
-              ? (rawCombos as { combos: ApiComboResponse[] }).combos
-              : [];
-
-          comboProducts = comboList
-            .filter((combo) => combo.isActive !== false)
-            .map((combo) => mapApiComboToCatalogProduct(combo, productMap));
-        } catch {
-          // Ignore JSON parse errors for combos
-        }
-      }
-
-      const regularProducts = allItems.map(mapApiProductToCatalogProduct);
-
+      const payload = (await response.json()) as ApiPublicCatalogResponse;
       return {
-        branch: firstPage.branch,
-        categories: firstPage.categories,
-        products: [...comboProducts, ...regularProducts],
+        branch: payload.branch,
+        categories: payload.categories,
+        products: payload.items.map(mapApiProductToCatalogProduct),
+        total: payload.total,
+        page: payload.page,
+        limit: payload.limit,
+        totalPages: payload.totalPages,
       };
     },
   };
@@ -261,22 +187,18 @@ export const catalogRepository: CatalogRepository = isTestEnv
       async getBranches() {
         try {
           return await httpRepository.getBranches();
-        } catch (err) {
-          if (import.meta.env.DEV) {
-            return mockCatalogRepository.getBranches();
-          }
-          throw err;
+        } catch (error) {
+          if (import.meta.env.DEV) return mockCatalogRepository.getBranches();
+          throw error;
         }
       },
-      async getBranchCatalog(branchSlug: string) {
+      async getBranchCatalogPage(branchSlug, request) {
         try {
-          return await httpRepository.getBranchCatalog(branchSlug);
-        } catch (err) {
-          const mockFallback = getMockBranchCatalog(branchSlug);
-          if (import.meta.env.DEV && mockFallback) {
-            return mockFallback;
-          }
-          throw err;
+          return await httpRepository.getBranchCatalogPage(branchSlug, request);
+        } catch (error) {
+          if (import.meta.env.DEV)
+            return mockCatalogRepository.getBranchCatalogPage(branchSlug, request);
+          throw error;
         }
       },
     };

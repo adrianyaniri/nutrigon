@@ -53,6 +53,22 @@ export interface BranchCatalog {
   products: CatalogProduct[];
 }
 
+export interface CatalogPageRequest {
+  page: number;
+  limit: number;
+  search?: string;
+  categorySlug?: string;
+  isOnSale?: boolean;
+}
+
+/** A single API page for a branch catalog. Prices remain branch-specific. */
+export interface BranchCatalogPage extends BranchCatalog {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export type SortOption = "popular" | "price-asc" | "price-desc" | "name-asc";
 
 export interface CatalogFilters {

@@ -7,10 +7,9 @@ import { ProductImage } from "@/components/atoms/product-image";
 import { getEffectivePrice, isOnSale } from "@/features/catalog/lib/filter-products";
 import {
   calculatePortionPrice,
-  getPortionOptions,
-  referencePrice,
-  getPriceReferenceGrams,
+  getDefaultPortion,
   formatWeight,
+  portionGrams,
 } from "@/features/catalog/lib/portion-pricing";
 import type { CatalogProduct } from "@/features/catalog/types";
 import { formatPrice } from "@/lib/format/price";
@@ -22,19 +21,17 @@ interface ProductCardProps {
   onSelect?: (product: CatalogProduct) => void;
 }
 
-function describeSaleUnit(product: CatalogProduct): string {
+function describeSaleUnit(product: CatalogProduct, initialWeight?: number): string {
   if (product.isCombo) return "Combo · Precio especial";
   return product.saleUnit === "WEIGHT"
-    ? `Granel · Precio por ${formatWeight(getPriceReferenceGrams(product))}`
+    ? `Granel · Precio inicial ${formatWeight(initialWeight ?? 0)}`
     : "Venta por unidad";
 }
 
-function getUnitLabel(product: CatalogProduct): string {
+function getUnitLabel(product: CatalogProduct, initialWeight?: number): string {
   if (product.isCombo) return "/ combo";
   return product.saleUnit === "WEIGHT"
-    ? getPriceReferenceGrams(product) === 100
-      ? "/ 100 g"
-      : "/ kg"
+    ? `/ ${formatWeight(initialWeight ?? 0)}`
     : "/ un.";
 }
 
@@ -49,9 +46,10 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   const isClickable = Boolean(onSelect);
   const isWeight = product.saleUnit === "WEIGHT" && !product.isCombo;
   const effectivePrice = getEffectivePrice(product);
-  const minPortion = getPortionOptions(product)[0];
-  const minPortionPrice = isWeight && minPortion
-    ? calculatePortionPrice(effectivePrice, minPortion.value)
+  const defaultPortion = isWeight ? getDefaultPortion(product) : null;
+  const defaultWeightGrams = defaultPortion ? portionGrams(defaultPortion) : undefined;
+  const defaultPortionPrice = defaultPortion
+    ? calculatePortionPrice(effectivePrice, defaultPortion)
     : null;
 
   function handleAdd(e: React.MouseEvent) {
@@ -102,7 +100,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
 
       <div className="flex flex-col gap-1">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {describeSaleUnit(product)}
+          {describeSaleUnit(product, defaultWeightGrams)}
         </span>
         <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
           {product.name}
@@ -134,20 +132,19 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand-border/40 pt-3">
         <div className="flex flex-col">
           <PriceTag
-            price={isWeight ? referencePrice(effectivePrice, product) : effectivePrice}
+            price={defaultPortionPrice ?? effectivePrice}
             originalPrice={
               onSale
-                ? isWeight
-                  ? referencePrice(product.price, product)
+                ? defaultPortion
+                  ? calculatePortionPrice(product.price, defaultPortion)
                   : product.price
                 : undefined
             }
-            unitLabel={getUnitLabel(product)}
+            unitLabel={getUnitLabel(product, defaultWeightGrams)}
           />
-          {minPortion && minPortionPrice !== null && (
+          {isWeight && (
             <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
-              Desde {formatPrice(minPortionPrice)} /{" "}
-              {minPortion.value === "1kg" ? "1 kg" : minPortion.value}
+              Equivale a {formatPrice(effectivePrice)} / kg
             </span>
           )}
         </div>

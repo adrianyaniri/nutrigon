@@ -5,7 +5,9 @@ import type {
   CategoryOption,
 } from "../types";
 
-export function isOnSale(product: Pick<CatalogProduct, "price" | "promotionalPrice">): boolean {
+export function isOnSale(
+  product: Pick<CatalogProduct, "price" | "promotionalPrice">
+): boolean {
   return product.promotionalPrice !== null && product.promotionalPrice < product.price;
 }
 
@@ -74,7 +76,7 @@ export function filterAndSortProducts(
 export function buildCategoryOptions(
   categories: readonly CatalogCategory[],
   products: readonly CatalogProduct[],
-  config?: { includeSpecialFilters?: boolean }
+  config?: { includeSpecialFilters?: boolean; includeEmptyCategories?: boolean }
 ): CategoryOption[] {
   const countByCategory = new Map<string, number>();
   let offersCount = 0;
@@ -88,7 +90,10 @@ export function buildCategoryOptions(
     if (isOnSale(product)) {
       offersCount += 1;
     }
-    countByCategory.set(product.categoryId, (countByCategory.get(product.categoryId) ?? 0) + 1);
+    countByCategory.set(
+      product.categoryId,
+      (countByCategory.get(product.categoryId) ?? 0) + 1
+    );
   }
 
   const specialOptions: CategoryOption[] = [];
@@ -110,13 +115,19 @@ export function buildCategoryOptions(
   }
 
   const options: CategoryOption[] = categories
-    .filter((category) => (countByCategory.get(category.id) ?? 0) > 0)
+    .filter(
+      (category) =>
+        config?.includeEmptyCategories || (countByCategory.get(category.id) ?? 0) > 0
+    )
     .map((category) => ({
       value: category.slug,
       label: category.name,
       count: countByCategory.get(category.id) ?? 0,
     }));
 
-  return [{ value: null, label: "Todos", count: products.length }, ...specialOptions, ...options];
+  return [
+    { value: null, label: "Todos", count: products.length },
+    ...specialOptions,
+    ...options,
+  ];
 }
-

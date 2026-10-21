@@ -23,6 +23,7 @@ describe("BranchQrModal", () => {
     expect(screen.getByText(/QR Catálogo Sucursal Origone/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Copiar enlace/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Imprimir cartel/i })).toBeInTheDocument();
+    expect(screen.getByText("https://nutrigon.ar/catalogo/origone")).toBeInTheDocument();
   });
 
   it("calls onClose when close button is clicked", () => {
@@ -89,7 +90,9 @@ describe("BranchQrModal", () => {
       close: mockClose,
     };
 
-    const openSpy = vi.spyOn(window, "open").mockReturnValue(mockPrintWindow as unknown as Window);
+    const openSpy = vi
+      .spyOn(window, "open")
+      .mockReturnValue(mockPrintWindow as unknown as Window);
 
     render(<BranchQrModal isOpen={true} onClose={vi.fn()} branch={mockBranch} />);
 

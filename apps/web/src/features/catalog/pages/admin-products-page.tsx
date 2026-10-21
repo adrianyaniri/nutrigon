@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils/cn";
 import { BranchOfferModal } from "../components/branch-offer-modal";
 import { BranchProductRow } from "../components/branch-product-row";
 import {
+  calculatePortionPrice,
   getPriceReferenceGrams,
   referencePrice,
   toPricePerKg,
@@ -71,6 +72,7 @@ export function AdminProductsPage() {
 
   // Draft prices keyed by productId
   const [draftPrices, setDraftPrices] = useState<Record<string, string>>({});
+  const [priceReferences, setPriceReferences] = useState<Record<string, 100 | 1000>>({});
 
   // Offer Modal state
   const [offerModalItem, setOfferModalItem] = useState<BranchProductAdminItem | null>(
@@ -208,7 +210,23 @@ export function AdminProductsPage() {
   function getDraftPrice(item: BranchProductAdminItem): string {
     const existingDraft = draftPrices[item.productId];
     if (existingDraft !== undefined) return existingDraft;
-    return item.price !== null ? String(displayedPrice(item.price, item)) : "";
+    return item.price !== null
+      ? String(displayedPriceForReference(item.price, item, getPriceReference(item)))
+      : "";
+  }
+
+  function getPriceReference(item: BranchProductAdminItem): 100 | 1000 {
+    return priceReferences[item.productId] ?? getPriceReferenceGrams(item);
+  }
+
+  function displayedPriceForReference(
+    price: number,
+    item: BranchProductAdminItem,
+    reference: 100 | 1000
+  ): number {
+    return item.saleUnit === "WEIGHT"
+      ? calculatePortionPrice(price, reference === 100 ? "100g" : "1kg")
+      : price;
   }
 
   function handleDraftPriceChange(productId: string, value: string) {
@@ -216,6 +234,29 @@ export function AdminProductsPage() {
       ...prev,
       [productId]: value,
     }));
+  }
+
+  function handlePriceReferenceChange(item: BranchProductAdminItem, reference: 100 | 1000) {
+    const previousReference = getPriceReference(item);
+    if (item.saleUnit !== "WEIGHT" || previousReference === reference) return;
+
+    const existingDraft = draftPrices[item.productId];
+    const previousDisplay =
+      item.price === null
+        ? ""
+        : String(displayedPriceForReference(item.price, item, previousReference));
+    const canonicalPrice =
+      existingDraft === undefined || existingDraft === previousDisplay
+        ? item.price
+        : toPricePerKg(Number(existingDraft), previousReference);
+
+    setPriceReferences((previous) => ({ ...previous, [item.productId]: reference }));
+    if (canonicalPrice !== null && Number.isFinite(canonicalPrice)) {
+      setDraftPrices((previous) => ({
+        ...previous,
+        [item.productId]: String(displayedPriceForReference(canonicalPrice, item, reference)),
+      }));
+    }
   }
 
   function handleSavePrice(item: BranchProductAdminItem) {
@@ -233,7 +274,7 @@ export function AdminProductsPage() {
     if (
       !raw ||
       !Number.isFinite(inputPrice) ||
-      inputPrice < 0 ||
+      inputPrice <= 0 ||
       !/^\d*\.?\d{0,2}$/.test(raw) ||
       inputPrice > 9999999999.99
     ) {
@@ -243,10 +284,11 @@ export function AdminProductsPage() {
 
     // Saving an unchanged rounded reference must not reprice an existing kg amount.
     const numericPrice =
-      item.price !== null && inputPrice === displayedPrice(item.price, item)
+      item.price !== null &&
+      inputPrice === displayedPriceForReference(item.price, item, getPriceReference(item))
         ? item.price
         : item.saleUnit === "WEIGHT"
-          ? toPricePerKg(inputPrice, getPriceReferenceGrams(item))
+          ? toPricePerKg(inputPrice, getPriceReference(item))
           : inputPrice;
     if (numericPrice > 9999999999.99) {
       showFeedback("error", "El precio convertido por kilo supera el importe permitido.");
@@ -637,9 +679,11 @@ export function AdminProductsPage() {
                 key={item.productId}
                 item={item}
                 draftValue={getDraftPrice(item)}
+                priceReferenceGrams={getPriceReference(item)}
                 isSaving={upsertMutation.isPending}
                 isReadOnly={isGeneralAdmin}
                 onDraftPriceChange={handleDraftPriceChange}
+                onPriceReferenceChange={handlePriceReferenceChange}
                 onSavePrice={handleSavePrice}
                 onToggleAvailability={handleToggleAvailability}
                 onToggleFeatured={handleToggleFeatured}

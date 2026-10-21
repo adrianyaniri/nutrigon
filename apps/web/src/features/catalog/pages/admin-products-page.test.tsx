@@ -47,6 +47,60 @@ function renderAdminProductsPage() {
 
 describe("AdminProductsPage (Branch Pricing & Offers)", () => {
   afterEach(() => vi.restoreAllMocks());
+
+  it("switches WEIGHT price input between 100 g and 1 kg without changing the canonical price", async () => {
+    const item: BranchProductAdminItem = {
+      ...baseItem,
+      priceReferenceGrams: 1000,
+      price: 16000,
+      promotionalPrice: null,
+      isOnSale: false,
+    };
+    vi.spyOn(branchPricingRepository, "listProducts").mockResolvedValue({
+      items: [item],
+      total: 1,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+    });
+    const save = vi.spyOn(branchPricingRepository, "upsertProduct").mockResolvedValue({
+      id: "bp",
+      branchId: "b-centro",
+      productId: item.productId,
+      price: 16000,
+      promotionalPrice: null,
+      isOnSale: false,
+      isAvailable: true,
+      isFeatured: false,
+    });
+
+    renderAdminProductsPage();
+
+    const input = await screen.findByLabelText("Precio de Almendras Nonpareil");
+    const selector = screen.getByLabelText("Unidad de precio de Almendras Nonpareil");
+    expect(input).toHaveValue("16000");
+    expect(selector).toHaveValue("1000");
+    expect(screen.getByText(/Precio por 100 g:.*1\.600/)).toBeInTheDocument();
+    expect(screen.getByText(/Precio por 1 kg:.*16\.000/)).toBeInTheDocument();
+
+    fireEvent.change(selector, { target: { value: "100" } });
+    expect(input).toHaveValue("1600");
+    expect(screen.getByText("Precio por 100 g")).toBeInTheDocument();
+    expect(save).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Guardar precio de Almendras Nonpareil" })
+    );
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.any(String),
+        item.productId,
+        expect.any(String),
+        expect.objectContaining({ price: 16000 })
+      )
+    );
+  });
+
   it("does not reprice an unchanged rounded per100g reference", async () => {
     const item: BranchProductAdminItem = { ...baseItem, priceReferenceGrams: 100, price: 100.01 };
     vi.spyOn(branchPricingRepository, "listProducts").mockResolvedValue({

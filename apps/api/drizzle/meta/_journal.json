@@ -29,6 +29,13 @@
       "when": 1792545382266,
       "tag": "0003_special_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792607274083,
+      "tag": "0004_free_nextwave",
+      "breakpoints": true
     }
   ]
 }

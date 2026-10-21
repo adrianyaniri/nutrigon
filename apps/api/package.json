@@ -28,6 +28,12 @@
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/core/database/seed.ts",
     "db:seed:prod": "node dist/core/database/seed.js",
+    "db:seed:branches": "tsx src/core/database/branches.seed.ts",
+    "db:seed:branches:prod": "node dist/core/database/branches.seed.js",
+    "db:import:products": "tsx src/core/database/products.import.ts",
+    "db:import:products:prod": "node dist/core/database/products.import.js",
+    "db:import:branch-prices": "tsx src/core/database/branch-prices.import.ts",
+    "db:import:branch-prices:prod": "node dist/core/database/branch-prices.import.js",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

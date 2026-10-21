@@ -5,10 +5,15 @@ import type { Role } from "../types";
 
 interface ProtectedRouteProps {
   allowedRoles?: Role[];
+  unauthorizedRedirectTo?: string;
   children?: ReactNode;
 }
 
-export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
+export function ProtectedRoute({
+  allowedRoles,
+  unauthorizedRedirectTo = "/catalogo",
+  children,
+}: ProtectedRouteProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -29,7 +34,7 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/catalogo" replace />;
+    return <Navigate to={unauthorizedRedirectTo} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
