@@ -167,6 +167,16 @@ export function ProductModal({
                   <span className="font-headline text-2xl sm:text-3xl font-black text-primary tracking-tight">
                     {formatPrice(unitCalculatedPrice)}
                   </span>
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <span className="text-base sm:text-lg text-muted-foreground line-through decoration-muted-foreground/60">
+                      {formatPrice(product.price)}
+                    </span>
+                  )}
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <span className="inline-flex items-center text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Ahorrás {formatPrice(product.price - product.promotionalPrice)}
+                    </span>
+                  )}
                   <span className="text-xs text-muted-foreground">
                     {product.isCombo
                       ? "Precio por combo completo"
@@ -179,23 +189,52 @@ export function ProductModal({
 
               {/* Included items for Combos */}
               {product.isCombo && product.comboItems && product.comboItems.length > 0 && (
-                <div className="space-y-2 rounded-2xl border border-border bg-brand-surface/40 p-3.5">
-                  <span className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
-                    Productos incluidos en el combo
-                  </span>
-                  <ul className="space-y-1.5 text-xs text-foreground">
-                    {product.comboItems.map((item) => (
-                      <li
-                        key={item.productId}
-                        className="flex items-center justify-between"
-                      >
-                        <span>{item.productName}</span>
-                        <span className="font-semibold text-primary">
-                          {item.quantity} {item.saleUnit === "WEIGHT" ? "kg" : "un."}
-                        </span>
-                      </li>
-                    ))}
+                <div className="space-y-2.5 rounded-2xl border border-border bg-brand-surface/40 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+                      Productos incluidos en el combo
+                    </span>
+                    {product.promotionalPrice && product.price > product.promotionalPrice && (
+                      <span className="text-[11px] font-bold text-emerald-400 font-mono">
+                        Ahorro: {formatPrice(product.price - product.promotionalPrice)}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="space-y-2 text-xs text-foreground divide-y divide-border/40">
+                    {product.comboItems.map((item) => {
+                      const qtyLabel =
+                        item.saleUnit === "WEIGHT"
+                          ? item.quantity < 1
+                            ? `${Math.round(item.quantity * 1000)} g`
+                            : `${item.quantity} kg`
+                          : `${item.quantity} un.`;
+
+                      return (
+                        <li
+                          key={item.productId}
+                          className="flex items-center justify-between pt-1.5 first:pt-0"
+                        >
+                          <div className="flex flex-col pr-2">
+                            <span className="font-medium text-foreground">{item.productName}</span>
+                            {item.unitPrice ? (
+                              <span className="text-[11px] text-muted-foreground">
+                                Precio regular: {formatPrice(item.unitPrice * item.quantity)}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="font-semibold text-primary shrink-0 bg-surface-elevated px-2 py-0.5 rounded border border-border/40 text-xs">
+                            {qtyLabel}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <div className="pt-2.5 border-t border-border flex items-center justify-between text-xs font-semibold">
+                      <span className="text-muted-foreground">Suma precio regular individual:</span>
+                      <span className="text-muted-foreground line-through">{formatPrice(product.price)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 

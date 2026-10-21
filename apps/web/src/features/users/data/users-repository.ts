@@ -134,7 +134,15 @@ export function createHttpUsersRepository(baseUrl: string): UsersRepository {
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Error al crear encargado.");
+        let message = "Error al crear encargado.";
+        if (typeof errData.message === "string") {
+          message = errData.message;
+        } else if (Array.isArray(errData.message) && errData.message.length > 0) {
+          message = typeof errData.message[0] === "string" ? errData.message[0] : (errData.message[0]?.message ?? message);
+        } else if (Array.isArray(errData.errors) && errData.errors.length > 0) {
+          message = errData.errors[0]?.message ?? message;
+        }
+        throw new Error(message);
       }
       return res.json();
     },

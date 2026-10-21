@@ -23,6 +23,7 @@ export interface ComboItemSummary {
   productName: string;
   quantity: number;
   saleUnit: SaleUnit;
+  unitPrice?: number;
 }
 
 /**

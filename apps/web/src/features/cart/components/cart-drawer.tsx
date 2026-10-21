@@ -138,6 +138,8 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
 
     const whatsappUrl = buildWhatsAppOrderUrl(branch?.whatsappNumber, message);
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    clear();
+    onClose();
   }
 
   return (

@@ -45,6 +45,12 @@ export function useDialogFocusTrap<T extends HTMLElement = HTMLDivElement>({
   const fallbackRef = useRef<T>(null);
   const ref = (containerRef ?? fallbackRef) as React.RefObject<T | null>;
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  // Keep the latest onClose in a ref so inline callbacks don't re-run the effect
+  // (which would steal focus back to the first focusable element on every render).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -54,7 +60,7 @@ export function useDialogFocusTrap<T extends HTMLElement = HTMLDivElement>({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (closeOnEscape && event.key === "Escape") {
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -108,7 +114,7 @@ export function useDialogFocusTrap<T extends HTMLElement = HTMLDivElement>({
       }
       previouslyFocusedElementRef.current?.focus({ preventScroll: true });
     };
-  }, [isOpen, onClose, closeOnEscape, lockScroll, initialFocusSelector, ref]);
+  }, [isOpen, closeOnEscape, lockScroll, initialFocusSelector, ref]);
 
   return ref;
 }

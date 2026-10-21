@@ -99,9 +99,23 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
   };
 }
 
-function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
+function mapApiComboToCatalogProduct(
+  combo: ApiComboResponse,
+  productMap?: Map<string, { price: number }>
+): CatalogProduct {
   const imageUrl = combo.imageUrls?.[0] || combo.imageUrl || DEFAULT_PRODUCT_IMAGE;
-  const originalPrice = combo.originalPrice;
+
+  let originalPrice = combo.originalPrice;
+  if (!originalPrice && productMap && combo.items.length > 0) {
+    const sum = combo.items.reduce((acc, item) => {
+      const prod = productMap.get(item.productId);
+      return acc + (prod ? prod.price * item.quantity : 0);
+    }, 0);
+    if (sum > 0) {
+      originalPrice = sum;
+    }
+  }
+
   const hasDiscount = originalPrice !== undefined && originalPrice > combo.price;
 
   return {
@@ -114,12 +128,16 @@ function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
     price: hasDiscount ? originalPrice : combo.price,
     promotionalPrice: hasDiscount ? combo.price : null,
     isCombo: true,
-    comboItems: combo.items.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      quantity: item.quantity,
-      saleUnit: item.saleUnit,
-    })),
+    comboItems: combo.items.map((item) => {
+      const prod = productMap?.get(item.productId);
+      return {
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        saleUnit: item.saleUnit,
+        unitPrice: prod?.price,
+      };
+    }),
   };
 }
 
@@ -193,6 +211,11 @@ export function createHttpCatalogRepository(
         }
       }
 
+      const productMap = new Map<string, { price: number }>();
+      for (const item of allItems) {
+        productMap.set(item.id, { price: item.price });
+      }
+
       let comboProducts: CatalogProduct[] = [];
       if (combosRes.ok) {
         try {
@@ -208,7 +231,7 @@ export function createHttpCatalogRepository(
 
           comboProducts = comboList
             .filter((combo) => combo.isActive !== false)
-            .map(mapApiComboToCatalogProduct);
+            .map((combo) => mapApiComboToCatalogProduct(combo, productMap));
         } catch {
           // Ignore JSON parse errors for combos
         }
