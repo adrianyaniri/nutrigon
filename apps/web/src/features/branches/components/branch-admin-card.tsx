@@ -28,7 +28,6 @@ export interface BranchAdminCardProps {
 export function BranchAdminCard({
   branch,
   isTogglingStatus,
-  onNavigatePricing,
   onEdit,
   onShowQr,
   onToggleStatus,

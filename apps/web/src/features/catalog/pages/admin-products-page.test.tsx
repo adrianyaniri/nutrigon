@@ -4,9 +4,13 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { branchPricingRepository } from "@/features/pricing/data/branch-pricing-repository";
 import { INITIAL_MOCK_ITEMS } from "@/features/pricing/data/branch-pricing.mock";
+import type { BranchProductAdminItem } from "@/features/pricing/data/branch-pricing-repository";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role } from "@/features/auth/types";
 import { AdminProductsPage } from "./admin-products-page";
+
+const [baseItem] = INITIAL_MOCK_ITEMS;
+if (!baseItem) throw new Error("Expected a branch product fixture");
 
 function renderAdminProductsPage() {
   const queryClient = new QueryClient({
@@ -44,7 +48,7 @@ function renderAdminProductsPage() {
 describe("AdminProductsPage (Branch Pricing & Offers)", () => {
   afterEach(() => vi.restoreAllMocks());
   it("does not reprice an unchanged rounded per100g reference", async () => {
-    const item = { ...INITIAL_MOCK_ITEMS[0], priceReferenceGrams: 100, price: 100.01 };
+    const item: BranchProductAdminItem = { ...baseItem, priceReferenceGrams: 100, price: 100.01 };
     vi.spyOn(branchPricingRepository, "listProducts").mockResolvedValue({
       items: [item],
       total: 1,
@@ -81,8 +85,8 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     );
   });
   it("enters regular and offer prices per100g but saves canonical kg amounts", async () => {
-    const item = {
-      ...INITIAL_MOCK_ITEMS[0],
+    const item: BranchProductAdminItem = {
+      ...baseItem,
       priceReferenceGrams: 100,
       price: 10500,
       promotionalPrice: null,

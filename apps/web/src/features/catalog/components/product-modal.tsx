@@ -268,7 +268,9 @@ export function ProductModal({
                         );
                         if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                           const nextIndex = (currentIndex + 1) % portionOptions.length;
-                          setSelectedPortion(portionOptions[nextIndex].value);
+                          const option = portionOptions[nextIndex];
+                          if (!option) return;
+                          setSelectedPortion(option.value);
                           e.currentTarget
                             .querySelectorAll<HTMLButtonElement>('[role="radio"]')
                             [nextIndex]?.focus();
@@ -276,7 +278,9 @@ export function ProductModal({
                           const prevIndex =
                             (currentIndex - 1 + portionOptions.length) %
                             portionOptions.length;
-                          setSelectedPortion(portionOptions[prevIndex].value);
+                          const option = portionOptions[prevIndex];
+                          if (!option) return;
+                          setSelectedPortion(option.value);
                           e.currentTarget
                             .querySelectorAll<HTMLButtonElement>('[role="radio"]')
                             [prevIndex]?.focus();

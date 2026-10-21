@@ -133,17 +133,22 @@ export function AdminProductsPage() {
   }
 
   async function invalidateBranchQueries() {
-    await Promise.all([
+    const invalidations = [
       queryClient.invalidateQueries({
         queryKey: ["admin", "branch-products", branchId],
       }),
       queryClient.invalidateQueries({
         queryKey: ["admin", "branch-products-counts", branchId],
       }),
-      queryClient.invalidateQueries({
-        queryKey: catalogKeys.branch(activeBranch.slug),
-      }),
-    ]);
+    ];
+    if (activeBranch) {
+      invalidations.push(
+        queryClient.invalidateQueries({
+          queryKey: catalogKeys.branch(activeBranch.slug),
+        })
+      );
+    }
+    await Promise.all(invalidations);
   }
 
   const upsertMutation = useMutation({

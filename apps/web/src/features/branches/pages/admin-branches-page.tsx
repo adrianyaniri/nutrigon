@@ -29,7 +29,7 @@ import type {
 } from "../types";
 
 export function AdminBranchesPage() {
-  const { user, token, setSelectedBranchSlug } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 

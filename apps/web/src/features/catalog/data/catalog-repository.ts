@@ -116,7 +116,11 @@ function mapApiComboToCatalogProduct(
     }
   }
 
-  const hasDiscount = originalPrice !== undefined && originalPrice > combo.price;
+  const price =
+    originalPrice !== undefined && originalPrice > combo.price
+      ? originalPrice
+      : combo.price;
+  const hasDiscount = price > combo.price;
 
   return {
     id: combo.id,
@@ -125,7 +129,7 @@ function mapApiComboToCatalogProduct(
     description: combo.description,
     saleUnit: "UNIT",
     imageUrl,
-    price: hasDiscount ? originalPrice : combo.price,
+    price,
     promotionalPrice: hasDiscount ? combo.price : null,
     isCombo: true,
     comboItems: combo.items.map((item) => {

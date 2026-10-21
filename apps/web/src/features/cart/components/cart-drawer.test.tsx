@@ -36,13 +36,16 @@ const mockProducts: CatalogProduct[] = [
   },
 ];
 
+const [almondProduct] = mockProducts;
+if (!almondProduct) throw new Error("Expected an almond product fixture");
+
 describe("CartDrawer", () => {
   it.each([undefined, "250g", "invalid"])(
     "blocks checkout for missing or obsolete weight %s",
     (portion) => {
       const open = vi.spyOn(window, "open").mockImplementation(() => null);
-      const spice = {
-        ...mockProducts[0],
+      const spice: CatalogProduct = {
+        ...almondProduct,
         weightOptionsGrams: [25, 50, 75, 100],
         defaultWeightGrams: 25,
         priceReferenceGrams: 100,
@@ -83,8 +86,8 @@ describe("CartDrawer", () => {
 
   it("keeps configured spice portions separate and sends exact cart totals", () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
-    const spice = {
-      ...mockProducts[0],
+    const spice: CatalogProduct = {
+      ...almondProduct,
       weightOptionsGrams: [25, 50],
       defaultWeightGrams: 25,
       price: 10500,
@@ -113,7 +116,9 @@ describe("CartDrawer", () => {
     fireEvent.click(screen.getByText("Add spice"));
     expect(screen.getByText(/75 g en total/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Enviar Pedido por WhatsApp/ }));
-    const message = decodeURIComponent(String(open.mock.calls[0][0]));
+    const [call] = open.mock.calls;
+    if (!call) throw new Error("Expected checkout to open WhatsApp");
+    const message = decodeURIComponent(String(call[0]));
     expect(message).toContain("787,50");
     expect(message).toContain("1.312,50");
     expect(message).toContain("25g");

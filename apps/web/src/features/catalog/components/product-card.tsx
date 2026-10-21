@@ -50,7 +50,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   const isWeight = product.saleUnit === "WEIGHT" && !product.isCombo;
   const effectivePrice = getEffectivePrice(product);
   const minPortion = getPortionOptions(product)[0];
-  const minPortionPrice = isWeight
+  const minPortionPrice = isWeight && minPortion
     ? calculatePortionPrice(effectivePrice, minPortion.value)
     : null;
 
@@ -144,7 +144,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
             }
             unitLabel={getUnitLabel(product)}
           />
-          {minPortionPrice !== null && (
+          {minPortion && minPortionPrice !== null && (
             <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
               Desde {formatPrice(minPortionPrice)} /{" "}
               {minPortion.value === "1kg" ? "1 kg" : minPortion.value}

@@ -648,7 +648,7 @@ export function AdminCombosPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmCombo && (
+      {deleteConfirmCombo && activeBranch && (
         <div
           role="dialog"
           aria-modal="true"
