@@ -1,9 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProductsService } from './products.service.js';
-import type { IProductsRepository, PaginatedResult } from './products.repository.interface.js';
+import type {
+  IProductsRepository,
+  PaginatedResult,
+} from './products.repository.interface.js';
 import type { ICategoriesRepository } from '../categories/categories.repository.interface.js';
-import type { ProductEntity, NewProductEntity } from '../../core/database/schema/products.js';
+import type {
+  ProductEntity,
+  NewProductEntity,
+} from '../../core/database/schema/products.js';
 import type { CategoryEntity } from '../../core/database/schema/categories.js';
 import type { ProductQueryDto } from './dto/product.dto.js';
 import { SaleUnit } from '@nutrigon/contracts';
@@ -11,7 +21,9 @@ import { SaleUnit } from '@nutrigon/contracts';
 class InMemoryProductsRepository implements IProductsRepository {
   public items: ProductEntity[] = [];
 
-  async findMany(query: ProductQueryDto): Promise<PaginatedResult<ProductEntity>> {
+  async findMany(
+    query: ProductQueryDto,
+  ): Promise<PaginatedResult<ProductEntity>> {
     let filtered = [...this.items];
 
     if (query.search) {
@@ -60,6 +72,9 @@ class InMemoryProductsRepository implements IProductsRepository {
       name: data.name,
       description: data.description ?? null,
       saleUnit: data.saleUnit,
+      weightOptionsGrams: data.weightOptionsGrams ?? [100, 250, 500, 1000],
+      defaultWeightGrams: data.defaultWeightGrams ?? 250,
+      priceReferenceGrams: data.priceReferenceGrams ?? 1000,
       imageUrls: data.imageUrls ?? [],
       isActive: data.isActive ?? true,
       createdAt: new Date(),
@@ -69,7 +84,10 @@ class InMemoryProductsRepository implements IProductsRepository {
     return item;
   }
 
-  async update(id: string, data: Partial<NewProductEntity>): Promise<ProductEntity | null> {
+  async update(
+    id: string,
+    data: Partial<NewProductEntity>,
+  ): Promise<ProductEntity | null> {
     const index = this.items.findIndex((p) => p.id === id);
     if (index === -1) return null;
 
@@ -150,7 +168,11 @@ describe('ProductsService (TDD)', () => {
       await seedProduct({ name: 'Almendras Non Pareil' });
       await seedProduct({ name: 'Castañas de Cajú' });
 
-      const result = await service.findMany({ search: 'nuez', page: 1, limit: 10 });
+      const result = await service.findMany({
+        search: 'nuez',
+        page: 1,
+        limit: 10,
+      });
 
       expect(result.items).toHaveLength(1);
       expect(result.items[0]!.name).toBe('Nuez Mariposa');
@@ -186,6 +208,21 @@ describe('ProductsService (TDD)', () => {
   });
 
   describe('create', () => {
+    it('persists spice settings with a per-100-g price reference', async () => {
+      const settings = {
+        weightOptionsGrams: [25, 50, 75, 100],
+        defaultWeightGrams: 25,
+        priceReferenceGrams: 100 as const,
+      };
+      const created = await service.create({
+        categoryId: validCategory.id,
+        name: 'Canela',
+        saleUnit: SaleUnit.WEIGHT,
+        imageUrls: [],
+        ...settings,
+      });
+      expect(created).toMatchObject(settings);
+    });
     it('should create master product when category exists', async () => {
       const created = await service.create({
         categoryId: validCategory.id,
@@ -244,6 +281,31 @@ describe('ProductsService (TDD)', () => {
   });
 
   describe('update', () => {
+    it('rejects a partial default outside persisted weights without modifying data', async () => {
+      const seeded = await seedProduct();
+      const before = structuredClone(productsRepo.items);
+      await expect(
+        service.update(seeded.id, { defaultWeightGrams: 25 }),
+      ).rejects.toThrow(BadRequestException);
+      expect(productsRepo.items).toEqual(before);
+    });
+
+    it('rejects weights that exclude the persisted default', async () => {
+      const seeded = await seedProduct();
+      await expect(
+        service.update(seeded.id, { weightOptionsGrams: [25, 50] }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('accepts a coordinated change of weights and default', async () => {
+      const seeded = await seedProduct();
+      expect(
+        await service.update(seeded.id, {
+          weightOptionsGrams: [25, 50],
+          defaultWeightGrams: 25,
+        }),
+      ).toMatchObject({ weightOptionsGrams: [25, 50], defaultWeightGrams: 25 });
+    });
     it('should update product successfully', async () => {
       const seeded = await seedProduct();
 
@@ -266,9 +328,9 @@ describe('ProductsService (TDD)', () => {
       const prod1 = await seedProduct({ code: 'COD-1' });
       await seedProduct({ code: 'COD-2' });
 
-      await expect(
-        service.update(prod1.id, { code: 'COD-2' }),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.update(prod1.id, { code: 'COD-2' })).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 

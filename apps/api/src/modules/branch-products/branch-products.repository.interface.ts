@@ -10,6 +10,9 @@ import type { BranchProductQueryDto } from './dto/branch-product.dto.js';
 export const BRANCH_PRODUCTS_REPOSITORY = Symbol('BRANCH_PRODUCTS_REPOSITORY');
 
 export interface BranchProductAdminRow {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
   productId: string;
   name: string;
   description: string | null;
@@ -27,6 +30,9 @@ export interface BranchProductAdminRow {
 }
 
 export interface BranchCatalogRow {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
   id: string;
   name: string;
   description: string | null;

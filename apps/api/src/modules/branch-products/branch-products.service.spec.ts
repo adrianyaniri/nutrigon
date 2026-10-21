@@ -40,7 +40,9 @@ const makeBranch = (overrides: Partial<BranchEntity> = {}): BranchEntity => ({
   ...overrides,
 });
 
-const makeProduct = (overrides: Partial<ProductEntity> = {}): ProductEntity => ({
+const makeProduct = (
+  overrides: Partial<ProductEntity> = {},
+): ProductEntity => ({
   id: PRODUCT_ID,
   categoryId: CATEGORY_ID,
   code: null,
@@ -142,7 +144,8 @@ describe('BranchProductsService', () => {
 
     const branchesRepo = {
       findById: async (id: string) => branches.find((b) => b.id === id) ?? null,
-      findBySlug: async (slug: string) => branches.find((b) => b.slug === slug) ?? null,
+      findBySlug: async (slug: string) =>
+        branches.find((b) => b.slug === slug) ?? null,
     } as unknown as IBranchesRepository;
 
     const productsRepo = {
@@ -153,7 +156,12 @@ describe('BranchProductsService', () => {
       listPublicForBranch: async (_slug: string) => publicCombos,
     } as unknown as CombosService;
 
-    service = new BranchProductsService(repo, branchesRepo, productsRepo, combosService);
+    service = new BranchProductsService(
+      repo,
+      branchesRepo,
+      productsRepo,
+      combosService,
+    );
   });
 
   describe('listForBranch', () => {
@@ -256,14 +264,20 @@ describe('BranchProductsService', () => {
   describe('upsert', () => {
     it('throws NotFound when the branch does not exist', async () => {
       await expect(
-        service.upsert('missing', PRODUCT_ID, { price: 100, isAvailable: true }),
+        service.upsert('missing', PRODUCT_ID, {
+          price: 100,
+          isAvailable: true,
+        }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('throws NotFound when the branch is inactive', async () => {
       branches = [makeBranch({ isActive: false })];
       await expect(
-        service.upsert(BRANCH_ID, PRODUCT_ID, { price: 100, isAvailable: true }),
+        service.upsert(BRANCH_ID, PRODUCT_ID, {
+          price: 100,
+          isAvailable: true,
+        }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
@@ -276,7 +290,10 @@ describe('BranchProductsService', () => {
     it('rejects configuring a deactivated master product', async () => {
       products = [makeProduct({ isActive: false })];
       await expect(
-        service.upsert(BRANCH_ID, PRODUCT_ID, { price: 100, isAvailable: true }),
+        service.upsert(BRANCH_ID, PRODUCT_ID, {
+          price: 100,
+          isAvailable: true,
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -394,9 +411,9 @@ describe('BranchProductsService', () => {
 
     it('throws NotFound for an inactive branch', async () => {
       branches = [makeBranch({ isActive: false })];
-      await expect(service.getPublicCatalog('centro', {})).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        service.getPublicCatalog('centro', {}),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('returns branch metadata, active categories, and mapped items with numeric prices', async () => {
@@ -418,6 +435,9 @@ describe('BranchProductsService', () => {
             name: 'Almendras',
             saleUnit: SaleUnit.WEIGHT,
             price: '5000.00',
+            weightOptionsGrams: [25, 50, 75, 100],
+            defaultWeightGrams: 25,
+            priceReferenceGrams: 100,
           },
           {
             ...base,
@@ -445,7 +465,15 @@ describe('BranchProductsService', () => {
       expect(result.categories).toEqual([
         { id: CATEGORY_ID, name: 'Frutos secos', slug: 'frutos-secos' },
       ]);
-      expect(result.items[0]).toMatchObject({ price: 5000, priceUnitLabel: 'kg' });
+      expect(result.items[0]).toMatchObject({
+        price: 5000,
+        priceUnitLabel: 'kg',
+      });
+      expect(result.items[0]).toMatchObject({
+        weightOptionsGrams: [25, 50, 75, 100],
+        defaultWeightGrams: 25,
+        priceReferenceGrams: 100,
+      });
       expect(result.items[1]).toMatchObject({
         price: 800,
         promotionalPrice: 700,
