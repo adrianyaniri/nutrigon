@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button";
 import type { BranchProductAdminItem } from "@/features/pricing/data/branch-pricing-repository";
 import { useDialogFocusTrap } from "@/hooks";
 import { formatPrice } from "@/lib/format/price";
+import {
+  getPriceReferenceGrams,
+  formatWeight,
+  referencePrice,
+} from "../lib/portion-pricing";
 
 export interface BranchOfferModalProps {
   item: BranchProductAdminItem | null;
@@ -32,6 +37,12 @@ export function BranchOfferModal({
   });
 
   if (!item) return null;
+  const unit =
+    item.saleUnit === "WEIGHT" ? formatWeight(getPriceReferenceGrams(item)) : "unidad";
+  const regular =
+    item.saleUnit === "WEIGHT"
+      ? referencePrice(item.price ?? 0, item)
+      : (item.price ?? 0);
 
   return (
     <div
@@ -78,12 +89,9 @@ export function BranchOfferModal({
         </div>
 
         <div className="rounded-xl border border-outline/60 bg-surface p-3.5 flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">
-            Precio regular ({item.saleUnit === "WEIGHT" ? "por 1 kg" : "por unidad"}):
-          </span>
+          <span className="text-muted-foreground">Precio regular (por {unit}):</span>
           <span className="font-headline text-sm font-bold text-foreground">
-            {formatPrice(item.price ?? 0)}{" "}
-            {item.saleUnit === "WEIGHT" ? "/ kg" : "/ un."}
+            {formatPrice(regular)} / {unit}
           </span>
         </div>
 
@@ -92,7 +100,7 @@ export function BranchOfferModal({
             htmlFor="promoPriceField"
             className="block text-xs font-semibold text-foreground"
           >
-            Precio promocional de oferta ({item.saleUnit === "WEIGHT" ? "$ / kg" : "$ / un."})
+            Precio promocional de oferta ($ / {unit})
           </label>
           <div className="relative flex items-center">
             <span className="pointer-events-none absolute left-3.5 text-sm font-bold text-brand-gold-text">
@@ -101,8 +109,8 @@ export function BranchOfferModal({
             <input
               id="promoPriceField"
               type="number"
-              min="1"
-              step="10"
+              min="0.01"
+              step="0.01"
               value={promoPriceInput}
               onChange={(e) => onPromoPriceInputChange(e.target.value)}
               onKeyDown={(e) => {
@@ -116,19 +124,15 @@ export function BranchOfferModal({
             />
             {item.price &&
               Number(promoPriceInput) > 0 &&
-              Number(promoPriceInput) < item.price && (
+              Number(promoPriceInput) < regular && (
                 <span className="absolute right-3 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[11px] font-bold text-brand-gold-text">
-                  -
-                  {Math.round(
-                    ((item.price - Number(promoPriceInput)) / item.price) * 100
-                  )}
-                  %
+                  -{Math.round(((regular - Number(promoPriceInput)) / regular) * 100)}%
                 </span>
               )}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            En el catálogo público se mostrará el precio regular tachado junto con la insignia de{" "}
-            <strong className="text-brand-gold-text">Oferta</strong>.
+            En el catálogo público se mostrará el precio regular tachado junto con la
+            insignia de <strong className="text-brand-gold-text">Oferta</strong>.
           </p>
         </div>
 

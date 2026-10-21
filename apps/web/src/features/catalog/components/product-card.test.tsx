@@ -15,17 +15,36 @@ const base: CatalogProduct = {
 };
 
 describe("ProductCard", () => {
+  it("shows the configured reference and the actual smallest purchasable spice portion", () => {
+    render(
+      <ProductCard
+        product={{
+          ...base,
+          price: 10500,
+          priceReferenceGrams: 100,
+          weightOptionsGrams: [25, 50, 75, 100],
+          defaultWeightGrams: 25,
+        }}
+      />
+    );
+    expect(screen.getByText("Granel · Precio por 100 g")).toBeInTheDocument();
+    expect(screen.getByText("/ 100 g")).toBeInTheDocument();
+    expect(screen.getByText(/Desde.*262,50.*25g/)).toBeInTheDocument();
+    expect(screen.getByText(/1\.050/)).toBeInTheDocument();
+  });
   afterEach(() => {
     cleanup();
   });
 
   it("shows name, sale unit, starting 100g portion price, and kg price for WEIGHT products", () => {
     render(<ProductCard product={base} />);
-    expect(screen.getByRole("heading", { name: "Almendras Nonpareil" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Almendras Nonpareil" })
+    ).toBeInTheDocument();
     expect(screen.getByText("Granel · Precio por 1 kg")).toBeInTheDocument();
     expect(screen.getByText("/ kg")).toBeInTheDocument();
     expect(screen.getByText(/1\.450/)).toBeInTheDocument();
-    expect(screen.getByText(/Desde.*150.*\/ 100g/)).toBeInTheDocument();
+    expect(screen.getByText(/Desde.*145.*\/ 100g/)).toBeInTheDocument();
     expect(screen.queryByText("Oferta")).not.toBeInTheDocument();
   });
 
@@ -39,7 +58,9 @@ describe("ProductCard", () => {
   it("renders an 'Elegir' button for WEIGHT products without false 'added' checkmark", () => {
     const onAdd = vi.fn();
     render(<ProductCard product={base} onAdd={onAdd} />);
-    const chooseBtn = screen.getByRole("button", { name: "Elegir gramos de Almendras Nonpareil" });
+    const chooseBtn = screen.getByRole("button", {
+      name: "Elegir gramos de Almendras Nonpareil",
+    });
     fireEvent.click(chooseBtn);
     expect(onAdd).toHaveBeenCalledWith(base);
     expect(
@@ -71,7 +92,9 @@ describe("ProductCard", () => {
     const onSelect = vi.fn();
     render(<ProductCard product={base} onSelect={onSelect} />);
 
-    const card = screen.getByRole("button", { name: "Ver detalle de Almendras Nonpareil" });
+    const card = screen.getByRole("button", {
+      name: "Ver detalle de Almendras Nonpareil",
+    });
     fireEvent.keyDown(card, { key: "Enter" });
     expect(onSelect).toHaveBeenCalledWith(base);
   });
@@ -86,7 +109,9 @@ describe("ProductCard", () => {
       price: 1200,
     };
     render(<ProductCard product={unitProduct} onAdd={onAdd} />);
-    const addBtn = screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" });
+    const addBtn = screen.getByRole("button", {
+      name: "Agregar Galletas de Arroz al pedido",
+    });
     fireEvent.click(addBtn);
     expect(onAdd).toHaveBeenCalledWith(unitProduct);
     expect(

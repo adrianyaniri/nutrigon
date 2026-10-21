@@ -5,7 +5,12 @@ import { ProductImage } from "@/components/atoms/product-image";
 import { useCart } from "@/features/cart";
 import {
   calculatePortionPrice,
-  PORTION_OPTIONS,
+  getPortionOptions,
+  getDefaultPortion,
+  referencePrice,
+  getPriceReferenceGrams,
+  formatWeight,
+  multiplyPrice,
   type WeightPortion,
 } from "@/features/catalog/lib/portion-pricing";
 import { getEffectivePrice } from "@/features/catalog/lib/filter-products";
@@ -30,7 +35,12 @@ export function ProductModal({
   categories,
 }: ProductModalProps) {
   const { addProduct } = useCart();
-  const [selectedPortion, setSelectedPortion] = useState<WeightPortion>("250g");
+  const defaultPortion = getDefaultPortion(product ?? {});
+  const [portionChoice, setSelectedPortion] = useState<WeightPortion>(defaultPortion);
+  const portionOptions = getPortionOptions(product ?? {});
+  const selectedPortion = portionOptions.some((option) => option.value === portionChoice)
+    ? portionChoice
+    : defaultPortion;
   const [quantity, setQuantity] = useState(1);
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
 
@@ -44,11 +54,11 @@ export function ProductModal({
   // Reset state when opening a new product
   useEffect(() => {
     if (isOpen) {
-      setSelectedPortion("250g");
+      setSelectedPortion(defaultPortion);
       setQuantity(1);
       setIsAddedFeedback(false);
     }
-  }, [isOpen, product?.id]);
+  }, [isOpen, product?.id, defaultPortion]);
 
   const categoryName = useMemo(() => {
     if (!product) return "Dietética";
@@ -64,7 +74,7 @@ export function ProductModal({
   const unitCalculatedPrice = isWeight
     ? calculatePortionPrice(baseEffectivePrice, selectedPortion)
     : baseEffectivePrice;
-  const totalPrice = unitCalculatedPrice * quantity;
+  const totalPrice = multiplyPrice(unitCalculatedPrice, quantity);
 
   function handleAddToCart() {
     if (!product) return;
@@ -161,7 +171,7 @@ export function ProductModal({
                     {product.isCombo
                       ? "Precio por combo completo"
                       : isWeight
-                        ? `Por ${selectedPortion} · Precio por 1 kg: ${formatPrice(baseEffectivePrice)}`
+                        ? `Por ${selectedPortion} · Precio por ${formatWeight(getPriceReferenceGrams(product))}: ${formatPrice(referencePrice(baseEffectivePrice, product))}`
                         : "Precio por unidad"}
                   </span>
                 </div>
@@ -175,7 +185,10 @@ export function ProductModal({
                   </span>
                   <ul className="space-y-1.5 text-xs text-foreground">
                     {product.comboItems.map((item) => (
-                      <li key={item.productId} className="flex items-center justify-between">
+                      <li
+                        key={item.productId}
+                        className="flex items-center justify-between"
+                      >
                         <span>{item.productName}</span>
                         <span className="font-semibold text-primary">
                           {item.quantity} {item.saleUnit === "WEIGHT" ? "kg" : "un."}
@@ -205,34 +218,52 @@ export function ProductModal({
                     role="radiogroup"
                     aria-labelledby={portionLabelId}
                     onKeyDown={(e) => {
-                      if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+                      if (
+                        ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(
+                          e.key
+                        )
+                      ) {
                         e.preventDefault();
-                        const currentIndex = PORTION_OPTIONS.findIndex((o) => o.value === selectedPortion);
+                        const currentIndex = portionOptions.findIndex(
+                          (o) => o.value === selectedPortion
+                        );
                         if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-                          const nextIndex = (currentIndex + 1) % PORTION_OPTIONS.length;
-                          setSelectedPortion(PORTION_OPTIONS[nextIndex].value);
+                          const nextIndex = (currentIndex + 1) % portionOptions.length;
+                          setSelectedPortion(portionOptions[nextIndex].value);
+                          e.currentTarget
+                            .querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                            [nextIndex]?.focus();
                         } else {
-                          const prevIndex = (currentIndex - 1 + PORTION_OPTIONS.length) % PORTION_OPTIONS.length;
-                          setSelectedPortion(PORTION_OPTIONS[prevIndex].value);
+                          const prevIndex =
+                            (currentIndex - 1 + portionOptions.length) %
+                            portionOptions.length;
+                          setSelectedPortion(portionOptions[prevIndex].value);
+                          e.currentTarget
+                            .querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                            [prevIndex]?.focus();
                         }
                       }
                     }}
                     className="grid grid-cols-2 gap-2 sm:gap-2.5"
                   >
-                    {PORTION_OPTIONS.map((option) => {
+                    {portionOptions.map((option) => {
                       const isSelected = selectedPortion === option.value;
-                      const optPrice = calculatePortionPrice(baseEffectivePrice, option.value);
+                      const optPrice = calculatePortionPrice(
+                        baseEffectivePrice,
+                        option.value
+                      );
 
                       return (
                         <button
                           key={option.value}
                           type="button"
                           role="radio"
+                          aria-label={`${option.value} ${formatPrice(optPrice)}`}
                           aria-checked={isSelected}
                           tabIndex={isSelected ? 0 : -1}
                           onClick={() => setSelectedPortion(option.value)}
                           className={cn(
-                            "flex flex-col justify-between p-3 rounded-xl border text-left transition-all active:scale-[0.98]",
+                            "flex min-h-[44px] flex-col justify-between p-3 rounded-xl border text-left transition-all active:scale-[0.98]",
                             isSelected
                               ? "border-primary bg-primary/10 text-foreground font-semibold shadow-xs"
                               : "border-border bg-brand-surface/40 text-muted-foreground hover:border-border/80 hover:text-foreground"
@@ -256,7 +287,9 @@ export function ProductModal({
                             <span
                               className={cn(
                                 "font-headline text-xs font-semibold tabular-nums",
-                                isSelected ? "text-primary font-bold" : "text-muted-foreground"
+                                isSelected
+                                  ? "text-primary font-bold"
+                                  : "text-muted-foreground"
                               )}
                             >
                               {formatPrice(optPrice)}
@@ -340,9 +373,7 @@ export function ProductModal({
                 ) : (
                   <>
                     <ShoppingBag className="size-5" />
-                    <span>
-                      Agregar al Pedido · {formatPrice(totalPrice)}
-                    </span>
+                    <span>Agregar al Pedido · {formatPrice(totalPrice)}</span>
                   </>
                 )}
               </Button>

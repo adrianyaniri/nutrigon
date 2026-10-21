@@ -24,6 +24,9 @@ interface ApiBranchItem {
 }
 
 interface ApiCatalogProductItem {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
   id: string;
   categoryId: string;
   name: string;
@@ -86,6 +89,9 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
     name: item.name,
     description: item.description,
     saleUnit: item.saleUnit,
+    weightOptionsGrams: item.weightOptionsGrams,
+    defaultWeightGrams: item.defaultWeightGrams,
+    priceReferenceGrams: item.priceReferenceGrams,
     imageUrl: item.imageUrls[0] || DEFAULT_PRODUCT_IMAGE,
     price: item.price,
     promotionalPrice: item.isOnSale ? item.promotionalPrice : null,
@@ -152,12 +158,16 @@ export function createHttpCatalogRepository(
     async getBranchCatalog(branchSlug: string): Promise<BranchCatalog> {
       const encodedSlug = encodeURIComponent(branchSlug);
       const [catalogRes, combosRes] = await Promise.all([
-        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`),
+        fetchFn(
+          `${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`
+        ),
         fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog/combos`),
       ]);
 
       if (!catalogRes.ok) {
-        throw new Error(`Branch "${branchSlug}" was not found (status ${catalogRes.status}).`);
+        throw new Error(
+          `Branch "${branchSlug}" was not found (status ${catalogRes.status}).`
+        );
       }
 
       const firstPage = (await catalogRes.json()) as ApiPublicCatalogResponse;
@@ -190,11 +200,11 @@ export function createHttpCatalogRepository(
           const comboList: ApiComboResponse[] = Array.isArray(rawCombos)
             ? (rawCombos as ApiComboResponse[])
             : rawCombos &&
-              typeof rawCombos === "object" &&
-              "combos" in rawCombos &&
-              Array.isArray((rawCombos as { combos: unknown[] }).combos)
-            ? (rawCombos as { combos: ApiComboResponse[] }).combos
-            : [];
+                typeof rawCombos === "object" &&
+                "combos" in rawCombos &&
+                Array.isArray((rawCombos as { combos: unknown[] }).combos)
+              ? (rawCombos as { combos: ApiComboResponse[] }).combos
+              : [];
 
           comboProducts = comboList
             .filter((combo) => combo.isActive !== false)

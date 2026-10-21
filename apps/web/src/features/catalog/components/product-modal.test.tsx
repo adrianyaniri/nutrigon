@@ -40,6 +40,40 @@ const mockUnitProduct: CatalogProduct = {
 };
 
 describe("ProductModal", () => {
+  it("shows configured spice weights, per100g reference and exact cent totals", () => {
+    const spice = {
+      ...mockWeightProduct,
+      price: 10500,
+      weightOptionsGrams: [25, 50, 75, 100],
+      defaultWeightGrams: 25,
+      priceReferenceGrams: 100,
+    };
+    render(
+      <CartProvider>
+        <ProductModal
+          isOpen
+          onClose={() => {}}
+          product={spice}
+          branch={mockBranch}
+          categories={mockCategories}
+        />
+      </CartProvider>
+    );
+    expect(screen.getAllByRole("radio")).toHaveLength(4);
+    expect(screen.getByRole("radio", { name: /25g/ })).toHaveAttribute(
+      "aria-checked",
+      "true"
+    );
+    expect(screen.queryByRole("radio", { name: /250g/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Precio por 100 g:/)).toHaveTextContent(/1\.050/);
+    expect(
+      screen.getByRole("button", { name: /Agregar al Pedido.*262,50/ })
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar paquetes" }));
+    expect(
+      screen.getByRole("button", { name: /Agregar al Pedido.*525/ })
+    ).toBeInTheDocument();
+  });
   it("renders weight product with grammage selector and dynamic price calculation", () => {
     const onClose = vi.fn();
     render(
@@ -58,9 +92,13 @@ describe("ProductModal", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
     expect(screen.getByText("Frutos Secos")).toBeInTheDocument();
-    expect(screen.getByText("Almendras tostadas de primera calidad.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Almendras tostadas de primera calidad.")
+    ).toBeInTheDocument();
     expect(screen.getByText(/Precio por 1 kg:/i)).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })
+    ).toBeInTheDocument();
 
     // Default portion is 250g (0.25 of 10000 = $2.500), appears in main price and 250g card
     expect(screen.getAllByText(/2\.500/).length).toBeGreaterThanOrEqual(1);
@@ -70,14 +108,18 @@ describe("ProductModal", () => {
     fireEvent.click(portion500g);
 
     expect(screen.getAllByText(/5\.000/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("button", { name: /Agregar al Pedido.*5\.000/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Agregar al Pedido.*5\.000/i })
+    ).toBeInTheDocument();
 
     // Increase pack count to 2
     const incrementBtn = screen.getByRole("button", { name: "Aumentar paquetes" });
     fireEvent.click(incrementBtn);
 
     // 5000 * 2 = 10000 -> $10.000
-    expect(screen.getByRole("button", { name: /Agregar al Pedido.*10\.000/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Agregar al Pedido.*10\.000/i })
+    ).toBeInTheDocument();
 
     // Add to cart
     const addBtn = screen.getByRole("button", { name: /Agregar al Pedido/i });

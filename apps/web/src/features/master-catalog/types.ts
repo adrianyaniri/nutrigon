@@ -1,4 +1,5 @@
 import type { SaleUnit } from "@/features/catalog/types";
+import type { WeightConfiguration } from "@/features/catalog/lib/portion-pricing";
 
 export interface MasterCategory {
   id: string;
@@ -23,7 +24,7 @@ export interface UpdateCategoryInput {
   isActive?: boolean;
 }
 
-export interface MasterProduct {
+export interface MasterProduct extends WeightConfiguration {
   id: string;
   categoryId: string;
   code: string | null;
@@ -53,7 +54,7 @@ export interface MasterProductsQuery {
   limit?: number;
 }
 
-export interface CreateMasterProductInput {
+export interface CreateMasterProductInput extends WeightConfiguration {
   categoryId: string;
   code?: string | null;
   name: string;
@@ -63,7 +64,7 @@ export interface CreateMasterProductInput {
   imageUrls?: string[];
 }
 
-export interface UpdateMasterProductInput {
+export interface UpdateMasterProductInput extends WeightConfiguration {
   categoryId?: string;
   code?: string | null;
   name?: string;
@@ -87,10 +88,7 @@ export interface MasterCatalogRepository {
     token: string,
     query?: MasterProductsQuery
   ): Promise<PaginatedMasterProducts>;
-  createProduct(
-    token: string,
-    input: CreateMasterProductInput
-  ): Promise<MasterProduct>;
+  createProduct(token: string, input: CreateMasterProductInput): Promise<MasterProduct>;
   updateProduct(
     token: string,
     productId: string,

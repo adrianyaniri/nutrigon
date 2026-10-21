@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import type { BranchProductAdminItem } from "@/features/pricing/data/branch-pricing-repository";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
+import {
+  referencePrice,
+  formatWeight,
+  getPriceReferenceGrams,
+  calculatePortionPrice,
+  toPricePerKg,
+} from "../lib/portion-pricing";
 
 export interface BranchProductRowProps {
   item: BranchProductAdminItem;
@@ -29,13 +36,20 @@ export const BranchProductRow = memo(function BranchProductRow({
   onToggleFeatured,
   onOpenOfferModal,
 }: BranchProductRowProps) {
-  const unitSuffix = item.saleUnit === "WEIGHT" ? "/ kg" : "/ un.";
+  const reference = getPriceReferenceGrams(item);
+  const displayPrice = (price: number) =>
+    item.saleUnit === "WEIGHT" ? referencePrice(price, item) : price;
+  const unitSuffix =
+    item.saleUnit === "WEIGHT" ? (reference === 100 ? "/ 100 g" : "/ kg") : "/ un.";
   const unitBadge =
     item.saleUnit === "WEIGHT"
-      ? "Granel · Precio por 1 kg"
+      ? `Granel · Precio por ${formatWeight(reference)}`
       : "Venta por unidad";
   const isConfigured = item.price !== null && item.price > 0;
-  const savedPriceStr = item.price !== null && item.price !== undefined ? String(item.price) : "";
+  const savedPriceStr =
+    item.price !== null && item.price !== undefined
+      ? String(displayPrice(item.price))
+      : "";
   const isDirty = draftValue.trim() !== "" && draftValue.trim() !== savedPriceStr;
 
   return (
@@ -82,7 +96,7 @@ export const BranchProductRow = memo(function BranchProductRow({
               <span className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 border border-brand-gold/30 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-gold shrink-0">
                 <Sparkles className="size-2.5 shrink-0" aria-hidden="true" />
                 <span>
-                  Oferta {formatPrice(item.promotionalPrice)} {unitSuffix}
+                  Oferta {formatPrice(displayPrice(item.promotionalPrice))} {unitSuffix}
                 </span>
               </span>
             )}
@@ -120,11 +134,13 @@ export const BranchProductRow = memo(function BranchProductRow({
                 Precio Sucursal
               </span>
               <p className="font-headline text-base sm:text-lg font-bold text-brand-gold tabular-nums">
-                {isConfigured ? `${formatPrice(item.price!)} ${unitSuffix}` : "Sin precio asignado"}
+                {isConfigured
+                  ? `${formatPrice(displayPrice(item.price!))} ${unitSuffix}`
+                  : "Sin precio asignado"}
               </p>
               {item.saleUnit === "WEIGHT" && isConfigured && (
                 <span className="text-[11px] text-muted-foreground font-medium block tabular-nums">
-                  ({formatPrice(Math.round(item.price! / 10))} / 100g)
+                  ({formatPrice(calculatePortionPrice(item.price!, "100g"))} / 100g)
                 </span>
               )}
             </div>
@@ -148,7 +164,7 @@ export const BranchProductRow = memo(function BranchProductRow({
                     value={draftValue}
                     onChange={(e) => {
                       const sanitized = e.target.value.replace(/,/g, ".");
-                      if (/^[0-9]*\.?[0-9]*$/.test(sanitized)) {
+                      if (/^[0-9]*\.?[0-9]{0,2}$/.test(sanitized)) {
                         onDraftPriceChange(item.productId, sanitized);
                       }
                     }}
@@ -190,7 +206,8 @@ export const BranchProductRow = memo(function BranchProductRow({
                   disabled={isSaving}
                   className={cn(
                     "h-11 min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 shrink-0 transition-all focus-visible:ring-2 focus-visible:ring-brand-gold",
-                    isDirty && "bg-brand-gold text-brand-dark hover:bg-brand-gold-hover shadow-lg shadow-brand-gold/20"
+                    isDirty &&
+                      "bg-brand-gold text-brand-dark hover:bg-brand-gold-hover shadow-lg shadow-brand-gold/20"
                   )}
                 >
                   <Check className="size-3.5" aria-hidden="true" />
@@ -202,8 +219,10 @@ export const BranchProductRow = memo(function BranchProductRow({
               {item.saleUnit === "WEIGHT" && (
                 <span className="text-[11px] text-brand-muted font-medium tabular-nums pl-1 mt-1 block">
                   {Number(draftValue || item.price || 0) > 0
-                    ? `Equiv. ${formatPrice(Math.round(Number(draftValue || item.price || 0) / 10))} / 100g`
-                    : "Ingresá precio por 1 kg"}
+                    ? reference === 100
+                      ? `Equiv. ${formatPrice(toPricePerKg(Number(draftValue || 0), 100))} / kg`
+                      : `Equiv. ${formatPrice(calculatePortionPrice(Number(draftValue || 0), "100g"))} / 100g`
+                    : `Ingresá precio por ${formatWeight(reference)}`}
                   {isDirty && (
                     <span className="ml-1.5 text-amber-400 font-semibold text-[10px] uppercase tracking-wider">
                       · Sin guardar
@@ -217,7 +236,11 @@ export const BranchProductRow = memo(function BranchProductRow({
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                aria-label={item.isFeatured ? `Quitar de destacados a ${item.name}` : `Destacar ${item.name}`}
+                aria-label={
+                  item.isFeatured
+                    ? `Quitar de destacados a ${item.name}`
+                    : `Destacar ${item.name}`
+                }
                 title={
                   isConfigured
                     ? item.isFeatured
@@ -242,11 +265,15 @@ export const BranchProductRow = memo(function BranchProductRow({
 
               <button
                 type="button"
-                aria-label={item.isOnSale ? `Editar oferta de ${item.name}` : `Configurar oferta para ${item.name}`}
+                aria-label={
+                  item.isOnSale
+                    ? `Editar oferta de ${item.name}`
+                    : `Configurar oferta para ${item.name}`
+                }
                 title={
                   isConfigured
                     ? item.isOnSale
-                      ? `Oferta activa: ${formatPrice(item.promotionalPrice ?? 0)} (clic para editar)`
+                      ? `Oferta activa: ${formatPrice(displayPrice(item.promotionalPrice ?? 0))} (clic para editar)`
                       : "Configurar oferta para este producto"
                     : "Guardá primero un precio base para habilitar ofertas"
                 }
@@ -266,7 +293,9 @@ export const BranchProductRow = memo(function BranchProductRow({
                 type="button"
                 onClick={() => onToggleAvailability(item)}
                 disabled={isSaving}
-                aria-label={item.isAvailable ? `Pausar ${item.name}` : `Activar ${item.name}`}
+                aria-label={
+                  item.isAvailable ? `Pausar ${item.name}` : `Activar ${item.name}`
+                }
                 title={
                   item.isAvailable
                     ? "Pausar producto en esta sucursal"

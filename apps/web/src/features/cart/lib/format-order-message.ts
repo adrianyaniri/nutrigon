@@ -1,5 +1,6 @@
 import { formatPrice } from "@/lib/format/price";
 import type { SaleUnit } from "@/features/catalog/types";
+import { portionGrams, formatWeight } from "@/features/catalog/lib/portion-pricing";
 
 export interface OrderItem {
   name: string;
@@ -21,7 +22,9 @@ export interface FormatOrderMessageParams {
 
 function describeSaleUnit(unit: SaleUnit, portion?: string): string {
   if (unit === "WEIGHT") {
-    return portion ? `Granel · ${portion}` : "Granel · 100 g";
+    if (!portion) throw new Error("Weight portion is required");
+    portionGrams(portion);
+    return `Granel · ${portion}`;
   }
   return "Unidad";
 }
@@ -37,7 +40,7 @@ export function formatWhatsAppOrderMessage({
   const itemsList = items
     .map(
       (item) =>
-        `• ${item.quantity}x ${item.name} (${describeSaleUnit(item.saleUnit, item.portion)}) — ${formatPrice(item.lineTotal)}`
+        `• ${item.quantity}x ${item.name} (${describeSaleUnit(item.saleUnit, item.portion)})${item.saleUnit === "WEIGHT" ? ` · ${formatWeight(portionGrams(item.portion!) * item.quantity)} en total · ${formatPrice(item.unitPrice)} por paquete` : ""} — ${formatPrice(item.lineTotal)}`
     )
     .join("\n");
 

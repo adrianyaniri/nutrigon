@@ -5,7 +5,13 @@ import { IconButton } from "@/components/atoms/icon-button";
 import { PriceTag } from "@/components/atoms/price-tag";
 import { ProductImage } from "@/components/atoms/product-image";
 import { getEffectivePrice, isOnSale } from "@/features/catalog/lib/filter-products";
-import { calculatePortionPrice } from "@/features/catalog/lib/portion-pricing";
+import {
+  calculatePortionPrice,
+  getPortionOptions,
+  referencePrice,
+  getPriceReferenceGrams,
+  formatWeight,
+} from "@/features/catalog/lib/portion-pricing";
 import type { CatalogProduct } from "@/features/catalog/types";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
@@ -18,12 +24,18 @@ interface ProductCardProps {
 
 function describeSaleUnit(product: CatalogProduct): string {
   if (product.isCombo) return "Combo · Precio especial";
-  return product.saleUnit === "WEIGHT" ? "Granel · Precio por 1 kg" : "Venta por unidad";
+  return product.saleUnit === "WEIGHT"
+    ? `Granel · Precio por ${formatWeight(getPriceReferenceGrams(product))}`
+    : "Venta por unidad";
 }
 
 function getUnitLabel(product: CatalogProduct): string {
   if (product.isCombo) return "/ combo";
-  return product.saleUnit === "WEIGHT" ? "/ kg" : "/ un.";
+  return product.saleUnit === "WEIGHT"
+    ? getPriceReferenceGrams(product) === 100
+      ? "/ 100 g"
+      : "/ kg"
+    : "/ un.";
 }
 
 /**
@@ -37,7 +49,10 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   const isClickable = Boolean(onSelect);
   const isWeight = product.saleUnit === "WEIGHT" && !product.isCombo;
   const effectivePrice = getEffectivePrice(product);
-  const minPortionPrice = isWeight ? calculatePortionPrice(effectivePrice, "100g") : null;
+  const minPortion = getPortionOptions(product)[0];
+  const minPortionPrice = isWeight
+    ? calculatePortionPrice(effectivePrice, minPortion.value)
+    : null;
 
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
@@ -68,7 +83,10 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
             <>
               {product.isFeatured && (
                 <Badge variant="featured" className="shadow-sm flex items-center gap-1">
-                  <Star className="size-3 fill-brand-dark text-brand-dark" aria-hidden="true" />
+                  <Star
+                    className="size-3 fill-brand-dark text-brand-dark"
+                    aria-hidden="true"
+                  />
                   <span>Destacado</span>
                 </Badge>
               )}
@@ -110,21 +128,26 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
           {cardBody}
         </button>
       ) : (
-        <div className="flex w-full flex-col gap-3 rounded-xl text-left">
-          {cardBody}
-        </div>
+        <div className="flex w-full flex-col gap-3 rounded-xl text-left">{cardBody}</div>
       )}
 
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand-border/40 pt-3">
         <div className="flex flex-col">
           <PriceTag
-            price={effectivePrice}
-            originalPrice={onSale ? product.price : undefined}
+            price={isWeight ? referencePrice(effectivePrice, product) : effectivePrice}
+            originalPrice={
+              onSale
+                ? isWeight
+                  ? referencePrice(product.price, product)
+                  : product.price
+                : undefined
+            }
             unitLabel={getUnitLabel(product)}
           />
           {minPortionPrice !== null && (
             <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
-              Desde {formatPrice(minPortionPrice)} / 100g
+              Desde {formatPrice(minPortionPrice)} /{" "}
+              {minPortion.value === "1kg" ? "1 kg" : minPortion.value}
             </span>
           )}
         </div>
@@ -156,7 +179,10 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               )}
             >
               {isAddedFeedback ? (
-                <Check className="size-5 animate-in zoom-in-50 duration-150" aria-hidden="true" />
+                <Check
+                  className="size-5 animate-in zoom-in-50 duration-150"
+                  aria-hidden="true"
+                />
               ) : (
                 <Plus className="size-5" aria-hidden="true" />
               )}
@@ -166,5 +192,3 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
     </article>
   );
 }
-
-

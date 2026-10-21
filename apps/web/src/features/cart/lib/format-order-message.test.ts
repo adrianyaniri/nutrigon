@@ -2,6 +2,48 @@ import { describe, expect, it } from "vitest";
 import { formatWhatsAppOrderMessage } from "./format-order-message";
 
 describe("formatWhatsAppOrderMessage", () => {
+  it("includes exact cents, package weight and total weight for spices", () => {
+    const message = formatWhatsAppOrderMessage({
+      branchName: "Centro",
+      items: [
+        {
+          name: "Canela",
+          quantity: 3,
+          saleUnit: "WEIGHT",
+          portion: "25g",
+          unitPrice: 262.5,
+          lineTotal: 787.5,
+        },
+      ],
+      total: 787.5,
+      fulfillment: "pickup",
+      customerName: "Ana",
+    });
+    expect(message).toContain("3x Canela (Granel · 25g)");
+    expect(message).toContain("75 g en total");
+    expect(message).toContain("262,50 por paquete");
+    expect(message).toContain("787,50");
+  });
+
+  it("rejects missing weight instead of inventing a 100g portion", () => {
+    expect(() =>
+      formatWhatsAppOrderMessage({
+        branchName: "Centro",
+        items: [
+          {
+            name: "Canela",
+            quantity: 1,
+            saleUnit: "WEIGHT",
+            unitPrice: 262.5,
+            lineTotal: 262.5,
+          },
+        ],
+        total: 262.5,
+        fulfillment: "pickup",
+        customerName: "Ana",
+      })
+    ).toThrow("Weight portion is required");
+  });
   it("formats order message with items, pickup fulfillment and customer details", () => {
     const message = formatWhatsAppOrderMessage({
       branchName: "Centro",
@@ -10,6 +52,7 @@ describe("formatWhatsAppOrderMessage", () => {
           name: "Almendras Nonpareil",
           quantity: 2,
           saleUnit: "WEIGHT",
+          portion: "100g",
           unitPrice: 1450,
           lineTotal: 2900,
         },
@@ -28,7 +71,7 @@ describe("formatWhatsAppOrderMessage", () => {
     });
 
     expect(message).toContain("¡Hola Nutrigon (Sucursal Centro)! 👋");
-    expect(message).toContain("• 2x Almendras Nonpareil (Granel · 100 g)");
+    expect(message).toContain("• 2x Almendras Nonpareil (Granel · 100g)");
     expect(message).toContain("• 1x Galletas de Arroz (Unidad)");
     expect(message).toContain("Total estimado:");
     expect(message).toContain("Modalidad: Retiro en mostrador (sin costo)");
@@ -44,6 +87,7 @@ describe("formatWhatsAppOrderMessage", () => {
           name: "Nueces Mariposa",
           quantity: 1,
           saleUnit: "WEIGHT",
+          portion: "100g",
           unitPrice: 1600,
           lineTotal: 1600,
         },
@@ -90,4 +134,3 @@ describe("formatWhatsAppOrderMessage", () => {
     expect(message).not.toContain("100 g");
   });
 });
-

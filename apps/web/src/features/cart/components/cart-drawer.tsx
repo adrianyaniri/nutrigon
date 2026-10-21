@@ -27,7 +27,14 @@ import { useDialogFocusTrap } from "@/hooks";
 import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 
-import { calculatePortionPrice } from "@/features/catalog/lib/portion-pricing";
+import {
+  calculatePortionPrice,
+  getPortionOptions,
+  portionGrams,
+  formatWeight,
+  multiplyPrice,
+  sumPrices,
+} from "@/features/catalog/lib/portion-pricing";
 
 export interface CartDrawerProps {
   isOpen: boolean;
@@ -37,11 +44,25 @@ export interface CartDrawerProps {
 }
 
 function describeSaleUnit(unit: SaleUnit): string {
-  return unit === "WEIGHT" ? "Granel · 1 kg" : "Unidad";
+  return unit === "WEIGHT" ? "Peso sin seleccionar" : "Unidad";
+}
+
+function hasValidPortion(product: CatalogProduct, portion?: string): boolean {
+  if (product.saleUnit !== "WEIGHT") return !portion;
+  if (!portion) return false;
+  try {
+    const grams = portionGrams(portion);
+    return getPortionOptions(product).some(
+      (option) => portionGrams(option.value) === grams
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProps) {
-  const { state, itemCount, addProduct, decrementProduct, removeProduct, clear } = useCart();
+  const { state, itemCount, addProduct, decrementProduct, removeProduct, clear } =
+    useCart();
   const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">("pickup");
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
@@ -64,12 +85,15 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
         const product = productMap.get(line.productId);
         if (!product) return null;
         const basePrice = getEffectivePrice(product);
-        const unitPrice =
-          product.saleUnit === "WEIGHT" && line.portion
+        const isValid = hasValidPortion(product, line.portion);
+        const unitPrice = !isValid
+          ? 0
+          : product.saleUnit === "WEIGHT" && line.portion
             ? calculatePortionPrice(basePrice, line.portion)
             : basePrice;
-        const lineTotal = unitPrice * line.quantity;
+        const lineTotal = multiplyPrice(unitPrice, line.quantity);
         return {
+          isValid,
           product,
           quantity: line.quantity,
           portion: line.portion,
@@ -81,15 +105,19 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
   }, [state.lines, products]);
 
   const totalAmount = useMemo(
-    () => cartItems.reduce((acc, item) => acc + item.lineTotal, 0),
+    () => sumPrices(cartItems.map((item) => item.lineTotal)),
     [cartItems]
   );
 
   if (!isOpen) return null;
 
+  const hasInvalidItems =
+    cartItems.length !== state.lines.length || cartItems.some((item) => !item.isValid);
+
   const branchName = branch?.name ?? "Principal";
 
   function handleSendWhatsApp() {
+    if (hasInvalidItems || !cartItems.length) return;
     const orderItems: OrderItem[] = cartItems.map((item) => ({
       name: item.product.name,
       quantity: item.quantity,
@@ -226,6 +254,16 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
             </div>
           </div>
 
+          {hasInvalidItems && (
+            <p
+              role="alert"
+              className="rounded-xl border border-destructive p-3 text-sm text-foreground"
+            >
+              Revisá las cantidades: hay productos o pesos que ya no están disponibles.
+              Eliminá los ítems afectados y volvé a elegirlos en el catálogo antes de
+              enviar el pedido.
+            </p>
+          )}
           {/* Cart Items List */}
           {cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -236,7 +274,8 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                 Tu pedido está vacío
               </h3>
               <p className="mt-1.5 max-w-xs text-xs text-muted-foreground leading-relaxed">
-                Elegí frutos secos, harinas o semillas en el catálogo para armar tu pedido.
+                Elegí frutos secos, harinas o semillas en el catálogo para armar tu
+                pedido.
               </p>
               <Button
                 variant="outline"
@@ -253,72 +292,84 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
               </p>
 
               <div className="divide-y divide-border/60 rounded-2xl border border-border bg-brand-surface/30 overflow-hidden">
-                {cartItems.map(({ product, quantity, portion, unitPrice, lineTotal }) => (
-                  <div
-                    key={portion ? `${product.id}:${portion}` : product.id}
-                    className="flex items-center gap-3 p-3 sm:p-4 transition-colors hover:bg-brand-surface/60"
-                  >
-                    <div className="size-16 sm:size-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-brand-surface">
-                      <ProductImage src={product.imageUrl} alt={product.name} />
-                    </div>
-
-                    <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
-                      <div className="flex items-start justify-between gap-1">
-                        <div className="min-w-0">
-                          <h4 className="font-headline text-xs sm:text-sm font-bold text-foreground truncate">
-                            {product.name}
-                          </h4>
-                          <span className="mt-0.5 inline-block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            {portion
-                              ? `Granel · ${portion}`
-                              : describeSaleUnit(product.saleUnit)}{" "}
-                            · {formatPrice(unitPrice)}
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => removeProduct(product.id, portion)}
-                          aria-label={`Eliminar ${product.name}`}
-                          className="flex min-h-[44px] min-w-[44px] items-center justify-center -mr-2 text-muted-foreground hover:text-destructive transition-colors active:scale-90"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
+                {cartItems.map(
+                  ({ product, quantity, portion, unitPrice, lineTotal, isValid }) => (
+                    <div
+                      key={portion ? `${product.id}:${portion}` : product.id}
+                      className="flex items-center gap-3 p-3 sm:p-4 transition-colors hover:bg-brand-surface/60"
+                    >
+                      <div className="size-16 sm:size-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-brand-surface">
+                        <ProductImage src={product.imageUrl} alt={product.name} />
                       </div>
 
-                      <div className="mt-2.5 flex items-center justify-between">
-                        {/* Stepper (min 44px touch area) */}
-                        <div className="inline-flex items-center rounded-full border border-border bg-card shadow-2xs">
+                      <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
+                        <div className="flex items-start justify-between gap-1">
+                          <div className="min-w-0">
+                            <h4 className="font-headline text-xs sm:text-sm font-bold text-foreground truncate">
+                              {product.name}
+                            </h4>
+                            <span className="mt-0.5 inline-block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {portion
+                                ? `Granel · ${portion}`
+                                : describeSaleUnit(product.saleUnit)}{" "}
+                              ·{" "}
+                              {isValid
+                                ? formatPrice(unitPrice)
+                                : "Cantidad no disponible"}
+                            </span>
+                            {isValid && product.saleUnit === "WEIGHT" && portion && (
+                              <span className="block text-xs text-muted-foreground">
+                                {quantity} × {formatWeight(portionGrams(portion))} ·{" "}
+                                {formatWeight(portionGrams(portion) * quantity)} en total
+                              </span>
+                            )}
+                          </div>
+
                           <button
                             type="button"
-                            onClick={() => decrementProduct(product.id, portion)}
-                            aria-label={`Disminuir cantidad de ${product.name}`}
-                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                            onClick={() => removeProduct(product.id, portion)}
+                            aria-label={`Eliminar ${product.name}`}
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center -mr-2 text-muted-foreground hover:text-destructive transition-colors active:scale-90"
                           >
-                            <span className="text-base font-bold leading-none">−</span>
-                          </button>
-                          <span className="min-w-6 px-1 text-center text-xs font-bold tabular-nums text-foreground select-none">
-                            {quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (branch?.slug) addProduct(branch.slug, product.id, 1, portion);
-                            }}
-                            aria-label={`Aumentar cantidad de ${product.name}`}
-                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
-                          >
-                            <span className="text-base font-bold leading-none">+</span>
+                            <Trash2 className="size-4" />
                           </button>
                         </div>
 
-                        <span className="font-headline text-sm font-bold text-primary tracking-tight">
-                          {formatPrice(lineTotal)}
-                        </span>
+                        <div className="mt-2.5 flex items-center justify-between">
+                          {/* Stepper (min 44px touch area) */}
+                          <div className="inline-flex items-center rounded-full border border-border bg-card shadow-2xs">
+                            <button
+                              type="button"
+                              onClick={() => decrementProduct(product.id, portion)}
+                              aria-label={`Disminuir cantidad de ${product.name}`}
+                              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                            >
+                              <span className="text-base font-bold leading-none">−</span>
+                            </button>
+                            <span className="min-w-6 px-1 text-center text-xs font-bold tabular-nums text-foreground select-none">
+                              {quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (branch?.slug)
+                                  addProduct(branch.slug, product.id, 1, portion);
+                              }}
+                              aria-label={`Aumentar cantidad de ${product.name}`}
+                              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                            >
+                              <span className="text-base font-bold leading-none">+</span>
+                            </button>
+                          </div>
+
+                          <span className="font-headline text-sm font-bold text-primary tracking-tight">
+                            {isValid ? formatPrice(lineTotal) : "Revisar peso"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           )}
@@ -337,7 +388,9 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                   role="radiogroup"
                   aria-labelledby={fulfillmentLabelId}
                   onKeyDown={(e) => {
-                    if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+                    if (
+                      ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)
+                    ) {
                       e.preventDefault();
                       setFulfillment(fulfillment === "pickup" ? "delivery" : "pickup");
                     }
@@ -358,8 +411,12 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                     )}
                   >
                     <Store className="size-4 text-primary" aria-hidden="true" />
-                    <span className="text-xs font-semibold leading-tight">Retiro en mostrador</span>
-                    <span className="text-[11px] text-muted-foreground font-normal">Sin costo</span>
+                    <span className="text-xs font-semibold leading-tight">
+                      Retiro en mostrador
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-normal">
+                      Sin costo
+                    </span>
                   </button>
 
                   <button
@@ -376,8 +433,12 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                     )}
                   >
                     <Bike className="size-4 text-primary" aria-hidden="true" />
-                    <span className="text-xs font-semibold leading-tight">Envío a domicilio</span>
-                    <span className="text-[11px] text-muted-foreground font-normal">A coordinar</span>
+                    <span className="text-xs font-semibold leading-tight">
+                      Envío a domicilio
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-normal">
+                      A coordinar
+                    </span>
                   </button>
                 </div>
               </div>
@@ -455,13 +516,19 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
           <footer className="border-t border-border bg-card/95 p-4 sm:p-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] space-y-3">
             <div className="space-y-1.5 text-xs text-muted-foreground">
               <div className="flex justify-between">
-                <span>Subtotal ({itemCount} {itemCount === 1 ? "ítem" : "ítems"})</span>
-                <span className="font-semibold text-foreground">{formatPrice(totalAmount)}</span>
+                <span>
+                  Subtotal ({itemCount} {itemCount === 1 ? "ítem" : "ítems"})
+                </span>
+                <span className="font-semibold text-foreground">
+                  {hasInvalidItems ? "Pendiente de revisión" : formatPrice(totalAmount)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Modalidad</span>
                 <span className="font-semibold text-primary">
-                  {fulfillment === "pickup" ? "Retiro en mostrador (Gratis)" : "Envío a coordinar"}
+                  {fulfillment === "pickup"
+                    ? "Retiro en mostrador (Gratis)"
+                    : "Envío a coordinar"}
                 </span>
               </div>
             </div>
@@ -471,21 +538,28 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
                 Total Estimado
               </span>
               <span className="font-headline text-2xl font-black text-primary tracking-tight">
-                {formatPrice(totalAmount)}
+                {hasInvalidItems ? "Revisar pedido" : formatPrice(totalAmount)}
               </span>
             </div>
 
             <Button
               className="w-full min-h-[48px] rounded-xl bg-primary text-primary-foreground hover:bg-brand-gold-hover font-headline font-bold text-sm tracking-wide shadow-lg shadow-brand-gold/15 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               onClick={handleSendWhatsApp}
+              disabled={hasInvalidItems}
             >
               <Send className="size-4" />
               <span>Enviar Pedido por WhatsApp</span>
-              <span className="text-xs font-normal opacity-90 hidden sm:inline">· Sucursal {branchName}</span>
+              <span className="text-xs font-normal opacity-90 hidden sm:inline">
+                · Sucursal {branchName}
+              </span>
             </Button>
 
             <p className="text-[11px] text-center text-muted-foreground">
-              Se abrirá WhatsApp directo con <strong className="font-semibold text-foreground">Sucursal {branchName}</strong> para confirmar tu pedido.
+              Se abrirá WhatsApp directo con{" "}
+              <strong className="font-semibold text-foreground">
+                Sucursal {branchName}
+              </strong>{" "}
+              para confirmar tu pedido.
             </p>
           </footer>
         )}
