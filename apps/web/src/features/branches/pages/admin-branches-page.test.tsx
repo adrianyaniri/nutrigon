@@ -189,18 +189,6 @@ describe("AdminBranchesPage (Branch Management for ADMIN_GENERAL)", () => {
     expect(screen.queryByRole("heading", { name: "Nueva Sucursal" })).not.toBeInTheDocument();
   });
 
-  it("navigates to branch products pricing when clicking Precios on a branch card", async () => {
-    const mockSetBranch = vi.fn();
-    renderBranchesPage(Role.ADMIN_GENERAL, mockSetBranch);
-
-    await screen.findByText(/Sucursal Origone/i);
-
-    const pricingButtons = screen.getAllByRole("button", { name: /^Precios$/i });
-    expect(pricingButtons.length).toBeGreaterThan(0);
-
-    fireEvent.click(pricingButtons[0]!);
-    expect(mockSetBranch).toHaveBeenCalledWith("origone");
-  });
 
   it("opens branch users modal (Encargados), displays managers, and allows adding a new manager", async () => {
     renderBranchesPage(Role.ADMIN_GENERAL);

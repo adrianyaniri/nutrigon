@@ -28,6 +28,8 @@ export interface BranchUsersModalProps {
   onNotification: (msg: string) => void;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 export function BranchUsersModal({
   branch,
   isOpen,
@@ -137,8 +139,13 @@ export function BranchUsersModal({
       setFormError("El nombre completo debe tener al menos 2 caracteres.");
       return;
     }
-    if (!email.trim() || !email.includes("@")) {
-      setFormError("Ingresá un correo electrónico válido.");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setFormError("Ingresá el correo electrónico.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setFormError("El formato del correo electrónico no es válido (ejemplo: usuario@dominio.com).");
       return;
     }
     if (password.length < 6) {
@@ -148,7 +155,7 @@ export function BranchUsersModal({
 
     createUserMutation.mutate({
       fullName: fullName.trim(),
-      email: email.trim(),
+      email: trimmedEmail.toLowerCase(),
       password,
     });
   }

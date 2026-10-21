@@ -104,6 +104,7 @@ export function AdminCombosPage() {
     queryKey: ["branch-products-picker", branchId, debouncedProductSearchTerm],
     queryFn: () =>
       branchPricingRepository.listProducts(branchId, authToken, {
+        status: "ACTIVE",
         search: debouncedProductSearchTerm.trim() || undefined,
         limit: 50,
       }),

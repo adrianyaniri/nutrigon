@@ -37,6 +37,89 @@ const mockProducts: CatalogProduct[] = [
 ];
 
 describe("CartDrawer", () => {
+  it.each([undefined, "250g", "invalid"])(
+    "blocks checkout for missing or obsolete weight %s",
+    (portion) => {
+      const open = vi.spyOn(window, "open").mockImplementation(() => null);
+      const spice = {
+        ...mockProducts[0],
+        weightOptionsGrams: [25, 50, 75, 100],
+        defaultWeightGrams: 25,
+        priceReferenceGrams: 100,
+        price: 10500,
+      };
+      function Trigger() {
+        const { addProduct } = useCart();
+        return (
+          <>
+            <button onClick={() => addProduct("centro", spice.id, 1, portion as never)}>
+              Add spice
+            </button>
+            <CartDrawer
+              isOpen
+              onClose={() => {}}
+              branch={mockBranch}
+              products={[spice]}
+            />
+          </>
+        );
+      }
+      render(
+        <CartProvider>
+          <Trigger />
+        </CartProvider>
+      );
+      fireEvent.click(screen.getByText("Add spice"));
+      expect(screen.getByRole("alert")).toHaveTextContent(/Revisá las cantidades/);
+      const submit = screen.getByRole("button", { name: /Enviar Pedido por WhatsApp/ });
+      expect(submit).toBeDisabled();
+      fireEvent.click(submit);
+      expect(open).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: /Eliminar Almendras/ }));
+      expect(screen.getByText("Tu pedido está vacío")).toBeInTheDocument();
+      open.mockRestore();
+    }
+  );
+
+  it("keeps configured spice portions separate and sends exact cart totals", () => {
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    const spice = {
+      ...mockProducts[0],
+      weightOptionsGrams: [25, 50],
+      defaultWeightGrams: 25,
+      price: 10500,
+    };
+    function Trigger() {
+      const { addProduct } = useCart();
+      return (
+        <>
+          <button
+            onClick={() => {
+              addProduct("centro", spice.id, 3, "25g");
+              addProduct("centro", spice.id, 1, "50g");
+            }}
+          >
+            Add spice
+          </button>
+          <CartDrawer isOpen onClose={() => {}} branch={mockBranch} products={[spice]} />
+        </>
+      );
+    }
+    render(
+      <CartProvider>
+        <Trigger />
+      </CartProvider>
+    );
+    fireEvent.click(screen.getByText("Add spice"));
+    expect(screen.getByText(/75 g en total/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Enviar Pedido por WhatsApp/ }));
+    const message = decodeURIComponent(String(open.mock.calls[0][0]));
+    expect(message).toContain("787,50");
+    expect(message).toContain("1.312,50");
+    expect(message).toContain("25g");
+    expect(message).toContain("50g");
+    open.mockRestore();
+  });
   afterEach(() => {
     cleanup();
     localStorage.clear();
@@ -45,7 +128,12 @@ describe("CartDrawer", () => {
   it("renders empty state when there are no items in cart", () => {
     render(
       <CartProvider>
-        <CartDrawer isOpen={true} onClose={vi.fn()} branch={mockBranch} products={mockProducts} />
+        <CartDrawer
+          isOpen={true}
+          onClose={vi.fn()}
+          branch={mockBranch}
+          products={mockProducts}
+        />
       </CartProvider>
     );
 
@@ -63,7 +151,7 @@ describe("CartDrawer", () => {
         <div>
           <button
             type="button"
-            onClick={() => addProduct("centro", "p-almendras")}
+            onClick={() => addProduct("centro", "p-almendras", 1, "1kg")}
           >
             Add Almendras
           </button>
@@ -95,7 +183,9 @@ describe("CartDrawer", () => {
     expect(screen.getByText("Total Estimado")).toBeInTheDocument();
 
     // Delivery fulfillment radiogroup is accessible
-    expect(screen.getByRole("radiogroup", { name: "Modalidad de entrega" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "Modalidad de entrega" })
+    ).toBeInTheDocument();
     const pickupRadio = screen.getByRole("radio", { name: /Retiro en mostrador/i });
     const deliveryRadio = screen.getByRole("radio", { name: /Envío a domicilio/i });
     expect(pickupRadio).toHaveAttribute("aria-checked", "true");
@@ -161,7 +251,9 @@ describe("CartDrawer", () => {
     // First click on Vaciar carrito shows confirmation controls instead of clearing immediately
     fireEvent.click(screen.getByRole("button", { name: "Vaciar carrito" }));
     expect(screen.getByText("Almendras Nonpareil")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Confirmar vaciar carrito" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Confirmar vaciar carrito" })
+    ).toBeInTheDocument();
 
     // Cancel keeps the cart intact
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));

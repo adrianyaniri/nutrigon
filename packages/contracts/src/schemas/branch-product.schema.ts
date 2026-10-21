@@ -1,7 +1,8 @@
-import { z } from 'zod';
-import { BranchProductStatus } from '../enums/branch-product-status.enum.js';
-import { SaleUnit } from '../enums/sale-unit.enum.js';
-import { branchComboCatalogItemSchema } from './combo.schema.js';
+import { z } from "zod";
+import { BranchProductStatus } from "../enums/branch-product-status.enum.js";
+import { SaleUnit } from "../enums/sale-unit.enum.js";
+import { branchComboCatalogItemSchema } from "./combo.schema.js";
+import { productWeightFields } from "./product.schema.js";
 
 export const branchProductSchema = z
   .object({
@@ -22,10 +23,10 @@ export type BranchProduct = z.infer<typeof branchProductSchema>;
 
 export const upsertBranchProductSchema = z
   .object({
-    price: z.number().nonnegative('Price must be greater than or equal to 0'),
+    price: z.number().nonnegative("Price must be greater than or equal to 0"),
     promotionalPrice: z
       .number()
-      .nonnegative('Promotional price must be non-negative')
+      .nonnegative("Promotional price must be non-negative")
       .nullable()
       .optional(),
     isOnSale: z.boolean().default(false).optional(),
@@ -41,9 +42,9 @@ export const upsertBranchProductSchema = z
       return true;
     },
     {
-      message: 'Active products must have a valid price greater than 0',
-      path: ['price'],
-    },
+      message: "Active products must have a valid price greater than 0",
+      path: ["price"],
+    }
   )
   .refine(
     (data) => {
@@ -56,9 +57,9 @@ export const upsertBranchProductSchema = z
       return true;
     },
     {
-      message: 'Promotional price must be less than regular price when on sale',
-      path: ['promotionalPrice'],
-    },
+      message: "Promotional price must be less than regular price when on sale",
+      path: ["promotionalPrice"],
+    }
   );
 
 export type UpsertBranchProductDto = z.infer<typeof upsertBranchProductSchema>;
@@ -68,7 +69,7 @@ export const updateBranchProductOfferSchema = z
     isOnSale: z.boolean(),
     promotionalPrice: z
       .number()
-      .positive('Promotional price must be greater than 0')
+      .positive("Promotional price must be greater than 0")
       .nullable()
       .optional(),
   })
@@ -81,14 +82,12 @@ export const updateBranchProductOfferSchema = z
       return true;
     },
     {
-      message: 'A positive promotional price is required when activating an offer',
-      path: ['promotionalPrice'],
-    },
+      message: "A positive promotional price is required when activating an offer",
+      path: ["promotionalPrice"],
+    }
   );
 
-export type UpdateBranchProductOfferDto = z.infer<
-  typeof updateBranchProductOfferSchema
->;
+export type UpdateBranchProductOfferDto = z.infer<typeof updateBranchProductOfferSchema>;
 
 export const branchProductQuerySchema = z
   .object({
@@ -98,13 +97,13 @@ export const branchProductQuerySchema = z
     categorySlug: z.string().trim().optional(),
     barcode: z.string().trim().optional(),
     isOnSale: z.preprocess((val) => {
-      if (val === 'true' || val === true) return true;
-      if (val === 'false' || val === false) return false;
+      if (val === "true" || val === true) return true;
+      if (val === "false" || val === false) return false;
       return undefined;
     }, z.boolean().optional()),
     isFeatured: z.preprocess((val) => {
-      if (val === 'true' || val === true) return true;
-      if (val === 'false' || val === false) return false;
+      if (val === "true" || val === true) return true;
+      if (val === "false" || val === false) return false;
       return undefined;
     }, z.boolean().optional()),
     page: z.coerce.number().int().min(1).default(1).optional(),
@@ -127,6 +126,7 @@ export type BranchProductCounts = z.infer<typeof branchProductCountsSchema>;
 
 export const branchProductAdminItemSchema = z
   .object({
+    ...productWeightFields,
     productId: z.string().uuid(),
     name: z.string(),
     description: z.string().nullable(),
@@ -148,6 +148,7 @@ export type BranchProductAdminItem = z.infer<typeof branchProductAdminItemSchema
 
 export const branchCatalogItemSchema = z
   .object({
+    ...productWeightFields,
     id: z.string().uuid(),
     name: z.string(),
     description: z.string().nullable(),
@@ -212,6 +213,4 @@ export const branchPublicOffersResponseSchema = z
   })
   .strict();
 
-export type BranchPublicOffersResponse = z.infer<
-  typeof branchPublicOffersResponseSchema
->;
+export type BranchPublicOffersResponse = z.infer<typeof branchPublicOffersResponseSchema>;

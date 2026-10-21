@@ -6,6 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import type { ProductEntity } from '../../core/database/schema/products.js';
+import { productWeightConfigSchema } from '@nutrigon/contracts';
 import {
   PRODUCTS_REPOSITORY,
   type IProductsRepository,
@@ -30,7 +31,9 @@ export class ProductsService {
     private readonly categoriesRepository: ICategoriesRepository,
   ) {}
 
-  async findMany(query: ProductQueryDto): Promise<PaginatedResult<ProductEntity>> {
+  async findMany(
+    query: ProductQueryDto,
+  ): Promise<PaginatedResult<ProductEntity>> {
     return this.productsRepository.findMany(query);
   }
 
@@ -45,11 +48,16 @@ export class ProductsService {
   private async ensureActiveCategory(categoryId: string): Promise<void> {
     const category = await this.categoriesRepository.findById(categoryId);
     if (!category || !category.isActive) {
-      throw new BadRequestException(`Category with ID "${categoryId}" is invalid or inactive`);
+      throw new BadRequestException(
+        `Category with ID "${categoryId}" is invalid or inactive`,
+      );
     }
   }
 
-  private async ensureUniqueCode(code?: string | null, excludeProductId?: string): Promise<void> {
+  private async ensureUniqueCode(
+    code?: string | null,
+    excludeProductId?: string,
+  ): Promise<void> {
     const normalizedCode = code?.trim();
     if (!normalizedCode) {
       return;
@@ -57,11 +65,15 @@ export class ProductsService {
 
     const existing = await this.productsRepository.findByCode(normalizedCode);
     if (existing && existing.id !== excludeProductId) {
-      throw new ConflictException(`Product with code "${normalizedCode}" already exists`);
+      throw new ConflictException(
+        `Product with code "${normalizedCode}" already exists`,
+      );
     }
   }
 
   async create(dto: CreateProductDto): Promise<ProductEntity> {
+    const config = productWeightConfigSchema.safeParse(dto);
+    if (!config.success) throw new BadRequestException(config.error.flatten());
     await this.ensureActiveCategory(dto.categoryId);
     await this.ensureUniqueCode(dto.code);
 
@@ -72,6 +84,7 @@ export class ProductsService {
       barcode: dto.barcode || null,
       description: dto.description || null,
       saleUnit: dto.saleUnit,
+      ...config.data,
       imageUrls: dto.imageUrls ?? [],
       isActive: true,
     });
@@ -79,6 +92,8 @@ export class ProductsService {
 
   async update(id: string, dto: UpdateProductDto): Promise<ProductEntity> {
     const product = await this.findById(id);
+    const config = productWeightConfigSchema.safeParse({ ...product, ...dto });
+    if (!config.success) throw new BadRequestException(config.error.flatten());
 
     if (dto.categoryId && dto.categoryId !== product.categoryId) {
       await this.ensureActiveCategory(dto.categoryId);

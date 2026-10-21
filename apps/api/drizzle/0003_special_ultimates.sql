@@ -1,0 +1,4 @@
+ALTER TABLE "products" ADD COLUMN "weight_options_grams" integer[] DEFAULT ARRAY[100,250,500,1000]::integer[] NOT NULL;--> statement-breakpoint
+ALTER TABLE "products" ADD COLUMN "default_weight_grams" integer DEFAULT 250 NOT NULL;--> statement-breakpoint
+ALTER TABLE "products" ADD COLUMN "price_reference_grams" integer DEFAULT 1000 NOT NULL;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_weight_config_check" CHECK (cardinality("products"."weight_options_grams") > 0 AND 0 < ALL("products"."weight_options_grams") AND "products"."default_weight_grams" = ANY("products"."weight_options_grams") AND "products"."price_reference_grams" IN (100, 1000));

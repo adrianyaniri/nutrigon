@@ -8,7 +8,6 @@ import {
   Power,
   QrCode,
   Store,
-  Tag,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import type { BranchAdminItem } from "../types";
 export interface BranchAdminCardProps {
   branch: BranchAdminItem;
   isTogglingStatus: boolean;
-  onNavigatePricing: (branch: BranchAdminItem) => void;
+  onNavigatePricing?: (branch: BranchAdminItem) => void;
   onEdit: (branch: BranchAdminItem) => void;
   onShowQr: (branch: BranchAdminItem) => void;
   onToggleStatus: (branch: BranchAdminItem) => void;
@@ -141,17 +140,6 @@ export function BranchAdminCard({
           >
             <Users className="size-3.5 text-brand-gold" />
             <span>Encargados</span>
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onNavigatePricing(branch)}
-            title={`Ver precios y ofertas de Sucursal ${branch.name}`}
-            className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-outline bg-surface-elevated/40 text-foreground/85 hover:bg-surface-hover hover:text-foreground cursor-pointer"
-          >
-            <Tag className="size-3.5 text-brand-gold" />
-            <span>Precios</span>
           </Button>
 
           <Button
