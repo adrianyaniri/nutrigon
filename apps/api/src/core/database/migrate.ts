@@ -2,16 +2,13 @@ import path from 'node:path';
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { env } from '../config/env.js';
 
 const { Pool } = pg;
 
 async function run() {
-  const databaseUrl =
-    process.env.DATABASE_URL ||
-    'postgresql://postgres:postgres@localhost:5432/nutrigon';
-
   console.log('[Migrator] Connecting to database...');
-  const pool = new Pool({ connectionString: databaseUrl });
+  const pool = new Pool({ connectionString: env.DATABASE_URL });
   const db = drizzle(pool);
 
   // In local development or container execution, locate the drizzle folder relative to cwd or apps/api

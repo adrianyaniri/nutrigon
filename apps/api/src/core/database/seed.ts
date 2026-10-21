@@ -1,13 +1,39 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
-import { count } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import argon2 from 'argon2';
 import { env } from '../config/env.js';
+import {
+  ensureInitialAdmin,
+  type InitialAdminRepository,
+} from './initial-admin.js';
 import { categories, products, users } from './schema/index.js';
 
 const { Pool } = pg;
+const DEVELOPMENT_INITIAL_ADMIN_EMAIL = 'admin@nutrigon.com';
+const DEVELOPMENT_INITIAL_ADMIN_PASSWORD = 'AdminNutrigon2026!';
+
+function getInitialAdminCredentials(): { email: string; password: string } {
+  if (env.NODE_ENV === 'production') {
+    if (!env.INITIAL_ADMIN_EMAIL || !env.INITIAL_ADMIN_PASSWORD) {
+      throw new Error(
+        'INITIAL_ADMIN_EMAIL and INITIAL_ADMIN_PASSWORD are required to run the production seed',
+      );
+    }
+
+    return {
+      email: env.INITIAL_ADMIN_EMAIL,
+      password: env.INITIAL_ADMIN_PASSWORD,
+    };
+  }
+
+  return {
+    email: env.INITIAL_ADMIN_EMAIL ?? DEVELOPMENT_INITIAL_ADMIN_EMAIL,
+    password: env.INITIAL_ADMIN_PASSWORD ?? DEVELOPMENT_INITIAL_ADMIN_PASSWORD,
+  };
+}
 
 function parseCsv(content: string): string[][] {
   const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
@@ -67,6 +93,7 @@ function findDataDir(): string {
 
 async function runSeed() {
   console.log('🌱 Starting database seeding process...');
+  const initialAdminCredentials = getInitialAdminCredentials();
   const pool = new Pool({ connectionString: env.DATABASE_URL });
   const db = drizzle(pool);
 
@@ -141,40 +168,32 @@ async function runSeed() {
 
     // 3. Seed Initial General Admin User
     console.log('📦 Seeding initial General Admin user...');
-    const adminEmail = env.INITIAL_ADMIN_EMAIL;
-    const adminPassword = env.INITIAL_ADMIN_PASSWORD;
-
-    if (env.NODE_ENV === 'production' && adminPassword === 'AdminNutrigon2026!') { // ggignore
-      console.warn(
-        '⚠️  SECURITY WARNING: Using default password in production. Please set INITIAL_ADMIN_PASSWORD in environment variables.',
-      );
-    }
-
+    const { email: adminEmail, password: adminPassword } = initialAdminCredentials;
     const passwordHash = await argon2.hash(adminPassword);
+    const initialAdminRepository: InitialAdminRepository = {
+      async findByEmail(email) {
+        const existingUser = await db
+          .select({ email: users.email })
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
+        return existingUser.length > 0;
+      },
+      async createInitialGeneralAdmin(input) {
+        await db.insert(users).values(input);
+      },
+    };
 
-    await db
-      .insert(users)
-      .values({
-        email: adminEmail,
-        fullName: 'Administrador General',
-        passwordHash,
-        role: 'ADMIN_GENERAL',
-        branchId: null,
-        isActive: true,
-      })
-      .onConflictDoUpdate({
-        target: users.email,
-        set: {
-          passwordHash,
-          fullName: 'Administrador General',
-          role: 'ADMIN_GENERAL',
-          isActive: true,
-          updatedAt: new Date(),
-        },
-      });
+    const initialAdminResult = await ensureInitialAdmin(initialAdminRepository, {
+      email: adminEmail,
+      passwordHash,
+    });
 
-    console.log(`✅ General Admin user ready: ${adminEmail}`);
-
+    console.log(
+      initialAdminResult === 'created'
+        ? `General Admin user created: ${adminEmail}`
+        : `General Admin user already exists: ${adminEmail}`,
+    );
     console.log('\n🎉 Database seeding completed successfully!');
     console.log('--------------------------------------------------');
     console.log(`📌 Categorías: ${allCategories.length}`);
