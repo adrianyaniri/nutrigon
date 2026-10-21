@@ -1,11 +1,12 @@
 import type { SaleUnit } from "@/features/catalog/types";
+import type { WeightConfiguration } from "@/features/catalog/lib/portion-pricing";
 import { createInMemoryBranchPricingRepository } from "./branch-pricing.mock";
 
 export { createInMemoryBranchPricingRepository } from "./branch-pricing.mock";
 
 export type BranchProductStatus = "ACTIVE" | "INACTIVE" | "UNCONFIGURED";
 
-export interface BranchProductAdminItem {
+export interface BranchProductAdminItem extends WeightConfiguration {
   productId: string;
   name: string;
   description: string | null;
@@ -133,7 +134,10 @@ export function createHttpBranchPricingRepository(
       });
 
       if (!res.ok) {
-        throw await parseApiError(res, "No se pudo cargar el listado de productos de la sucursal.");
+        throw await parseApiError(
+          res,
+          "No se pudo cargar el listado de productos de la sucursal."
+        );
       }
 
       return (await res.json()) as PaginatedBranchProducts;
@@ -146,7 +150,10 @@ export function createHttpBranchPricingRepository(
       });
 
       if (!res.ok) {
-        throw await parseApiError(res, "No se pudieron obtener los contadores de la sucursal.");
+        throw await parseApiError(
+          res,
+          "No se pudieron obtener los contadores de la sucursal."
+        );
       }
 
       return (await res.json()) as BranchProductCounts;
@@ -197,7 +204,9 @@ export function createHttpBranchPricingRepository(
 }
 
 const isTestEnv = import.meta.env.MODE === "test" || !import.meta.env.VITE_API_URL;
-const httpPricingRepo = createHttpBranchPricingRepository(import.meta.env.VITE_API_URL ?? "");
+const httpPricingRepo = createHttpBranchPricingRepository(
+  import.meta.env.VITE_API_URL ?? ""
+);
 const mockPricingRepo = createInMemoryBranchPricingRepository();
 
 export const branchPricingRepository: BranchPricingRepository = isTestEnv

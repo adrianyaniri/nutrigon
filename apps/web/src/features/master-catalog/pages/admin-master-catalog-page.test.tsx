@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { masterCatalogRepository } from "../data/master-catalog-repository";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role } from "@/features/auth/types";
 import { AdminMasterCatalogPage } from "./admin-master-catalog-page";
@@ -17,8 +18,12 @@ function renderMasterCatalogPage(role: Role = Role.ADMIN_GENERAL) {
         value={{
           user: {
             id: role === Role.ADMIN_GENERAL ? "u-admin-general" : "u-branch-origone",
-            email: role === Role.ADMIN_GENERAL ? "admin@nutrigon.com" : "admin.origone@nutrigon.com",
-            fullName: role === Role.ADMIN_GENERAL ? "Administrador General" : "Encargado Origone",
+            email:
+              role === Role.ADMIN_GENERAL
+                ? "admin@nutrigon.com"
+                : "admin.origone@nutrigon.com",
+            fullName:
+              role === Role.ADMIN_GENERAL ? "Administrador General" : "Encargado Origone",
             role,
             branchId: role === Role.ADMIN_GENERAL ? null : "b-origone",
           },
@@ -27,7 +32,7 @@ function renderMasterCatalogPage(role: Role = Role.ADMIN_GENERAL) {
           setSelectedBranchSlug: () => {},
           isLoading: false,
           isAuthenticated: true,
-          login: async () => ({} as never),
+          login: async () => ({}) as never,
           logout: () => {},
         }}
       >
@@ -40,6 +45,60 @@ function renderMasterCatalogPage(role: Role = Role.ADMIN_GENERAL) {
 }
 
 describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("creates a spice product using editable small-quantity defaults", async () => {
+    const create = vi.spyOn(masterCatalogRepository, "createProduct");
+    renderMasterCatalogPage();
+    await screen.findByText("Almendras Nonpareil");
+    fireEvent.click(screen.getByRole("button", { name: /Nuevo Producto Maestro/i }));
+    fireEvent.change(screen.getByLabelText(/Nombre del Producto/), {
+      target: { value: "Canela configurada" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Cantidades pequeñas" }));
+    expect(screen.getByLabelText("Cantidades disponibles (g)")).toHaveValue(
+      "25, 50, 75, 100"
+    );
+    fireEvent.change(screen.getByLabelText("Referencia del precio"), {
+      target: { value: "100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Crear Producto Maestro" }));
+    await screen.findByText(/Producto maestro "Canela configurada" creado/);
+    expect(create).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        weightOptionsGrams: [25, 50, 75, 100],
+        defaultWeightGrams: 25,
+        priceReferenceGrams: 100,
+      })
+    );
+    const card = screen
+      .getByRole("heading", { name: "Canela configurada" })
+      .closest("article")!;
+    fireEvent.click(within(card).getByRole("button", { name: "Editar" }));
+    expect(screen.getByLabelText("Cantidades disponibles (g)")).toHaveValue(
+      "25, 50, 75, 100"
+    );
+    expect(screen.getByLabelText("Peso seleccionado inicialmente (g)")).toHaveValue(25);
+    expect(screen.getByLabelText("Referencia del precio")).toHaveValue("100");
+    create.mockRestore();
+  });
+
+  it("does not submit when the initial weight is outside the available list", async () => {
+    const create = vi.spyOn(masterCatalogRepository, "createProduct");
+    renderMasterCatalogPage();
+    await screen.findByText("Almendras Nonpareil");
+    fireEvent.click(screen.getByRole("button", { name: /Nuevo Producto Maestro/i }));
+    fireEvent.change(screen.getByLabelText(/Nombre del Producto/), {
+      target: { value: "Especia inválida" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Cantidades pequeñas" }));
+    fireEvent.change(screen.getByLabelText("Peso seleccionado inicialmente (g)"), {
+      target: { value: "250" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Crear Producto Maestro" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(/peso inicial incluido/);
+    expect(create).not.toHaveBeenCalled();
+  });
   it("restricts access for non-general admins (BRANCH_ADMIN)", async () => {
     renderMasterCatalogPage(Role.BRANCH_ADMIN);
 
@@ -138,7 +197,9 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     const listTab = within(dialog).getByRole("tab", { name: /Lista de Categorías/i });
     fireEvent.click(listTab);
 
-    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Frutos Secos" });
+    const editBtn = within(dialog).getByRole("button", {
+      name: "Editar categoría Frutos Secos",
+    });
     fireEvent.click(editBtn);
 
     expect(
@@ -152,7 +213,9 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     fireEvent.click(saveCatBtn);
 
     expect(
-      await screen.findByText(/Categoría "Frutos Secos Premium" actualizada exitosamente/i)
+      await screen.findByText(
+        /Categoría "Frutos Secos Premium" actualizada exitosamente/i
+      )
     ).toBeInTheDocument();
   });
 
@@ -177,7 +240,9 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     await screen.findByText(/Gestionar Categorías \([1-9]/);
 
     // Click on the summary pill or category button
-    const summaryBtn = screen.getByRole("button", { name: /Ver y editar categorías maestras/i });
+    const summaryBtn = screen.getByRole("button", {
+      name: /Ver y editar categorías maestras/i,
+    });
     fireEvent.click(summaryBtn);
 
     const dialog = await screen.findByRole("dialog");
@@ -190,7 +255,9 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     expect(within(dialog).getByText("Harinas & Granos")).toBeInTheDocument();
 
     // Click direct edit button on Harinas & Granos
-    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Harinas & Granos" });
+    const editBtn = within(dialog).getByRole("button", {
+      name: "Editar categoría Harinas & Granos",
+    });
     fireEvent.click(editBtn);
 
     // Form opens pre-filled
@@ -214,7 +281,9 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
 
     await screen.findByText("Almendras Nonpareil");
 
-    const summaryBtn = screen.getByRole("button", { name: /Ver y editar categorías maestras/i });
+    const summaryBtn = screen.getByRole("button", {
+      name: /Ver y editar categorías maestras/i,
+    });
     fireEvent.click(summaryBtn);
 
     const dialog = await screen.findByRole("dialog");
@@ -224,15 +293,23 @@ describe("AdminMasterCatalogPage (Master Catalog & Categories)", () => {
     fireEvent.click(listTab);
 
     // Ensure there is only 1 access to "Nueva Categoría" (the tab itself, no duplicate button in list)
-    expect(within(dialog).queryByRole("button", { name: "Nueva Categoría" })).not.toBeInTheDocument();
-    expect(within(dialog).getByRole("tab", { name: /Nueva Categoría/i })).toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole("button", { name: "Nueva Categoría" })
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("tab", { name: /Nueva Categoría/i })
+    ).toBeInTheDocument();
 
     // Click edit on Suplementos
-    const editBtn = within(dialog).getByRole("button", { name: "Editar categoría Suplementos" });
+    const editBtn = within(dialog).getByRole("button", {
+      name: "Editar categoría Suplementos",
+    });
     fireEvent.click(editBtn);
 
     // Ensure redundant "Ver Lista" button is not rendered in the form footer
-    expect(within(dialog).queryByRole("button", { name: /Ver Lista/i })).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole("button", { name: /Ver Lista/i })
+    ).not.toBeInTheDocument();
 
     // Click Eliminar Categoría
     const deleteBtn = within(dialog).getByRole("button", { name: /Eliminar Categoría/i });

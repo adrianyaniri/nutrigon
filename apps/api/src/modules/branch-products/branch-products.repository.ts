@@ -114,6 +114,9 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     const items = await this.db
       .select({
         productId: schema.products.id,
+        weightOptionsGrams: schema.products.weightOptionsGrams,
+        defaultWeightGrams: schema.products.defaultWeightGrams,
+        priceReferenceGrams: schema.products.priceReferenceGrams,
         name: schema.products.name,
         description: schema.products.description,
         categoryId: schema.products.categoryId,
@@ -218,13 +221,18 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         isFeatured: data.isFeatured ?? false,
       })
       .onConflictDoUpdate({
-        target: [schema.branchProducts.branchId, schema.branchProducts.productId],
+        target: [
+          schema.branchProducts.branchId,
+          schema.branchProducts.productId,
+        ],
         set: {
           price: data.price,
           promotionalPrice: data.promotionalPrice,
           isOnSale: data.isOnSale,
           isAvailable: data.isAvailable,
-          ...(data.isFeatured !== undefined ? { isFeatured: data.isFeatured } : {}),
+          ...(data.isFeatured !== undefined
+            ? { isFeatured: data.isFeatured }
+            : {}),
           updatedAt: new Date(),
         },
       })
@@ -299,6 +307,9 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     const items = await this.db
       .select({
         id: schema.products.id,
+        weightOptionsGrams: schema.products.weightOptionsGrams,
+        defaultWeightGrams: schema.products.defaultWeightGrams,
+        priceReferenceGrams: schema.products.priceReferenceGrams,
         name: schema.products.name,
         description: schema.products.description,
         categoryId: schema.products.categoryId,
@@ -341,11 +352,14 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     branchId: string,
   ): Promise<BranchCatalogCategory[]> {
     const rows = await this.db
-      .selectDistinctOn([schema.categories.orderIndex, schema.categories.name], {
-        id: schema.categories.id,
-        name: schema.categories.name,
-        slug: schema.categories.slug,
-      })
+      .selectDistinctOn(
+        [schema.categories.orderIndex, schema.categories.name],
+        {
+          id: schema.categories.id,
+          name: schema.categories.name,
+          slug: schema.categories.slug,
+        },
+      )
       .from(schema.branchProducts)
       .innerJoin(
         schema.products,

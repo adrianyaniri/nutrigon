@@ -27,7 +27,10 @@ describe("createHttpCatalogRepository", () => {
       ],
     });
 
-    const repo = createHttpCatalogRepository("http://localhost:3000", mockFetch as unknown as typeof fetch);
+    const repo = createHttpCatalogRepository(
+      "http://localhost:3000",
+      mockFetch as unknown as typeof fetch
+    );
     const branches = await repo.getBranches();
 
     expect(mockFetch).toHaveBeenCalledWith("http://localhost:3000/api/v1/branches");
@@ -91,6 +94,9 @@ describe("createHttpCatalogRepository", () => {
                 name: "Almendras Nonpareil",
                 description: "Tostadas",
                 saleUnit: "WEIGHT",
+                weightOptionsGrams: [25, 50, 75, 100],
+                defaultWeightGrams: 25,
+                priceReferenceGrams: 100,
                 imageUrls: ["https://cdn.nutrigon.com/almendras.webp"],
                 price: 14500,
                 promotionalPrice: 12900,
@@ -108,7 +114,10 @@ describe("createHttpCatalogRepository", () => {
       return { ok: false, status: 404 };
     });
 
-    const repo = createHttpCatalogRepository("http://localhost:3000", mockFetch as unknown as typeof fetch);
+    const repo = createHttpCatalogRepository(
+      "http://localhost:3000",
+      mockFetch as unknown as typeof fetch
+    );
     const catalog = await repo.getBranchCatalog("origone");
 
     expect(catalog.branch.slug).toBe("origone");
@@ -128,6 +137,9 @@ describe("createHttpCatalogRepository", () => {
       id: "prod-1",
       name: "Almendras Nonpareil",
       price: 14500,
+      weightOptionsGrams: [25, 50, 75, 100],
+      defaultWeightGrams: 25,
+      priceReferenceGrams: 100,
       promotionalPrice: 12900,
       saleUnit: "WEIGHT",
       imageUrl: "https://cdn.nutrigon.com/almendras.webp",
@@ -190,7 +202,10 @@ describe("createHttpCatalogRepository", () => {
       return { ok: false, status: 404 };
     });
 
-    const repo = createHttpCatalogRepository("http://localhost:3000", mockFetch as unknown as typeof fetch);
+    const repo = createHttpCatalogRepository(
+      "http://localhost:3000",
+      mockFetch as unknown as typeof fetch
+    );
     const catalog = await repo.getBranchCatalog("origone");
 
     const [comboItem, regularItem] = catalog.products;
@@ -202,4 +217,3 @@ describe("createHttpCatalogRepository", () => {
     );
   });
 });
-

@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { branchPricingRepository } from "@/features/pricing/data/branch-pricing-repository";
+import { INITIAL_MOCK_ITEMS } from "@/features/pricing/data/branch-pricing.mock";
 import { AuthContext } from "@/features/auth/context/auth-context";
 import { Role } from "@/features/auth/types";
 import { AdminProductsPage } from "./admin-products-page";
@@ -27,7 +29,7 @@ function renderAdminProductsPage() {
           setSelectedBranchSlug: () => {},
           isLoading: false,
           isAuthenticated: true,
-          login: async () => ({} as never),
+          login: async () => ({}) as never,
           logout: () => {},
         }}
       >
@@ -40,6 +42,104 @@ function renderAdminProductsPage() {
 }
 
 describe("AdminProductsPage (Branch Pricing & Offers)", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("does not reprice an unchanged rounded per100g reference", async () => {
+    const item = { ...INITIAL_MOCK_ITEMS[0], priceReferenceGrams: 100, price: 100.01 };
+    vi.spyOn(branchPricingRepository, "listProducts").mockResolvedValue({
+      items: [item],
+      total: 1,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+    });
+    const save = vi
+      .spyOn(branchPricingRepository, "upsertProduct")
+      .mockResolvedValue({
+        id: "bp",
+        branchId: "b-centro",
+        productId: item.productId,
+        price: 100.01,
+        promotionalPrice: null,
+        isOnSale: false,
+        isAvailable: true,
+        isFeatured: true,
+      });
+    renderAdminProductsPage();
+    expect(await screen.findByLabelText("Precio de Almendras Nonpareil")).toHaveValue(
+      "10"
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Guardar precio de Almendras Nonpareil" })
+    );
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.any(String),
+        item.productId,
+        expect.any(String),
+        expect.objectContaining({ price: 100.01 })
+      )
+    );
+  });
+  it("enters regular and offer prices per100g but saves canonical kg amounts", async () => {
+    const item = {
+      ...INITIAL_MOCK_ITEMS[0],
+      priceReferenceGrams: 100,
+      price: 10500,
+      promotionalPrice: null,
+      isOnSale: false,
+    };
+    const list = vi
+      .spyOn(branchPricingRepository, "listProducts")
+      .mockResolvedValue({ items: [item], total: 1, page: 1, limit: 20, totalPages: 1 });
+    const record = {
+      id: "bp",
+      branchId: "b-centro",
+      productId: item.productId,
+      price: 11002.5,
+      promotionalPrice: null,
+      isOnSale: false,
+      isAvailable: true,
+      isFeatured: true,
+    };
+    const save = vi
+      .spyOn(branchPricingRepository, "upsertProduct")
+      .mockResolvedValue(record);
+    const offer = vi
+      .spyOn(branchPricingRepository, "updateOffer")
+      .mockResolvedValue({ ...record, isOnSale: true, promotionalPrice: 9005 });
+    renderAdminProductsPage();
+    const input = await screen.findByLabelText("Precio de Almendras Nonpareil");
+    expect(input).toHaveValue("1050");
+    expect(screen.getByText("Granel · Precio por 100 g")).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: "1100.25" } });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Guardar precio de Almendras Nonpareil" })
+    );
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.any(String),
+        item.productId,
+        expect.any(String),
+        expect.objectContaining({ price: 11002.5 })
+      )
+    );
+    fireEvent.click(screen.getByRole("button", { name: /oferta/i }));
+    fireEvent.change(screen.getByLabelText(/Precio promocional de oferta/), {
+      target: { value: "900.50" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Activar oferta" }));
+    await waitFor(() =>
+      expect(offer).toHaveBeenCalledWith(
+        expect.any(String),
+        item.productId,
+        expect.any(String),
+        expect.objectContaining({ promotionalPrice: 9005 })
+      )
+    );
+    list.mockRestore();
+    save.mockRestore();
+    offer.mockRestore();
+  });
   it("renders branch products, status filter tabs, and explicit unit labels", async () => {
     renderAdminProductsPage();
 
@@ -124,7 +224,9 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     fireEvent.click(destacarButtons[0]!);
 
     expect(
-      await screen.findByText(/Precio y estado actualizados para "Nueces Mariposa Extra Light"/i)
+      await screen.findByText(
+        /Precio y estado actualizados para "Nueces Mariposa Extra Light"/i
+      )
     ).toBeInTheDocument();
   });
 
@@ -191,7 +293,7 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
             setSelectedBranchSlug: () => {},
             isLoading: false,
             isAuthenticated: true,
-            login: async () => ({} as never),
+            login: async () => ({}) as never,
             logout: () => {},
           }}
         >
@@ -208,8 +310,12 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
 
     expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
     expect(screen.getAllByText("Solo Lectura").length).toBeGreaterThan(0);
-    expect(screen.queryByLabelText("Precio de Almendras Nonpareil")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /guardar precio/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Precio de Almendras Nonpareil")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /guardar precio/i })
+    ).not.toBeInTheDocument();
   });
 
   it("shows dirty state and allows reverting price to original value", async () => {
@@ -222,7 +328,9 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     fireEvent.change(priceInput, { target: { value: "19500" } });
 
     expect(screen.getByText(/· Sin guardar/i)).toBeInTheDocument();
-    const revertBtn = screen.getByRole("button", { name: /Revertir precio de Almendras Nonpareil/i });
+    const revertBtn = screen.getByRole("button", {
+      name: /Revertir precio de Almendras Nonpareil/i,
+    });
     expect(revertBtn).toBeInTheDocument();
 
     // Revert changes
@@ -234,7 +342,9 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     renderAdminProductsPage();
 
     await screen.findByText("Almendras Nonpareil");
-    const priceInput = screen.getByLabelText("Precio de Almendras Nonpareil") as HTMLInputElement;
+    const priceInput = screen.getByLabelText(
+      "Precio de Almendras Nonpareil"
+    ) as HTMLInputElement;
 
     fireEvent.change(priceInput, { target: { value: "17200,50" } });
     expect(priceInput.value).toBe("17200.50");

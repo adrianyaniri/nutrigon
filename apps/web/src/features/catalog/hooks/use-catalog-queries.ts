@@ -20,5 +20,8 @@ export function useBranchCatalog(branchSlug: string | null) {
     enabled: branchSlug !== null,
     // Keep showing the previous branch's products while the next one loads.
     placeholderData: (previous) => previous,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 }

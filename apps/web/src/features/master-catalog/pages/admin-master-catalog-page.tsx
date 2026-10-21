@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { productWeightConfigSchema } from "@nutrigon/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -60,6 +61,9 @@ export function AdminMasterCatalogPage() {
   const [productName, setProductName] = useState("");
   const [productCategoryId, setProductCategoryId] = useState("");
   const [productSaleUnit, setProductSaleUnit] = useState<SaleUnit>("WEIGHT");
+  const [weightOptionsInput, setWeightOptionsInput] = useState("100, 250, 500, 1000");
+  const [defaultWeightGrams, setDefaultWeightGrams] = useState(250);
+  const [priceReferenceGrams, setPriceReferenceGrams] = useState(1000);
   const [productCode, setProductCode] = useState("");
   const [productBarcode, setProductBarcode] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -85,10 +89,7 @@ export function AdminMasterCatalogPage() {
     enabled: isGeneralAdmin,
   });
 
-  const categories = useMemo(
-    () => categoriesQuery.data ?? [],
-    [categoriesQuery.data]
-  );
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
 
   const categoryNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -100,11 +101,7 @@ export function AdminMasterCatalogPage() {
 
   // Products Query
   const isActiveParam =
-    statusFilter === "ACTIVE"
-      ? true
-      : statusFilter === "INACTIVE"
-      ? false
-      : undefined;
+    statusFilter === "ACTIVE" ? true : statusFilter === "INACTIVE" ? false : undefined;
 
   const productsQuery = useQuery({
     queryKey: [
@@ -135,6 +132,8 @@ export function AdminMasterCatalogPage() {
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["master-catalog", "products"] });
       queryClient.invalidateQueries({ queryKey: ["branch-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "branch-products"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog", "branch"] });
       setIsProductModalOpen(false);
       setFeedbackBanner({
         type: "success",
@@ -160,6 +159,8 @@ export function AdminMasterCatalogPage() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["master-catalog", "products"] });
       queryClient.invalidateQueries({ queryKey: ["branch-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "branch-products"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog", "branch"] });
       setIsProductModalOpen(false);
       setEditingProduct(null);
       setFeedbackBanner({
@@ -291,6 +292,9 @@ export function AdminMasterCatalogPage() {
     setProductName("");
     setProductCategoryId(categories[0]?.id ?? "");
     setProductSaleUnit("WEIGHT");
+    setWeightOptionsInput("100, 250, 500, 1000");
+    setDefaultWeightGrams(250);
+    setPriceReferenceGrams(1000);
     setProductCode("");
     setProductBarcode("");
     setProductDescription("");
@@ -304,6 +308,11 @@ export function AdminMasterCatalogPage() {
     setProductName(product.name);
     setProductCategoryId(product.categoryId);
     setProductSaleUnit(product.saleUnit);
+    setWeightOptionsInput(
+      (product.weightOptionsGrams ?? [100, 250, 500, 1000]).join(", ")
+    );
+    setDefaultWeightGrams(product.defaultWeightGrams ?? 250);
+    setPriceReferenceGrams(product.priceReferenceGrams ?? 1000);
     setProductCode(product.code ?? "");
     setProductBarcode(product.barcode ?? "");
     setProductDescription(product.description ?? "");
@@ -345,9 +354,7 @@ export function AdminMasterCatalogPage() {
       setProductImageUrl(url);
     } catch (err) {
       setProductFormError(
-        err instanceof Error
-          ? err.message
-          : "Error al subir la imagen a Cloudflare R2."
+        err instanceof Error ? err.message : "Error al subir la imagen a Cloudflare R2."
       );
     } finally {
       setIsUploadingImage(false);
@@ -369,7 +376,22 @@ export function AdminMasterCatalogPage() {
       return;
     }
 
+    const weightConfig = productWeightConfigSchema.safeParse({
+      weightOptionsGrams: weightOptionsInput
+        .split(",")
+        .map((value) => (/^\d+$/.test(value.trim()) ? Number(value) : NaN)),
+      defaultWeightGrams,
+      priceReferenceGrams,
+    });
+    if (productSaleUnit === "WEIGHT" && !weightConfig.success) {
+      setProductFormError(
+        "Ingresá pesos enteros positivos sin repetir y elegí un peso inicial incluido en la lista."
+      );
+      return;
+    }
+
     const payload: CreateMasterProductInput = {
+      ...(productSaleUnit === "WEIGHT" && weightConfig.success ? weightConfig.data : {}),
       name: productName.trim(),
       categoryId: effectiveCategoryId,
       saleUnit: productSaleUnit,
@@ -399,9 +421,13 @@ export function AdminMasterCatalogPage() {
       return;
     }
 
-    const finalSlug = (categorySlug.trim() || slugifyCategoryName(categoryName)).toLowerCase();
+    const finalSlug = (
+      categorySlug.trim() || slugifyCategoryName(categoryName)
+    ).toLowerCase();
     if (!/^[a-z0-9-]+$/.test(finalSlug)) {
-      setCategoryFormError("El slug solo puede contener letras minúsculas, números y guiones.");
+      setCategoryFormError(
+        "El slug solo puede contener letras minúsculas, números y guiones."
+      );
       return;
     }
 
@@ -434,8 +460,9 @@ export function AdminMasterCatalogPage() {
             Acceso exclusivo para Administración General
           </h1>
           <p className="text-xs text-zinc-400 max-w-md mx-auto">
-            El Catálogo Maestro define los productos globales y categorías de todas las sucursales.
-            Como encargado de sucursal, podés gestionar los precios, ofertas y combos de tu local.
+            El Catálogo Maestro define los productos globales y categorías de todas las
+            sucursales. Como encargado de sucursal, podés gestionar los precios, ofertas y
+            combos de tu local.
           </p>
           <div className="pt-2">
             <Link
@@ -494,8 +521,9 @@ export function AdminMasterCatalogPage() {
             Catálogo Maestro de Productos
           </h1>
           <p className="mt-1 text-sm text-zinc-400 max-w-2xl">
-            Administrá la base global de productos y categorías de Nutrigon. Cada producto dado de
-            alta acá queda disponible para que las sucursales configuren su precio y stock local.
+            Administrá la base global de productos y categorías de Nutrigon. Cada producto
+            dado de alta acá queda disponible para que las sucursales configuren su precio
+            y stock local.
           </p>
         </div>
 
@@ -551,7 +579,9 @@ export function AdminMasterCatalogPage() {
             aria-label="Ver y editar categorías maestras"
             className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer group"
           >
-            <span className="text-brand-gold font-medium group-hover:underline">Categorías Maestras</span>
+            <span className="text-brand-gold font-medium group-hover:underline">
+              Categorías Maestras
+            </span>
             <span className="font-headline text-base font-bold text-brand-gold tabular-nums">
               {categories.length}
             </span>
@@ -768,6 +798,12 @@ export function AdminMasterCatalogPage() {
         productCategoryId={productCategoryId}
         onProductCategoryIdChange={setProductCategoryId}
         productSaleUnit={productSaleUnit}
+        weightOptionsInput={weightOptionsInput}
+        onWeightOptionsInputChange={setWeightOptionsInput}
+        defaultWeightGrams={defaultWeightGrams}
+        onDefaultWeightGramsChange={setDefaultWeightGrams}
+        priceReferenceGrams={priceReferenceGrams}
+        onPriceReferenceGramsChange={setPriceReferenceGrams}
         onProductSaleUnitChange={setProductSaleUnit}
         productCode={productCode}
         onProductCodeChange={setProductCode}

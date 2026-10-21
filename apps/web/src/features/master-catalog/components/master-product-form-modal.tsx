@@ -14,6 +14,12 @@ export interface MasterProductFormModalProps {
   productCategoryId: string;
   onProductCategoryIdChange: (value: string) => void;
   productSaleUnit: SaleUnit;
+  weightOptionsInput: string;
+  onWeightOptionsInputChange: (value: string) => void;
+  defaultWeightGrams: number;
+  onDefaultWeightGramsChange: (value: number) => void;
+  priceReferenceGrams: number;
+  onPriceReferenceGramsChange: (value: number) => void;
   onProductSaleUnitChange: (value: SaleUnit) => void;
   productCode: string;
   onProductCodeChange: (value: string) => void;
@@ -40,6 +46,12 @@ export function MasterProductFormModal({
   productCategoryId,
   onProductCategoryIdChange,
   productSaleUnit,
+  weightOptionsInput,
+  onWeightOptionsInputChange,
+  defaultWeightGrams,
+  onDefaultWeightGramsChange,
+  priceReferenceGrams,
+  onPriceReferenceGramsChange,
   onProductSaleUnitChange,
   productCode,
   onProductCodeChange,
@@ -93,7 +105,9 @@ export function MasterProductFormModal({
               id="master-product-modal-title"
               className="font-headline text-lg font-bold text-white"
             >
-              {editingProduct ? `Editar: ${editingProduct.name}` : "Nuevo Producto Maestro"}
+              {editingProduct
+                ? `Editar: ${editingProduct.name}`
+                : "Nuevo Producto Maestro"}
             </h2>
           </div>
           <button
@@ -108,7 +122,10 @@ export function MasterProductFormModal({
 
         <form onSubmit={onSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {formError && (
-            <div className="p-3.5 rounded-xl border border-status-destructive/30 bg-status-destructive/10 text-status-destructive text-xs flex items-center gap-2">
+            <div
+              role="alert"
+              className="p-3.5 rounded-xl border border-status-destructive/30 bg-status-destructive/10 text-status-destructive text-xs flex items-center gap-2"
+            >
               <AlertCircle className="size-4 shrink-0 text-status-destructive" />
               <span>{formError}</span>
             </div>
@@ -168,11 +185,83 @@ export function MasterProductFormModal({
                 onChange={(e) => onProductSaleUnitChange(e.target.value as SaleUnit)}
                 className="w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
               >
-                <option value="WEIGHT">Granel (Precio por 1 kg)</option>
+                <option value="WEIGHT">Por peso / granel</option>
                 <option value="UNIT">Por Unidad cerrada</option>
               </select>
             </div>
           </div>
+
+          {productSaleUnit === "WEIGHT" && (
+            <fieldset className="space-y-3 rounded-xl border border-outline p-4">
+              <legend className="px-1 text-sm font-semibold text-white">
+                Cantidades y referencia de precio
+              </legend>
+              <div className="flex flex-col gap-2 md:flex-row">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-[44px]"
+                  onClick={() => {
+                    onWeightOptionsInputChange("100, 250, 500, 1000");
+                    onDefaultWeightGramsChange(250);
+                  }}
+                >
+                  Granel habitual
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-[44px]"
+                  onClick={() => {
+                    onWeightOptionsInputChange("25, 50, 75, 100");
+                    onDefaultWeightGramsChange(25);
+                  }}
+                >
+                  Cantidades pequeñas
+                </Button>
+              </div>
+              <label className="block text-xs text-zinc-300">
+                Cantidades disponibles (g)
+                <input
+                  value={weightOptionsInput}
+                  onChange={(e) => onWeightOptionsInputChange(e.target.value)}
+                  className="mt-1 w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3 text-white"
+                  aria-describedby="weight-options-help"
+                />
+              </label>
+              <p id="weight-options-help" className="text-xs text-zinc-300">
+                Separá los pesos con comas. Podés ajustar las cantidades de la plantilla.
+              </p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <label className="block text-xs text-zinc-300">
+                  Peso seleccionado inicialmente (g)
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={defaultWeightGrams || ""}
+                    onChange={(e) => onDefaultWeightGramsChange(Number(e.target.value))}
+                    className="mt-1 w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3 text-white"
+                  />
+                </label>
+                <label className="block text-xs text-zinc-300">
+                  Referencia del precio
+                  <select
+                    value={priceReferenceGrams}
+                    onChange={(e) => onPriceReferenceGramsChange(Number(e.target.value))}
+                    className="mt-1 w-full min-h-[44px] rounded-xl border border-outline bg-surface px-3 text-white"
+                  >
+                    <option value="1000">Por 1 kg</option>
+                    <option value="100">Por 100 g</option>
+                  </select>
+                </label>
+              </div>
+              <p className="text-xs text-zinc-300">
+                Cada sucursal carga su importe con esta referencia. Cambiarla no modifica
+                los precios guardados.
+              </p>
+            </fieldset>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -270,8 +359,8 @@ export function MasterProductFormModal({
                     {isUploadingImage
                       ? "Subiendo a R2..."
                       : productImageUrl
-                      ? "Cambiar foto"
-                      : "Subir foto del producto"}
+                        ? "Cambiar foto"
+                        : "Subir foto del producto"}
                   </span>
                   <input
                     type="file"
@@ -282,7 +371,8 @@ export function MasterProductFormModal({
                   />
                 </label>
                 <p className="mt-1 text-[11px] text-zinc-500">
-                  WEBP, JPEG o PNG (máx. 5 MB). Se optimiza automáticamente a WebP y se sincroniza en las 3 sucursales.
+                  WEBP, JPEG o PNG (máx. 5 MB). Se optimiza automáticamente a WebP y se
+                  sincroniza en las 3 sucursales.
                 </p>
               </div>
             </div>

@@ -15,10 +15,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth, Role } from "@/features/auth";
-import {
-  catalogKeys,
-  useBranches,
-} from "@/features/catalog/hooks/use-catalog-queries";
+import { catalogKeys, useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { masterCatalogRepository } from "@/features/master-catalog/data/master-catalog-repository";
 import {
   branchPricingRepository,
@@ -30,6 +27,15 @@ import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 import { BranchOfferModal } from "../components/branch-offer-modal";
 import { BranchProductRow } from "../components/branch-product-row";
+import {
+  getPriceReferenceGrams,
+  referencePrice,
+  toPricePerKg,
+} from "../lib/portion-pricing";
+
+function displayedPrice(price: number, item: BranchProductAdminItem): number {
+  return item.saleUnit === "WEIGHT" ? referencePrice(price, item) : price;
+}
 
 type FilterTab = "ALL" | BranchProductStatus | "ON_SALE";
 
@@ -67,8 +73,9 @@ export function AdminProductsPage() {
   const [draftPrices, setDraftPrices] = useState<Record<string, string>>({});
 
   // Offer Modal state
-  const [offerModalItem, setOfferModalItem] =
-    useState<BranchProductAdminItem | null>(null);
+  const [offerModalItem, setOfferModalItem] = useState<BranchProductAdminItem | null>(
+    null
+  );
   const [promoPriceInput, setPromoPriceInput] = useState("");
   const [offerModalError, setOfferModalError] = useState<string | null>(null);
 
@@ -82,17 +89,12 @@ export function AdminProductsPage() {
     queryFn: () => masterCatalogRepository.listCategories(),
   });
 
-  const categories = useMemo(
-    () => categoriesQuery.data ?? [],
-    [categoriesQuery.data]
-  );
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
 
   const queryFilter = useMemo(() => {
     return {
       status:
-        activeTab === "ACTIVE" ||
-        activeTab === "INACTIVE" ||
-        activeTab === "UNCONFIGURED"
+        activeTab === "ACTIVE" || activeTab === "INACTIVE" || activeTab === "UNCONFIGURED"
           ? activeTab
           : undefined,
       isOnSale: activeTab === "ON_SALE" ? true : undefined,
@@ -105,8 +107,7 @@ export function AdminProductsPage() {
 
   const productsQuery = useQuery({
     queryKey: ["admin", "branch-products", branchId, queryFilter],
-    queryFn: () =>
-      branchPricingRepository.listProducts(branchId, authToken, queryFilter),
+    queryFn: () => branchPricingRepository.listProducts(branchId, authToken, queryFilter),
     enabled: Boolean(branchId),
   });
 
@@ -153,24 +154,14 @@ export function AdminProductsPage() {
       isFeatured?: boolean;
       productName: string;
     }) =>
-      branchPricingRepository.upsertProduct(
-        branchId,
-        vars.productId,
-        authToken,
-        {
-          price: vars.price,
-          isAvailable: vars.isAvailable,
-          ...(vars.isFeatured !== undefined
-            ? { isFeatured: vars.isFeatured }
-            : {}),
-        }
-      ),
+      branchPricingRepository.upsertProduct(branchId, vars.productId, authToken, {
+        price: vars.price,
+        isAvailable: vars.isAvailable,
+        ...(vars.isFeatured !== undefined ? { isFeatured: vars.isFeatured } : {}),
+      }),
     onSuccess: async (_data, vars) => {
       await invalidateBranchQueries();
-      showFeedback(
-        "success",
-        `Precio y estado actualizados para "${vars.productName}".`
-      );
+      showFeedback("success", `Precio y estado actualizados para "${vars.productName}".`);
     },
     onError: (err: unknown) => {
       showFeedback(
@@ -204,9 +195,7 @@ export function AdminProductsPage() {
     },
     onError: (err: unknown) => {
       setOfferModalError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo actualizar la oferta."
+        err instanceof Error ? err.message : "No se pudo actualizar la oferta."
       );
     },
   });
@@ -214,7 +203,7 @@ export function AdminProductsPage() {
   function getDraftPrice(item: BranchProductAdminItem): string {
     const existingDraft = draftPrices[item.productId];
     if (existingDraft !== undefined) return existingDraft;
-    return item.price !== null ? String(item.price) : "";
+    return item.price !== null ? String(displayedPrice(item.price, item)) : "";
   }
 
   function handleDraftPriceChange(productId: string, value: string) {
@@ -234,10 +223,28 @@ export function AdminProductsPage() {
     }
 
     const raw = getDraftPrice(item).trim();
-    const numericPrice = Number(raw);
+    const inputPrice = Number(raw);
 
-    if (!raw || Number.isNaN(numericPrice) || numericPrice < 0) {
+    if (
+      !raw ||
+      !Number.isFinite(inputPrice) ||
+      inputPrice < 0 ||
+      !/^\d*\.?\d{0,2}$/.test(raw) ||
+      inputPrice > 9999999999.99
+    ) {
       showFeedback("error", `Ingresá un precio válido para "${item.name}".`);
+      return;
+    }
+
+    // Saving an unchanged rounded reference must not reprice an existing kg amount.
+    const numericPrice =
+      item.price !== null && inputPrice === displayedPrice(item.price, item)
+        ? item.price
+        : item.saleUnit === "WEIGHT"
+          ? toPricePerKg(inputPrice, getPriceReferenceGrams(item))
+          : inputPrice;
+    if (numericPrice > 9999999999.99) {
+      showFeedback("error", "El precio convertido por kilo supera el importe permitido.");
       return;
     }
 
@@ -324,23 +331,38 @@ export function AdminProductsPage() {
     setOfferModalItem(item);
     setOfferModalError(null);
     setPromoPriceInput(
-      item.promotionalPrice !== null ? String(item.promotionalPrice) : ""
+      item.promotionalPrice !== null
+        ? String(displayedPrice(item.promotionalPrice, item))
+        : ""
     );
   }
 
   function handleActivateOffer() {
     if (!offerModalItem) return;
     const basePrice = offerModalItem.price ?? 0;
-    const promo = Number(promoPriceInput.trim());
+    const inputPromo = Number(promoPriceInput.trim());
 
-    if (!promoPriceInput.trim() || Number.isNaN(promo) || promo <= 0) {
+    if (
+      !promoPriceInput.trim() ||
+      !Number.isFinite(inputPromo) ||
+      inputPromo <= 0 ||
+      !/^\d*\.?\d{0,2}$/.test(promoPriceInput.trim()) ||
+      inputPromo > 9999999999.99
+    ) {
       setOfferModalError("Ingresá un precio promocional mayor a $0.");
       return;
     }
+    const promo =
+      offerModalItem.promotionalPrice !== null &&
+      inputPromo === displayedPrice(offerModalItem.promotionalPrice, offerModalItem)
+        ? offerModalItem.promotionalPrice
+        : offerModalItem.saleUnit === "WEIGHT"
+          ? toPricePerKg(inputPromo, getPriceReferenceGrams(offerModalItem))
+          : inputPromo;
     if (promo >= basePrice) {
       setOfferModalError(
         `El precio promocional debe ser menor al precio regular (${formatPrice(
-          basePrice
+          displayedPrice(basePrice, offerModalItem)
         )}).`
       );
       return;
@@ -391,7 +413,8 @@ export function AdminProductsPage() {
             No hay sucursales registradas
           </h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
-            Para fijar precios y ofertas, primero debés registrar al menos una sucursal en el sistema.
+            Para fijar precios y ofertas, primero debés registrar al menos una sucursal en
+            el sistema.
           </p>
           {isGeneralAdmin ? (
             <Link
@@ -421,9 +444,11 @@ export function AdminProductsPage() {
           </h1>
 
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            Configurá el precio por kilogramo o por unidad, habilitá productos
+            Configurá el precio por kilogramo, por 100 g o por unidad, habilitá productos
             en el mostrador online y activá ofertas exclusivas para{" "}
-            <strong className="text-foreground">Sucursal {activeBranch?.name ?? ""}</strong>
+            <strong className="text-foreground">
+              Sucursal {activeBranch?.name ?? ""}
+            </strong>
             .
           </p>
         </div>
@@ -441,7 +466,10 @@ export function AdminProductsPage() {
                 Modo Auditoría de Sucursal (Solo Lectura)
               </p>
               <p className="text-sky-200/90 leading-relaxed">
-                Como administrador general podés consultar los precios, ofertas y disponibilidad de cada sucursal. La fijación de precios, activación de ofertas y cambios de disponibilidad son potestad exclusiva de los administradores locales.
+                Como administrador general podés consultar los precios, ofertas y
+                disponibilidad de cada sucursal. La fijación de precios, activación de
+                ofertas y cambios de disponibilidad son potestad exclusiva de los
+                administradores locales.
               </p>
             </div>
           </aside>
@@ -469,9 +497,7 @@ export function AdminProductsPage() {
                     : "border-outline/60 bg-surface text-muted-foreground hover:border-outline hover:text-foreground"
                 )}
               >
-                <span className="text-xs font-semibold truncate pr-2">
-                  {tab.label}
-                </span>
+                <span className="text-xs font-semibold truncate pr-2">{tab.label}</span>
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
@@ -564,9 +590,7 @@ export function AdminProductsPage() {
 
         <div className="text-xs text-muted-foreground">
           Mostrando <strong className="text-foreground">{items.length}</strong> de{" "}
-          <strong className="text-foreground">
-            {productsQuery.data?.total ?? 0}
-          </strong>{" "}
+          <strong className="text-foreground">{productsQuery.data?.total ?? 0}</strong>{" "}
           productos
         </div>
       </section>
@@ -576,9 +600,7 @@ export function AdminProductsPage() {
         {productsQuery.isPending ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-16 text-muted-foreground gap-3">
             <Loader2 className="size-6 animate-spin text-brand-gold" />
-            <span className="text-sm">
-              Cargando productos de la sucursal...
-            </span>
+            <span className="text-sm">Cargando productos de la sucursal...</span>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-outline bg-surface-card py-14 px-4 text-center gap-3">

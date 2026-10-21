@@ -57,7 +57,10 @@ export class BranchProductsService {
       throw new NotFoundException(`Branch with ID "${branchId}" was not found`);
     }
 
-    const result = await this.branchProductsRepository.findAdminList(branchId, query);
+    const result = await this.branchProductsRepository.findAdminList(
+      branchId,
+      query,
+    );
 
     const items: BranchProductAdminItem[] = result.items.map((row) => {
       const status =
@@ -74,6 +77,9 @@ export class BranchProductsService {
         categoryId: row.categoryId,
         categoryName: row.categoryName,
         saleUnit: row.saleUnit as SaleUnit,
+        weightOptionsGrams: row.weightOptionsGrams ?? [100, 250, 500, 1000],
+        defaultWeightGrams: row.defaultWeightGrams ?? 250,
+        priceReferenceGrams: row.priceReferenceGrams === 100 ? 100 : 1000,
         barcode: row.barcode,
         imageUrls: row.imageUrls ?? [],
         status,
@@ -119,7 +125,9 @@ export class BranchProductsService {
       productId: entity.productId,
       price: Number(entity.price),
       promotionalPrice:
-        entity.promotionalPrice !== null ? Number(entity.promotionalPrice) : null,
+        entity.promotionalPrice !== null
+          ? Number(entity.promotionalPrice)
+          : null,
       isOnSale: entity.isOnSale,
       isAvailable: entity.isAvailable,
       isFeatured: entity.isFeatured,
@@ -129,6 +137,9 @@ export class BranchProductsService {
   }
 
   private mapRowToCatalogItem(row: {
+    weightOptionsGrams?: number[];
+    defaultWeightGrams?: number;
+    priceReferenceGrams?: number;
     id: string;
     name: string;
     description: string | null;
@@ -148,6 +159,9 @@ export class BranchProductsService {
       categoryId: row.categoryId,
       categoryName: row.categoryName,
       saleUnit: row.saleUnit as SaleUnit,
+      weightOptionsGrams: row.weightOptionsGrams ?? [100, 250, 500, 1000],
+      defaultWeightGrams: row.defaultWeightGrams ?? 250,
+      priceReferenceGrams: row.priceReferenceGrams === 100 ? 100 : 1000,
       price: Number(row.price),
       promotionalPrice:
         row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
@@ -194,7 +208,9 @@ export class BranchProductsService {
 
     const product = await this.productsRepository.findById(productId);
     if (!product) {
-      throw new NotFoundException(`Product with ID "${productId}" was not found`);
+      throw new NotFoundException(
+        `Product with ID "${productId}" was not found`,
+      );
     }
 
     if (!product.isActive) {
@@ -205,17 +221,23 @@ export class BranchProductsService {
 
     const isOnSale = Boolean(dto.isOnSale);
     const promotionalPrice =
-      isOnSale && dto.promotionalPrice !== null && dto.promotionalPrice !== undefined
+      isOnSale &&
+      dto.promotionalPrice !== null &&
+      dto.promotionalPrice !== undefined
         ? dto.promotionalPrice.toFixed(2)
         : null;
 
-    const entity = await this.branchProductsRepository.upsert(branchId, productId, {
-      price: dto.price.toFixed(2),
-      promotionalPrice,
-      isOnSale,
-      isAvailable: dto.isAvailable ?? false,
-      ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
-    });
+    const entity = await this.branchProductsRepository.upsert(
+      branchId,
+      productId,
+      {
+        price: dto.price.toFixed(2),
+        promotionalPrice,
+        isOnSale,
+        isAvailable: dto.isAvailable ?? false,
+        ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
+      },
+    );
 
     return this.mapEntityToBranchProduct(entity);
   }
@@ -242,15 +264,25 @@ export class BranchProductsService {
       );
     }
 
-    this.validateOfferPrice(dto.isOnSale, dto.promotionalPrice, Number(existing.price));
+    this.validateOfferPrice(
+      dto.isOnSale,
+      dto.promotionalPrice,
+      Number(existing.price),
+    );
 
-    const entity = await this.branchProductsRepository.upsert(branchId, productId, {
-      price: existing.price,
-      promotionalPrice:
-        dto.isOnSale && dto.promotionalPrice ? dto.promotionalPrice.toFixed(2) : null,
-      isOnSale: dto.isOnSale,
-      isAvailable: existing.isAvailable,
-    });
+    const entity = await this.branchProductsRepository.upsert(
+      branchId,
+      productId,
+      {
+        price: existing.price,
+        promotionalPrice:
+          dto.isOnSale && dto.promotionalPrice
+            ? dto.promotionalPrice.toFixed(2)
+            : null,
+        isOnSale: dto.isOnSale,
+        isAvailable: existing.isAvailable,
+      },
+    );
 
     return this.mapEntityToBranchProduct(entity);
   }
@@ -261,7 +293,9 @@ export class BranchProductsService {
   ): Promise<BranchPublicCatalogResponse> {
     const branch = await this.branchesRepository.findBySlug(slug);
     if (!branch || !branch.isActive) {
-      throw new NotFoundException(`Branch "${slug}" was not found or is inactive`);
+      throw new NotFoundException(
+        `Branch "${slug}" was not found or is inactive`,
+      );
     }
 
     const { status: _ignoredStatus, ...sanitizedQuery } = query;
@@ -291,7 +325,9 @@ export class BranchProductsService {
   async getPublicOffers(slug: string): Promise<BranchPublicOffersResponse> {
     const branch = await this.branchesRepository.findBySlug(slug);
     if (!branch || !branch.isActive) {
-      throw new NotFoundException(`Branch "${slug}" was not found or is inactive`);
+      throw new NotFoundException(
+        `Branch "${slug}" was not found or is inactive`,
+      );
     }
 
     const [onSaleProducts, combos] = await Promise.all([
@@ -313,7 +349,9 @@ export class BranchProductsService {
         phone: branch.phone,
         whatsappNumber: branch.whatsappNumber,
       },
-      products: onSaleProducts.items.map((row) => this.mapRowToCatalogItem(row)),
+      products: onSaleProducts.items.map((row) =>
+        this.mapRowToCatalogItem(row),
+      ),
       combos,
     };
   }

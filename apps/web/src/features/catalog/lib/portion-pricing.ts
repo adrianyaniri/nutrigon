@@ -1,55 +1,98 @@
-export type WeightPortion = "100g" | "250g" | "500g" | "1kg";
+/** Keep legacy cart keys while allowing product-specific integer gram portions. */
+export type WeightPortion = `${number}g` | "1kg";
+
+export interface WeightConfiguration {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
+}
 
 export interface PortionOption {
   value: WeightPortion;
   label: string;
   multiplier: number;
-  discountRate: number; // 0 to 1
+  discountRate: number;
   badge?: string;
 }
 
-export const PORTION_OPTIONS: readonly PortionOption[] = [
-  {
-    value: "100g",
-    label: "100g",
-    multiplier: 0.1,
-    discountRate: 0,
-  },
-  {
-    value: "250g",
-    label: "250g",
-    multiplier: 0.25,
-    discountRate: 0,
-    badge: "Popular",
-  },
-  {
-    value: "500g",
-    label: "500g",
-    multiplier: 0.5,
-    discountRate: 0,
-  },
-  {
-    value: "1kg",
-    label: "1 kg",
-    multiplier: 1,
-    discountRate: 0,
-  },
-];
-
-function roundToTen(value: number): number {
-  return Math.round(value / 10) * 10;
+export function formatWeight(grams: number): string {
+  return grams === 1000 ? "1 kg" : `${grams} g`;
 }
 
-/**
- * Calculates effective price for a bulk portion based on the base price per 1 kg.
- */
-export function calculatePortionPrice(basePricePerKg: number, portion?: WeightPortion): number {
-  if (!portion) return basePricePerKg;
-
-  const option = PORTION_OPTIONS.find((opt) => opt.value === portion);
-  if (!option) return basePricePerKg;
-
-  const raw = basePricePerKg * option.multiplier * (1 - option.discountRate);
-  return roundToTen(raw);
+export function portionFromGrams(grams: number): WeightPortion {
+  return grams === 1000 ? "1kg" : `${grams}g`;
 }
 
+export function portionGrams(portion: string): number {
+  const grams =
+    portion === "1kg"
+      ? 1000
+      : /^\d+g$/.test(portion)
+        ? Number(portion.slice(0, -1))
+        : NaN;
+  if (!Number.isSafeInteger(grams) || grams <= 0 || grams > 1000000)
+    throw new RangeError("Invalid weight portion");
+  return grams;
+}
+
+function makeOption(grams: number): PortionOption {
+  return {
+    value: portionFromGrams(grams),
+    label: formatWeight(grams),
+    multiplier: grams / 1000,
+    discountRate: 0,
+  };
+}
+
+export const PORTION_OPTIONS: readonly PortionOption[] = [100, 250, 500, 1000].map(
+  makeOption
+);
+
+export function getPortionOptions(config: WeightConfiguration): readonly PortionOption[] {
+  return config.weightOptionsGrams?.map(makeOption) ?? PORTION_OPTIONS;
+}
+
+export function getDefaultPortion(config: WeightConfiguration): WeightPortion {
+  return portionFromGrams(config.defaultWeightGrams ?? 250);
+}
+
+export function getPriceReferenceGrams(config: WeightConfiguration): number {
+  return config.priceReferenceGrams === 100 ? 100 : 1000;
+}
+
+/** Prices are canonical kg amounts with at most two decimals. Round half up only at the cent boundary. */
+export function proportionalPrice(
+  price: number,
+  numerator: number,
+  denominator: number
+): number {
+  const cents = Math.round(price * 100);
+  if (!Number.isSafeInteger(cents) || cents < 0) throw new RangeError("Invalid price");
+  const divisor = BigInt(denominator);
+  return Number((BigInt(cents) * BigInt(numerator) + divisor / 2n) / divisor) / 100;
+}
+
+export function calculatePortionPrice(
+  basePricePerKg: number,
+  portion?: WeightPortion
+): number {
+  return portion
+    ? proportionalPrice(basePricePerKg, portionGrams(portion), 1000)
+    : basePricePerKg;
+}
+
+export function referencePrice(pricePerKg: number, config: WeightConfiguration): number {
+  return proportionalPrice(pricePerKg, getPriceReferenceGrams(config), 1000);
+}
+
+export function toPricePerKg(inputPrice: number, referenceGrams: number): number {
+  return proportionalPrice(inputPrice, 1000, referenceGrams);
+}
+
+export function multiplyPrice(price: number, quantity: number): number {
+  return (Math.round(price * 100) * quantity) / 100;
+}
+
+export function sumPrices(prices: number[]): number {
+  return prices.reduce((total, value) => total + Math.round(value * 100), 0) / 100;
+}

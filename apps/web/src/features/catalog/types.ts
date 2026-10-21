@@ -23,6 +23,7 @@ export interface ComboItemSummary {
   productName: string;
   quantity: number;
   saleUnit: SaleUnit;
+  unitPrice?: number;
 }
 
 /**
@@ -30,6 +31,9 @@ export interface ComboItemSummary {
  * `price` is per unit for `UNIT` products and per 1 kg for `WEIGHT` products.
  */
 export interface CatalogProduct {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
   id: string;
   categoryId: string;
   name: string;

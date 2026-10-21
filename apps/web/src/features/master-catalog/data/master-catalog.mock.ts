@@ -1,8 +1,4 @@
-import type {
-  MasterCategory,
-  MasterProduct,
-  MasterCatalogRepository,
-} from "../types";
+import type { MasterCategory, MasterProduct, MasterCatalogRepository } from "../types";
 
 export const INITIAL_MOCK_CATEGORIES: MasterCategory[] = [
   {
@@ -88,7 +84,9 @@ export function createInMemoryMasterCatalogRepository(
         throw new Error("El nombre de la categoría debe tener al menos 2 caracteres.");
       }
       if (!input.slug || !/^[a-z0-9-]+$/.test(input.slug.trim())) {
-        throw new Error("El slug solo puede contener letras minúsculas, números y guiones.");
+        throw new Error(
+          "El slug solo puede contener letras minúsculas, números y guiones."
+        );
       }
       if (categories.some((c) => c.slug === input.slug.trim())) {
         throw new Error(`Ya existe una categoría con el identificador "${input.slug}".`);
@@ -117,7 +115,9 @@ export function createInMemoryMasterCatalogRepository(
         throw new Error("El nombre de la categoría debe tener al menos 2 caracteres.");
       }
       if (input.slug !== undefined && !/^[a-z0-9-]+$/.test(input.slug.trim())) {
-        throw new Error("El slug solo puede contener letras minúsculas, números y guiones.");
+        throw new Error(
+          "El slug solo puede contener letras minúsculas, números y guiones."
+        );
       }
       if (
         input.slug !== undefined &&
@@ -200,7 +200,9 @@ export function createInMemoryMasterCatalogRepository(
       if (input.code?.trim()) {
         const codeNormalized = input.code.trim().toUpperCase();
         if (products.some((p) => p.code?.toUpperCase() === codeNormalized)) {
-          throw new Error(`Ya existe un producto con el código interno "${codeNormalized}".`);
+          throw new Error(
+            `Ya existe un producto con el código interno "${codeNormalized}".`
+          );
         }
       }
 
@@ -211,6 +213,9 @@ export function createInMemoryMasterCatalogRepository(
         name: input.name.trim(),
         description: input.description?.trim() || null,
         saleUnit: input.saleUnit,
+        weightOptionsGrams: input.weightOptionsGrams,
+        defaultWeightGrams: input.defaultWeightGrams,
+        priceReferenceGrams: input.priceReferenceGrams,
         barcode: input.barcode?.trim() || null,
         imageUrls: input.imageUrls ?? [],
         isActive: true,
@@ -238,6 +243,9 @@ export function createInMemoryMasterCatalogRepository(
             ? input.description?.trim() || null
             : current.description,
         saleUnit: input.saleUnit ?? current.saleUnit,
+        weightOptionsGrams: input.weightOptionsGrams ?? current.weightOptionsGrams,
+        defaultWeightGrams: input.defaultWeightGrams ?? current.defaultWeightGrams,
+        priceReferenceGrams: input.priceReferenceGrams ?? current.priceReferenceGrams,
         barcode:
           input.barcode !== undefined ? input.barcode?.trim() || null : current.barcode,
         imageUrls: input.imageUrls ?? current.imageUrls,

@@ -2,6 +2,10 @@ import { Barcode, Edit3, Hash, Layers, Scale } from "lucide-react";
 import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
 import { cn } from "@/lib/utils/cn";
 import type { MasterProduct } from "../types";
+import {
+  getPriceReferenceGrams,
+  formatWeight,
+} from "@/features/catalog/lib/portion-pricing";
 
 export interface MasterProductCardProps {
   product: MasterProduct;
@@ -62,7 +66,7 @@ export function MasterProductCard({
               <Scale className="size-3 shrink-0" />
               <span>
                 {product.saleUnit === "WEIGHT"
-                  ? "Granel · Venta por kg"
+                  ? `Granel · Precio por ${formatWeight(getPriceReferenceGrams(product))}`
                   : "Por Unidad"}
               </span>
             </span>
@@ -84,9 +88,7 @@ export function MasterProductCard({
           </h3>
 
           {product.description && (
-            <p className="text-xs text-zinc-400 line-clamp-1">
-              {product.description}
-            </p>
+            <p className="text-xs text-zinc-400 line-clamp-1">{product.description}</p>
           )}
 
           <div className="flex flex-wrap items-center gap-3 pt-0.5 text-[11px] text-zinc-400 font-mono">

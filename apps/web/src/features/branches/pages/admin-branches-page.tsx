@@ -373,10 +373,6 @@ export function AdminBranchesPage() {
               key={branch.id}
               branch={branch}
               isTogglingStatus={toggleStatusMutation.isPending}
-              onNavigatePricing={(target) => {
-                setSelectedBranchSlug(target.slug);
-                navigate("/admin/productos");
-              }}
               onEdit={setEditingBranch}
               onShowQr={setQrBranch}
               onManageUsers={setUsersModalBranch}

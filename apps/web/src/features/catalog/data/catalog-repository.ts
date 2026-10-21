@@ -24,6 +24,9 @@ interface ApiBranchItem {
 }
 
 interface ApiCatalogProductItem {
+  weightOptionsGrams?: number[];
+  defaultWeightGrams?: number;
+  priceReferenceGrams?: number;
   id: string;
   categoryId: string;
   name: string;
@@ -86,6 +89,9 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
     name: item.name,
     description: item.description,
     saleUnit: item.saleUnit,
+    weightOptionsGrams: item.weightOptionsGrams,
+    defaultWeightGrams: item.defaultWeightGrams,
+    priceReferenceGrams: item.priceReferenceGrams,
     imageUrl: item.imageUrls[0] || DEFAULT_PRODUCT_IMAGE,
     price: item.price,
     promotionalPrice: item.isOnSale ? item.promotionalPrice : null,
@@ -93,9 +99,23 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
   };
 }
 
-function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
+function mapApiComboToCatalogProduct(
+  combo: ApiComboResponse,
+  productMap?: Map<string, { price: number }>
+): CatalogProduct {
   const imageUrl = combo.imageUrls?.[0] || combo.imageUrl || DEFAULT_PRODUCT_IMAGE;
-  const originalPrice = combo.originalPrice;
+
+  let originalPrice = combo.originalPrice;
+  if (!originalPrice && productMap && combo.items.length > 0) {
+    const sum = combo.items.reduce((acc, item) => {
+      const prod = productMap.get(item.productId);
+      return acc + (prod ? prod.price * item.quantity : 0);
+    }, 0);
+    if (sum > 0) {
+      originalPrice = sum;
+    }
+  }
+
   const hasDiscount = originalPrice !== undefined && originalPrice > combo.price;
 
   return {
@@ -108,12 +128,16 @@ function mapApiComboToCatalogProduct(combo: ApiComboResponse): CatalogProduct {
     price: hasDiscount ? originalPrice : combo.price,
     promotionalPrice: hasDiscount ? combo.price : null,
     isCombo: true,
-    comboItems: combo.items.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      quantity: item.quantity,
-      saleUnit: item.saleUnit,
-    })),
+    comboItems: combo.items.map((item) => {
+      const prod = productMap?.get(item.productId);
+      return {
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        saleUnit: item.saleUnit,
+        unitPrice: prod?.price,
+      };
+    }),
   };
 }
 
@@ -152,12 +176,16 @@ export function createHttpCatalogRepository(
     async getBranchCatalog(branchSlug: string): Promise<BranchCatalog> {
       const encodedSlug = encodeURIComponent(branchSlug);
       const [catalogRes, combosRes] = await Promise.all([
-        fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`),
+        fetchFn(
+          `${normalizedBase}/api/v1/branches/${encodedSlug}/catalog?page=1&limit=100`
+        ),
         fetchFn(`${normalizedBase}/api/v1/branches/${encodedSlug}/catalog/combos`),
       ]);
 
       if (!catalogRes.ok) {
-        throw new Error(`Branch "${branchSlug}" was not found (status ${catalogRes.status}).`);
+        throw new Error(
+          `Branch "${branchSlug}" was not found (status ${catalogRes.status}).`
+        );
       }
 
       const firstPage = (await catalogRes.json()) as ApiPublicCatalogResponse;
@@ -183,6 +211,11 @@ export function createHttpCatalogRepository(
         }
       }
 
+      const productMap = new Map<string, { price: number }>();
+      for (const item of allItems) {
+        productMap.set(item.id, { price: item.price });
+      }
+
       let comboProducts: CatalogProduct[] = [];
       if (combosRes.ok) {
         try {
@@ -190,15 +223,15 @@ export function createHttpCatalogRepository(
           const comboList: ApiComboResponse[] = Array.isArray(rawCombos)
             ? (rawCombos as ApiComboResponse[])
             : rawCombos &&
-              typeof rawCombos === "object" &&
-              "combos" in rawCombos &&
-              Array.isArray((rawCombos as { combos: unknown[] }).combos)
-            ? (rawCombos as { combos: ApiComboResponse[] }).combos
-            : [];
+                typeof rawCombos === "object" &&
+                "combos" in rawCombos &&
+                Array.isArray((rawCombos as { combos: unknown[] }).combos)
+              ? (rawCombos as { combos: ApiComboResponse[] }).combos
+              : [];
 
           comboProducts = comboList
             .filter((combo) => combo.isActive !== false)
-            .map(mapApiComboToCatalogProduct);
+            .map((combo) => mapApiComboToCatalogProduct(combo, productMap));
         } catch {
           // Ignore JSON parse errors for combos
         }

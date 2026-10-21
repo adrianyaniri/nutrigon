@@ -5,7 +5,12 @@ import { ProductImage } from "@/components/atoms/product-image";
 import { useCart } from "@/features/cart";
 import {
   calculatePortionPrice,
-  PORTION_OPTIONS,
+  getPortionOptions,
+  getDefaultPortion,
+  referencePrice,
+  getPriceReferenceGrams,
+  formatWeight,
+  multiplyPrice,
   type WeightPortion,
 } from "@/features/catalog/lib/portion-pricing";
 import { getEffectivePrice } from "@/features/catalog/lib/filter-products";
@@ -30,7 +35,12 @@ export function ProductModal({
   categories,
 }: ProductModalProps) {
   const { addProduct } = useCart();
-  const [selectedPortion, setSelectedPortion] = useState<WeightPortion>("250g");
+  const defaultPortion = getDefaultPortion(product ?? {});
+  const [portionChoice, setSelectedPortion] = useState<WeightPortion>(defaultPortion);
+  const portionOptions = getPortionOptions(product ?? {});
+  const selectedPortion = portionOptions.some((option) => option.value === portionChoice)
+    ? portionChoice
+    : defaultPortion;
   const [quantity, setQuantity] = useState(1);
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
 
@@ -44,11 +54,11 @@ export function ProductModal({
   // Reset state when opening a new product
   useEffect(() => {
     if (isOpen) {
-      setSelectedPortion("250g");
+      setSelectedPortion(defaultPortion);
       setQuantity(1);
       setIsAddedFeedback(false);
     }
-  }, [isOpen, product?.id]);
+  }, [isOpen, product?.id, defaultPortion]);
 
   const categoryName = useMemo(() => {
     if (!product) return "Dietética";
@@ -64,7 +74,7 @@ export function ProductModal({
   const unitCalculatedPrice = isWeight
     ? calculatePortionPrice(baseEffectivePrice, selectedPortion)
     : baseEffectivePrice;
-  const totalPrice = unitCalculatedPrice * quantity;
+  const totalPrice = multiplyPrice(unitCalculatedPrice, quantity);
 
   function handleAddToCart() {
     if (!product) return;
@@ -157,11 +167,21 @@ export function ProductModal({
                   <span className="font-headline text-2xl sm:text-3xl font-black text-primary tracking-tight">
                     {formatPrice(unitCalculatedPrice)}
                   </span>
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <span className="text-base sm:text-lg text-muted-foreground line-through decoration-muted-foreground/60">
+                      {formatPrice(product.price)}
+                    </span>
+                  )}
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <span className="inline-flex items-center text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Ahorrás {formatPrice(product.price - product.promotionalPrice)}
+                    </span>
+                  )}
                   <span className="text-xs text-muted-foreground">
                     {product.isCombo
                       ? "Precio por combo completo"
                       : isWeight
-                        ? `Por ${selectedPortion} · Precio por 1 kg: ${formatPrice(baseEffectivePrice)}`
+                        ? `Por ${selectedPortion} · Precio por ${formatWeight(getPriceReferenceGrams(product))}: ${formatPrice(referencePrice(baseEffectivePrice, product))}`
                         : "Precio por unidad"}
                   </span>
                 </div>
@@ -169,20 +189,52 @@ export function ProductModal({
 
               {/* Included items for Combos */}
               {product.isCombo && product.comboItems && product.comboItems.length > 0 && (
-                <div className="space-y-2 rounded-2xl border border-border bg-brand-surface/40 p-3.5">
-                  <span className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
-                    Productos incluidos en el combo
-                  </span>
-                  <ul className="space-y-1.5 text-xs text-foreground">
-                    {product.comboItems.map((item) => (
-                      <li key={item.productId} className="flex items-center justify-between">
-                        <span>{item.productName}</span>
-                        <span className="font-semibold text-primary">
-                          {item.quantity} {item.saleUnit === "WEIGHT" ? "kg" : "un."}
-                        </span>
-                      </li>
-                    ))}
+                <div className="space-y-2.5 rounded-2xl border border-border bg-brand-surface/40 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground">
+                      Productos incluidos en el combo
+                    </span>
+                    {product.promotionalPrice && product.price > product.promotionalPrice && (
+                      <span className="text-[11px] font-bold text-emerald-400 font-mono">
+                        Ahorro: {formatPrice(product.price - product.promotionalPrice)}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="space-y-2 text-xs text-foreground divide-y divide-border/40">
+                    {product.comboItems.map((item) => {
+                      const qtyLabel =
+                        item.saleUnit === "WEIGHT"
+                          ? item.quantity < 1
+                            ? `${Math.round(item.quantity * 1000)} g`
+                            : `${item.quantity} kg`
+                          : `${item.quantity} un.`;
+
+                      return (
+                        <li
+                          key={item.productId}
+                          className="flex items-center justify-between pt-1.5 first:pt-0"
+                        >
+                          <div className="flex flex-col pr-2">
+                            <span className="font-medium text-foreground">{item.productName}</span>
+                            {item.unitPrice ? (
+                              <span className="text-[11px] text-muted-foreground">
+                                Precio regular: {formatPrice(item.unitPrice * item.quantity)}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="font-semibold text-primary shrink-0 bg-surface-elevated px-2 py-0.5 rounded border border-border/40 text-xs">
+                            {qtyLabel}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
+                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                    <div className="pt-2.5 border-t border-border flex items-center justify-between text-xs font-semibold">
+                      <span className="text-muted-foreground">Suma precio regular individual:</span>
+                      <span className="text-muted-foreground line-through">{formatPrice(product.price)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -205,34 +257,52 @@ export function ProductModal({
                     role="radiogroup"
                     aria-labelledby={portionLabelId}
                     onKeyDown={(e) => {
-                      if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+                      if (
+                        ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(
+                          e.key
+                        )
+                      ) {
                         e.preventDefault();
-                        const currentIndex = PORTION_OPTIONS.findIndex((o) => o.value === selectedPortion);
+                        const currentIndex = portionOptions.findIndex(
+                          (o) => o.value === selectedPortion
+                        );
                         if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-                          const nextIndex = (currentIndex + 1) % PORTION_OPTIONS.length;
-                          setSelectedPortion(PORTION_OPTIONS[nextIndex].value);
+                          const nextIndex = (currentIndex + 1) % portionOptions.length;
+                          setSelectedPortion(portionOptions[nextIndex].value);
+                          e.currentTarget
+                            .querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                            [nextIndex]?.focus();
                         } else {
-                          const prevIndex = (currentIndex - 1 + PORTION_OPTIONS.length) % PORTION_OPTIONS.length;
-                          setSelectedPortion(PORTION_OPTIONS[prevIndex].value);
+                          const prevIndex =
+                            (currentIndex - 1 + portionOptions.length) %
+                            portionOptions.length;
+                          setSelectedPortion(portionOptions[prevIndex].value);
+                          e.currentTarget
+                            .querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                            [prevIndex]?.focus();
                         }
                       }
                     }}
                     className="grid grid-cols-2 gap-2 sm:gap-2.5"
                   >
-                    {PORTION_OPTIONS.map((option) => {
+                    {portionOptions.map((option) => {
                       const isSelected = selectedPortion === option.value;
-                      const optPrice = calculatePortionPrice(baseEffectivePrice, option.value);
+                      const optPrice = calculatePortionPrice(
+                        baseEffectivePrice,
+                        option.value
+                      );
 
                       return (
                         <button
                           key={option.value}
                           type="button"
                           role="radio"
+                          aria-label={`${option.value} ${formatPrice(optPrice)}`}
                           aria-checked={isSelected}
                           tabIndex={isSelected ? 0 : -1}
                           onClick={() => setSelectedPortion(option.value)}
                           className={cn(
-                            "flex flex-col justify-between p-3 rounded-xl border text-left transition-all active:scale-[0.98]",
+                            "flex min-h-[44px] flex-col justify-between p-3 rounded-xl border text-left transition-all active:scale-[0.98]",
                             isSelected
                               ? "border-primary bg-primary/10 text-foreground font-semibold shadow-xs"
                               : "border-border bg-brand-surface/40 text-muted-foreground hover:border-border/80 hover:text-foreground"
@@ -256,7 +326,9 @@ export function ProductModal({
                             <span
                               className={cn(
                                 "font-headline text-xs font-semibold tabular-nums",
-                                isSelected ? "text-primary font-bold" : "text-muted-foreground"
+                                isSelected
+                                  ? "text-primary font-bold"
+                                  : "text-muted-foreground"
                               )}
                             >
                               {formatPrice(optPrice)}
@@ -340,9 +412,7 @@ export function ProductModal({
                 ) : (
                   <>
                     <ShoppingBag className="size-5" />
-                    <span>
-                      Agregar al Pedido · {formatPrice(totalPrice)}
-                    </span>
+                    <span>Agregar al Pedido · {formatPrice(totalPrice)}</span>
                   </>
                 )}
               </Button>
