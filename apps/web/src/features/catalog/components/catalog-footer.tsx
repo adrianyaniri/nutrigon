@@ -48,14 +48,14 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
               Seguinos en redes
             </span>
             <a
-              href="https://instagram.com/nutrigon.dietetica"
+              href="https://www.instagram.com/nutri.go/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram @nutrigon.dietetica"
+              aria-label="Instagram @nutri.go"
               className="inline-flex min-h-[44px] items-center gap-2.5 rounded-xl border border-brand-gold/40 bg-brand-card/80 px-4 py-2 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs"
             >
               <Instagram className="size-4 text-brand-gold" aria-hidden="true" />
-              <span>@nutrigon.dietetica</span>
+              <span>@nutri.go</span>
               <ExternalLink className="size-3 text-muted-foreground" aria-hidden="true" />
             </a>
           </div>
@@ -103,7 +103,10 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
 
                       {b.address && (
                         <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="size-3.5 text-brand-gold-text shrink-0 mt-0.5" aria-hidden="true" />
+                          <MapPin
+                            className="size-3.5 text-brand-gold-text shrink-0 mt-0.5"
+                            aria-hidden="true"
+                          />
                           <span>{b.address}</span>
                         </div>
                       )}
@@ -126,7 +129,10 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
                     <div className="pt-2 border-t border-border/40 space-y-1 text-[11px] text-muted-foreground">
                       {b.whatsappNumber && (
                         <div className="flex items-center gap-1.5">
-                          <MessageCircle className="size-3.5 shrink-0 text-status-success" aria-hidden="true" />
+                          <MessageCircle
+                            className="size-3.5 shrink-0 text-status-success"
+                            aria-hidden="true"
+                          />
                           <a
                             href={`https://wa.me/${b.whatsappNumber}`}
                             target="_blank"
@@ -140,7 +146,10 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
 
                       {b.phone && (
                         <div className="flex items-center gap-1.5">
-                          <Phone className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                          <Phone
+                            className="size-3.5 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
                           <span>Tel: {b.phone}</span>
                         </div>
                       )}
@@ -154,7 +163,10 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
 
         {/* Copyright */}
         <div className="border-t border-brand-border/60 pt-6 text-center sm:text-left text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Nutrigon Dietética. Todos los derechos reservados.</p>
+          <p>
+            © {new Date().getFullYear()} Nutrigon Dietética. Todos los derechos
+            reservados.
+          </p>
         </div>
       </div>
     </footer>

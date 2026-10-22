@@ -112,7 +112,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   return (
     <article
       className={cn(
-        "group relative flex h-full w-full flex-col justify-between rounded-2xl border border-brand-border/70 bg-brand-card/90 p-3 sm:p-4 transition-all duration-200 hover:border-brand-gold/60 hover:shadow-lg hover:shadow-brand-gold/5"
+        "group relative flex h-full min-w-0 w-full flex-col justify-between rounded-2xl border border-brand-border/70 bg-brand-card/90 p-3 sm:p-4 transition-all duration-200 hover:border-brand-gold/60 hover:shadow-lg hover:shadow-brand-gold/5"
       )}
     >
       {isClickable ? (
@@ -121,17 +121,20 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
           onClick={() => onSelect?.(product)}
           onKeyDown={handleKeyDown}
           aria-label={`Ver detalle de ${product.name}`}
-          className="flex w-full flex-col gap-3 rounded-xl text-left cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-gold"
+          className="flex min-w-0 w-full flex-col gap-3 rounded-xl text-left cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-gold"
         >
           {cardBody}
         </button>
       ) : (
-        <div className="flex w-full flex-col gap-3 rounded-xl text-left">{cardBody}</div>
+        <div className="flex min-w-0 w-full flex-col gap-3 rounded-xl text-left">
+          {cardBody}
+        </div>
       )}
 
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-brand-border/40 pt-3">
-        <div className="flex flex-col">
+      <div className="mt-3 flex min-w-0 flex-col items-stretch gap-2 border-t border-brand-border/40 pt-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-col">
           <PriceTag
+            className="min-w-0 [&>span:last-child]:flex-wrap"
             price={defaultPortionPrice ?? effectivePrice}
             originalPrice={
               onSale
@@ -155,7 +158,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               type="button"
               aria-label={`Elegir gramos de ${product.name}`}
               onClick={handleAdd}
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-brand-gold-text hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 motion-reduce:transform-none transition-all shadow-2xs"
+              className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/15 px-3 py-2 text-xs font-bold text-brand-gold-text hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark active:scale-95 motion-reduce:transform-none transition-all shadow-2xs sm:w-auto sm:shrink-0"
             >
               <Scale className="size-3.5 shrink-0" aria-hidden="true" />
               <span>Elegir</span>
@@ -169,7 +172,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
               }
               onClick={handleAdd}
               className={cn(
-                "transition-all duration-200 active:scale-95 motion-reduce:transform-none",
+                "self-end transition-all duration-200 active:scale-95 motion-reduce:transform-none sm:self-auto",
                 isAddedFeedback
                   ? "bg-status-success text-white hover:bg-status-success/90 scale-105"
                   : "hover:scale-105"

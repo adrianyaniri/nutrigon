@@ -14,10 +14,8 @@ export interface CatalogHeaderProps {
 }
 
 /**
- * Editorial header with perfectly centered branding.
- * Left: Mobile category drawer toggle & static read-only branch badge.
- * Center: Nutrigon Logo and brand identity.
- * Right: QR Share button, Admin Access & Cart button.
+ * Public catalog header. On mobile, branding and actions use the first row,
+ * while category navigation and the branch badge use the second row.
  */
 export function CatalogHeader({
   branchSlug,
@@ -40,9 +38,9 @@ export function CatalogHeader({
   }, [cartItemCount]);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between px-3 sm:px-4 md:px-6">
+      <div className="mx-auto grid w-full max-w-screen-xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-2 sm:px-4 md:flex md:h-16 md:justify-between md:gap-0 md:px-6 md:py-0">
         {/* Left Column: Mobile Menu Toggle & Read-Only Branch Badge */}
-        <div className="flex shrink-0 items-center justify-start gap-1.5 sm:gap-2">
+        <div className="col-span-2 row-start-2 flex min-w-0 items-center justify-start gap-1.5 sm:gap-2 md:shrink-0">
           {onOpenCategories && (
             <button
               type="button"
@@ -58,22 +56,27 @@ export function CatalogHeader({
           {branchName && (
             <div
               aria-label={`Sucursal actual: ${branchName}`}
-              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 sm:px-3 py-1.5 text-xs text-muted-foreground shadow-2xs"
+              className="flex min-h-[36px] min-w-0 items-center gap-1.5 rounded-full border border-border/80 bg-brand-surface/70 px-2.5 py-1.5 text-xs text-muted-foreground shadow-2xs sm:px-3"
             >
-              <MapPin className="size-3.5 text-brand-gold-text shrink-0" aria-hidden="true" />
+              <MapPin
+                className="size-3.5 text-brand-gold-text shrink-0"
+                aria-hidden="true"
+              />
               <span className="font-medium text-foreground max-w-[80px] sm:max-w-none truncate">
-                <span className="hidden sm:inline text-muted-foreground font-normal">Sucursal </span>
+                <span className="hidden sm:inline text-muted-foreground font-normal">
+                  Sucursal{" "}
+                </span>
                 {branchName}
               </span>
             </div>
           )}
         </div>
 
-        {/* Center Column: Prominent Centered Brand Logo */}
-        <div className="flex flex-1 items-center justify-center px-1 min-w-0">
+        {/* Brand: left-aligned on phones, centered at desktop widths. */}
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-start md:flex-1 md:justify-center md:px-1">
           <Link
             to={branchSlug ? `/catalogo/${branchSlug}` : "/catalogo"}
-            className="flex items-center gap-2 sm:gap-3 group max-w-full"
+            className="group flex min-h-[44px] min-w-0 max-w-full items-center gap-2 sm:gap-3"
           >
             <span className="relative flex size-9 sm:size-11 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-brand-gold/60 shadow-md bg-brand-surface transition-transform group-hover:scale-105">
               <img
@@ -90,7 +93,7 @@ export function CatalogHeader({
               <span className="font-headline text-base sm:text-xl font-bold tracking-tight text-foreground truncate">
                 Nutrigon
               </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-gold-text uppercase hidden xs:inline sm:inline truncate">
+              <span className="hidden truncate text-[11px] font-semibold uppercase tracking-wider text-brand-gold-text sm:inline">
                 Dietética &amp; Cerealera
               </span>
             </div>
@@ -98,16 +101,27 @@ export function CatalogHeader({
         </div>
 
         {/* Right Column: QR Share, Admin Access & Cart Button */}
-        <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+        <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
           {onOpenQr && (
             <button
               type="button"
               onClick={onOpenQr}
-              title={branchName ? `Ver y compartir QR de Sucursal ${branchName}` : "Ver código QR de la sucursal"}
-              aria-label={branchName ? `Ver y compartir QR de Sucursal ${branchName}` : "Ver código QR de la sucursal"}
+              title={
+                branchName
+                  ? `Ver y compartir QR de Sucursal ${branchName}`
+                  : "Ver código QR de la sucursal"
+              }
+              aria-label={
+                branchName
+                  ? `Ver y compartir QR de Sucursal ${branchName}`
+                  : "Ver código QR de la sucursal"
+              }
               className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-brand-surface/60 px-2.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs cursor-pointer"
             >
-              <QrCode className="size-4 text-brand-gold-text shrink-0" aria-hidden="true" />
+              <QrCode
+                className="size-4 text-brand-gold-text shrink-0"
+                aria-hidden="true"
+              />
               <span className="hidden md:inline">QR</span>
             </button>
           )}
@@ -140,7 +154,8 @@ export function CatalogHeader({
                 aria-hidden="true"
                 className={cn(
                   "absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow-xs transition-all duration-200 motion-reduce:transform-none",
-                  animateBadge && "scale-125 bg-status-success text-white ring-2 ring-status-success/40"
+                  animateBadge &&
+                    "scale-125 bg-status-success text-white ring-2 ring-status-success/40"
                 )}
               >
                 {cartItemCount}
