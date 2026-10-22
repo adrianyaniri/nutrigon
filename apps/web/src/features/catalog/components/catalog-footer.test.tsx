@@ -6,10 +6,10 @@ describe("CatalogFooter", () => {
   it("links to Nutrigon's current Instagram account", () => {
     render(<CatalogFooter branches={[]} />);
 
-    expect(screen.getByRole("link", { name: "Instagram @nutri.go" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Instagram @nutri.gon" })).toHaveAttribute(
       "href",
-      "https://www.instagram.com/nutri.go/"
+      "https://www.instagram.com/nutri.gon/"
     );
-    expect(screen.getByText("@nutri.go")).toBeInTheDocument();
+    expect(screen.getByText("@nutri.gon")).toBeInTheDocument();
   });
 });

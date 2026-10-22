@@ -48,14 +48,14 @@ export function CatalogFooter({ currentBranch, branches }: CatalogFooterProps) {
               Seguinos en redes
             </span>
             <a
-              href="https://www.instagram.com/nutri.go/"
+              href="https://www.instagram.com/nutri.gon/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram @nutri.go"
+              aria-label="Instagram @nutri.gon"
               className="inline-flex min-h-[44px] items-center gap-2.5 rounded-xl border border-brand-gold/40 bg-brand-card/80 px-4 py-2 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors shadow-2xs"
             >
               <Instagram className="size-4 text-brand-gold" aria-hidden="true" />
-              <span>@nutri.go</span>
+              <span>@nutri.gon</span>
               <ExternalLink className="size-3 text-muted-foreground" aria-hidden="true" />
             </a>
           </div>
