@@ -1,11 +1,19 @@
 import { defineConfig } from "vitest/config";
+import { loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
+import { requireApiUrl } from "./src/app/config/require-api-url";
 
 export default defineConfig({
   plugins: [
+    {
+      name: "require-production-api-url",
+      config(_config, { mode }) {
+        requireApiUrl(mode, loadEnv(mode, process.cwd(), "VITE_").VITE_API_URL);
+      },
+    },
     react(),
     tailwindcss(),
     VitePWA({
@@ -15,7 +23,8 @@ export default defineConfig({
       manifest: {
         name: "Nutrigon — Dietética",
         short_name: "Nutrigon",
-        description: "Catálogo online de Nutrigon Dietética: precios y productos por sucursal.",
+        description:
+          "Catálogo online de Nutrigon Dietética: precios y productos por sucursal.",
         lang: "es-AR",
         start_url: "/catalogo",
         scope: "/",

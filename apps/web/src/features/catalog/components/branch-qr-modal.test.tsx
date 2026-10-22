@@ -23,7 +23,9 @@ describe("BranchQrModal", () => {
     expect(screen.getByText(/QR Catálogo Sucursal Origone/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Copiar enlace/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Imprimir cartel/i })).toBeInTheDocument();
-    expect(screen.getByText("https://nutrigon.ar/catalogo/origone")).toBeInTheDocument();
+    expect(
+      screen.getByText("https://www.nutrigon.ar/catalogo/origone")
+    ).toBeInTheDocument();
   });
 
   it("calls onClose when close button is clicked", () => {
@@ -50,7 +52,9 @@ describe("BranchQrModal", () => {
     fireEvent.click(copyBtn);
 
     await waitFor(() => {
-      expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining("origone"));
+      expect(writeTextMock).toHaveBeenCalledWith(
+        "https://www.nutrigon.ar/catalogo/origone"
+      );
     });
   });
 
