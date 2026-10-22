@@ -14,5 +14,6 @@ async function bootstrap() {
   });
 
   await app.listen(env.PORT, '0.0.0.0');
+  console.log(`[NestApplication] Server listening on 0.0.0.0:${env.PORT}`);
 }
 await bootstrap();
