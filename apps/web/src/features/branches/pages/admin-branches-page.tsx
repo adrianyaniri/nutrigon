@@ -289,12 +289,12 @@ export function AdminBranchesPage() {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 rounded-xl border border-outline bg-surface p-1">
+        <div className="flex w-full min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-outline bg-surface p-1 sm:w-auto">
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
             className={cn(
-              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] shrink-0 px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "all"
                 ? "bg-brand-gold text-brand-dark shadow-xs"
                 : "text-zinc-400 hover:text-white"
@@ -306,7 +306,7 @@ export function AdminBranchesPage() {
             type="button"
             onClick={() => setStatusFilter("active")}
             className={cn(
-              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] shrink-0 px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "active"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -318,7 +318,7 @@ export function AdminBranchesPage() {
             type="button"
             onClick={() => setStatusFilter("inactive")}
             className={cn(
-              "min-h-[44px] px-3.5 rounded-lg text-xs font-semibold transition-colors",
+              "min-h-[44px] shrink-0 px-3.5 rounded-lg text-xs font-semibold transition-colors",
               statusFilter === "inactive"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-zinc-400 hover:text-white"

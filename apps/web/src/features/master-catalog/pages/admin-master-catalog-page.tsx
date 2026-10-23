@@ -622,7 +622,7 @@ export function AdminMasterCatalogPage() {
             value={selectedCategoryId}
             onChange={(e) => setSelectedCategoryId(e.target.value)}
             aria-label="Filtrar por categoría"
-            className="min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+            className="min-h-[44px] w-full min-w-0 rounded-xl border border-outline bg-surface px-3.5 text-xs text-white focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold sm:w-auto"
           >
             <option value="">Todas las categorías</option>
             {categories.map((cat) => (
@@ -633,12 +633,12 @@ export function AdminMasterCatalogPage() {
           </select>
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface border border-outline self-start lg:self-auto">
+        <div className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto rounded-xl border border-outline bg-surface p-1 lg:w-auto">
           <button
             type="button"
             onClick={() => setStatusFilter("ALL")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ALL"
                 ? "bg-brand-gold text-brand-dark"
                 : "text-zinc-400 hover:text-white"
@@ -650,7 +650,7 @@ export function AdminMasterCatalogPage() {
             type="button"
             onClick={() => setStatusFilter("ACTIVE")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "ACTIVE"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-zinc-400 hover:text-white"
@@ -662,7 +662,7 @@ export function AdminMasterCatalogPage() {
             type="button"
             onClick={() => setStatusFilter("INACTIVE")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px]",
               statusFilter === "INACTIVE"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-zinc-400 hover:text-white"

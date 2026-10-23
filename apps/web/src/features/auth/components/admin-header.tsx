@@ -92,28 +92,28 @@ export function AdminHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-surface border-b border-outline shadow-sm">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 gap-y-2 px-4 py-2.5 sm:px-6 sm:py-3 lg:flex lg:justify-between lg:gap-4">
         {/* Brand Anchor & Operational Status */}
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex min-w-0 items-center gap-4 sm:gap-6">
           <Link
             to={isGeneralAdmin ? "/admin/catalogo-maestro" : "/admin/productos"}
-            className="flex items-center gap-2.5 sm:gap-3"
+            className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
             <div className="size-8 rounded-lg bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold shadow-xs">
               <Store className="size-4" aria-hidden="true" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <span className="font-headline text-sm font-semibold tracking-tight text-foreground">
                 Nutrigon
               </span>
-              <span className="text-[11px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-surface-elevated font-mono">
+              <span className="hidden sm:inline text-[11px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-surface-elevated font-mono">
                 Admin
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1.5 ml-2">
+          <nav className="hidden xl:flex items-center gap-1.5 ml-2">
             {isGeneralAdmin && (
               <NavLink
                 to="/admin/catalogo-maestro"
@@ -181,21 +181,21 @@ export function AdminHeader() {
         </div>
 
       {/* Branch Selector + User Account Dropdown */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="contents lg:flex lg:min-w-0 lg:items-center lg:gap-3 xl:gap-4">
         {/* Branch Context Switcher (available to General Admin or displays branch for Branch Admin) */}
-        <div className="flex items-center gap-1.5 bg-surface-card border border-outline px-2.5 py-1.5 rounded-lg text-xs">
+        <div className="col-span-3 row-start-2 flex min-h-[44px] min-w-0 w-full items-center gap-1.5 rounded-lg border border-outline bg-surface-card px-3 py-1.5 text-xs lg:w-auto lg:max-w-64">
           <MapPin className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
           {branches.length === 0 ? (
             isGeneralAdmin ? (
               <Link
                 to="/admin/sucursales"
-                className="text-brand-gold hover:underline text-xs font-semibold whitespace-nowrap"
+                className="min-w-0 truncate text-brand-gold hover:underline text-xs font-semibold"
                 title="Registrar primera sucursal"
               >
                 Sin sucursales (+ Crear)
               </Link>
             ) : (
-              <span className="text-muted-foreground text-xs font-medium whitespace-nowrap">
+              <span className="min-w-0 truncate text-muted-foreground text-xs font-medium">
                 Sin sucursal asignada
               </span>
             )
@@ -203,7 +203,7 @@ export function AdminHeader() {
             <select
               value={activeBranch?.slug ?? selectedBranchSlug}
               onChange={(e) => setSelectedBranchSlug(e.target.value)}
-              className="bg-transparent text-foreground text-xs font-medium focus:outline-none cursor-pointer pr-1"
+              className="min-w-0 w-full bg-transparent text-foreground text-xs font-medium focus:outline-none cursor-pointer pr-1"
               aria-label="Seleccionar sucursal activa para gestionar"
             >
               {branches.map((b) => (
@@ -213,7 +213,7 @@ export function AdminHeader() {
               ))}
             </select>
           ) : (
-            <span className="text-foreground text-xs font-medium">
+            <span className="min-w-0 truncate text-foreground text-xs font-medium" title={`Sucursal ${activeBranch?.name ?? selectedBranchSlug}`}>
               Sucursal {activeBranch?.name ?? selectedBranchSlug}
             </span>
           )}
@@ -221,13 +221,13 @@ export function AdminHeader() {
 
         {/* Branch QR & Public Storefront Actions (only if activeBranch exists) */}
         {activeBranch && (
-          <div className="flex items-center gap-1.5">
+          <div className="col-start-2 row-start-1 flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setIsQrModalOpen(true)}
               aria-label={`Ver código QR de Sucursal ${activeBranch.name}`}
               title={`Ver, descargar o imprimir QR de Sucursal ${activeBranch.name}`}
-              className="flex min-h-[38px] items-center gap-1.5 rounded-lg border border-outline bg-surface-card px-2.5 py-1.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors cursor-pointer"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-lg border border-outline bg-surface-card px-2.5 py-1.5 text-xs font-semibold text-foreground hover:border-brand-gold hover:text-brand-gold transition-colors cursor-pointer"
             >
               <QrCode className="size-3.5 text-brand-gold shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline">QR Sucursal</span>
@@ -237,7 +237,7 @@ export function AdminHeader() {
               to={`/catalogo/${activeBranch.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors px-1.5"
+              className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-gold transition-colors px-1.5"
               title="Ver cómo lo ve el cliente en esta sucursal"
             >
               <span>Ver Tienda</span>
@@ -246,10 +246,10 @@ export function AdminHeader() {
           </div>
         )}
 
-        <div className="h-4 w-[1px] bg-outline" aria-hidden="true" />
+        <div className="hidden h-4 w-px bg-outline lg:block" aria-hidden="true" />
 
         {/* User Account Dropdown */}
-        <div className="relative" ref={userMenuRef}>
+        <div className="relative col-start-3 row-start-1" ref={userMenuRef}>
           <button
             type="button"
             onClick={() => setIsUserMenuOpen((prev) => !prev)}
@@ -292,7 +292,7 @@ export function AdminHeader() {
           {isUserMenuOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-outline bg-surface-card p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
+              className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-outline bg-surface-card p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
             >
               {/* User Identity Header */}
               <div className="px-3 py-2.5 border-b border-outline/70">
@@ -398,13 +398,13 @@ export function AdminHeader() {
 
 
       {/* Mobile Navigation Row */}
-      <nav className="flex md:hidden items-center border-t border-outline px-3 py-1.5 bg-surface-card/60 gap-1.5 overflow-x-auto">
+      <nav className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto overscroll-x-contain border-t border-outline bg-surface-card/60 px-3 py-1.5 xl:hidden">
         {isGeneralAdmin && (
           <NavLink
             to="/admin/catalogo-maestro"
             className={({ isActive }) =>
               cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                "flex-none flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
                 isActive
                   ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                   : "text-muted-foreground hover:text-foreground"
@@ -421,7 +421,7 @@ export function AdminHeader() {
             to="/admin/sucursales"
             className={({ isActive }) =>
               cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+                "flex-none flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
                 isActive
                   ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                   : "text-muted-foreground hover:text-foreground"
@@ -437,7 +437,7 @@ export function AdminHeader() {
           to="/admin/productos"
           className={({ isActive }) =>
             cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+              "flex-none flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                 : "text-muted-foreground hover:text-foreground"
@@ -452,7 +452,7 @@ export function AdminHeader() {
           to="/admin/combos"
           className={({ isActive }) =>
             cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
+              "flex-none flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] whitespace-nowrap",
               isActive
                 ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
                 : "text-muted-foreground hover:text-foreground"

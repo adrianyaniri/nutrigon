@@ -484,19 +484,23 @@ export function AdminProductsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-6 text-foreground pb-12">
       {/* Top Operational Header */}
-      <section className="rounded-2xl border border-outline bg-surface-card p-5 sm:p-6 shadow-xl">
+      <section className="rounded-2xl border border-outline bg-surface-card p-4 sm:p-6 shadow-xl">
         <div className="space-y-1.5">
-          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <h1 className="font-headline text-xl sm:text-3xl font-bold tracking-tight text-foreground">
             Gestión de Precios y Ofertas por Sucursal
           </h1>
 
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="hidden sm:block text-sm text-muted-foreground max-w-2xl leading-relaxed">
             Configurá el precio por kilogramo, por 100 g o por unidad, habilitá productos
             en el mostrador online y activá ofertas exclusivas para{" "}
             <strong className="text-foreground">
               Sucursal {activeBranch?.name ?? ""}
             </strong>
             .
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed sm:hidden">
+            Gestioná precios, disponibilidad y ofertas de{" "}
+            <strong className="text-foreground">Sucursal {activeBranch?.name ?? ""}</strong>.
           </p>
         </div>
 
@@ -526,7 +530,7 @@ export function AdminProductsPage() {
         <div
           role="tablist"
           aria-label="Filtrar por estado en la sucursal"
-          className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-5 border-t border-outline/60"
+          className="mt-4 grid grid-cols-2 gap-2 border-t border-outline/60 pt-4 sm:mt-6 sm:grid-cols-3 sm:gap-2.5 sm:pt-5 lg:grid-cols-5"
         >
           {filterTabs.map((tab) => {
             const isSelected = activeTab === tab.id;
@@ -538,16 +542,21 @@ export function AdminProductsPage() {
                 aria-selected={isSelected}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex min-h-[48px] items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none",
+                  "flex min-h-[48px] min-w-0 items-center justify-between gap-1.5 rounded-xl border px-2.5 py-2.5 text-left transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:outline-none sm:px-3.5",
+                  tab.id === "UNCONFIGURED" && "col-span-2 sm:col-span-1",
                   isSelected
                     ? "border-brand-gold bg-brand-gold/15 text-foreground shadow-sm"
                     : "border-outline/60 bg-surface text-muted-foreground hover:border-outline hover:text-foreground"
                 )}
               >
-                <span className="text-xs font-semibold truncate pr-2">{tab.label}</span>
+                <span className="min-w-0 text-xs font-semibold leading-snug">
+                  {tab.id === "ACTIVE" ? (
+                    <><span className="sm:hidden">Activos</span><span className="hidden sm:inline">{tab.label}</span></>
+                  ) : tab.label}
+                </span>
                 <span
                   className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+                    "shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
                     isSelected
                       ? "bg-brand-gold text-brand-dark"
                       : "bg-surface-elevated text-foreground/80"
@@ -624,7 +633,7 @@ export function AdminProductsPage() {
             value={selectedCategoryId}
             onChange={(e) => setSelectedCategoryId(e.target.value)}
             aria-label="Filtrar por categoría"
-            className="min-h-[44px] rounded-xl border border-outline bg-surface px-3.5 text-xs sm:text-sm text-foreground focus:outline-none focus:border-brand-gold cursor-pointer"
+            className="min-h-[44px] w-full min-w-0 rounded-xl border border-outline bg-surface px-3.5 text-xs text-foreground focus:outline-none focus:border-brand-gold cursor-pointer sm:w-auto sm:text-sm"
           >
             <option value="">Todas las categorías</option>
             {categories.map((cat) => (

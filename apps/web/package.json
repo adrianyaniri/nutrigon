@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run",
+    "test": "vitest run && node --test tests/pwa-worker.test.mjs",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "generate-pwa-assets": "pwa-assets-generator"

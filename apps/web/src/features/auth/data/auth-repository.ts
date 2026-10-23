@@ -80,60 +80,56 @@ function mockGetMe(token: string): AuthUser {
   throw new Error("SESSION_INVALID");
 }
 
+export async function requestLogin(
+  credentials: LoginDto,
+  baseUrl: string,
+  fetcher: typeof fetch = fetch
+): Promise<LoginResponse> {
+  const res = await fetcher(`${baseUrl}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+  });
+
+  if (res.ok) {
+    return (await res.json()) as LoginResponse;
+  }
+  if (res.status === 401) {
+    throw new Error("Credenciales inválidas. Verificá tu email y contraseña.");
+  }
+  const errorData = (await res.json().catch(() => ({}))) as { message?: string };
+  throw new Error(errorData.message || "Error al iniciar sesión en el servidor.");
+}
+
+export async function requestCurrentUser(
+  token: string,
+  baseUrl: string,
+  fetcher: typeof fetch = fetch
+): Promise<AuthUser> {
+  const res = await fetcher(`${baseUrl}/api/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.ok) {
+    return (await res.json()) as AuthUser;
+  }
+  if (res.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+  throw new Error("SESSION_INVALID");
+}
+
 export const authRepository: AuthRepository = {
-  async login(credentials: LoginDto): Promise<LoginResponse> {
+  async login(credentials) {
     if (import.meta.env.MODE === "test") {
       return mockLogin(credentials);
     }
-
-    const baseUrl = import.meta.env.VITE_API_URL || "";
-    try {
-      const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
-
-      if (res.ok) {
-        return (await res.json()) as LoginResponse;
-      }
-      if (res.status === 401) {
-        throw new Error("Credenciales inválidas. Verificá tu email y contraseña.");
-      }
-      const errorData = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(errorData.message || "Error al iniciar sesión en el servidor.");
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes("Credenciales")) {
-        throw err;
-      }
-
-      return mockLogin(credentials);
-    }
+    return requestLogin(credentials, import.meta.env.VITE_API_URL || "");
   },
 
-  async getMe(token: string): Promise<AuthUser> {
+  async getMe(token) {
     if (import.meta.env.MODE === "test") {
       return mockGetMe(token);
     }
-
-    const baseUrl = import.meta.env.VITE_API_URL || "";
-    try {
-      const res = await fetch(`${baseUrl}/api/v1/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        return (await res.json()) as AuthUser;
-      }
-      if (res.status === 401) {
-        throw new Error("UNAUTHORIZED");
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message === "UNAUTHORIZED") {
-        throw err;
-      }
-      return mockGetMe(token);
-    }
-
-    throw new Error("SESSION_INVALID");
+    return requestCurrentUser(token, import.meta.env.VITE_API_URL || "");
   },
 };

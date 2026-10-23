@@ -535,12 +535,12 @@ export function AdminCombosPage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface border border-outline self-start sm:self-auto">
+        <div className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto rounded-xl border border-outline bg-surface p-1 sm:w-auto">
           <button
             type="button"
             onClick={() => setStatusFilter("ALL")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "ALL"
                 ? "bg-brand-gold text-brand-dark"
                 : "text-muted-foreground hover:text-foreground"
@@ -552,7 +552,7 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("AVAILABLE")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "AVAILABLE"
                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                 : "text-muted-foreground hover:text-foreground"
@@ -564,7 +564,7 @@ export function AdminCombosPage() {
             type="button"
             onClick={() => setStatusFilter("PAUSED")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
+              "shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[44px] cursor-pointer",
               statusFilter === "PAUSED"
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                 : "text-muted-foreground hover:text-foreground"
