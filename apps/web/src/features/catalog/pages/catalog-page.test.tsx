@@ -1,7 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const captureAnalyticsEvent = vi.hoisted(() => vi.fn());
+vi.mock("@/app/analytics/posthog", () => ({ captureAnalyticsEvent }));
 import { CartProvider } from "@/features/cart";
 import { CatalogLandingPage } from "./catalog-landing-page";
 import { CatalogPage } from "./catalog-page";
@@ -25,6 +28,7 @@ function renderPage(initialEntry = "/catalogo/centro") {
 describe("CatalogPage & Route-based Branching", () => {
   beforeEach(() => {
     localStorage.clear();
+    captureAnalyticsEvent.mockClear();
   });
 
   afterEach(() => {
@@ -81,6 +85,10 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(
       screen.getByRole("button", { name: /Ver pedido: 1 producto/i })
     ).toBeInTheDocument();
+    expect(captureAnalyticsEvent).toHaveBeenCalledWith("add_to_cart", {
+      product_id: expect.any(String),
+      quantity: 1,
+    });
   });
 
   it("opens portion modal when clicking the choose button on WEIGHT products", async () => {
@@ -121,6 +129,9 @@ describe("CatalogPage & Route-based Branching", () => {
 
     expect(await screen.findByRole("dialog", { name: /tu pedido/i })).toBeInTheDocument();
     expect(screen.getByText("Enviar Pedido por WhatsApp")).toBeInTheDocument();
+    expect(captureAnalyticsEvent).toHaveBeenCalledWith("checkout_started", {
+      cart_items_count: 1,
+    });
   });
 
   it("opens the product detail modal when clicking a product card in the grid", async () => {
@@ -136,6 +147,10 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(
       screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })
     ).toBeInTheDocument();
+    expect(captureAnalyticsEvent).toHaveBeenCalledWith("product_viewed", {
+      product_id: expect.any(String),
+      product_category: expect.any(String),
+    });
   });
 
   it("applies the category from the URL", async () => {

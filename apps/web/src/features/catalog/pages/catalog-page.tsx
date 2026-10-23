@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/molecules/empty-state";
 import { SearchInput } from "@/components/molecules/search-input";
 import { SortSelect } from "@/components/molecules/sort-select";
 import { useCart, CartDrawer } from "@/features/cart";
+import { captureAnalyticsEvent } from "@/app/analytics/posthog";
 import { formatPrice } from "@/lib/format/price";
 import { CatalogFooter } from "../components/catalog-footer";
 import { CatalogHeader } from "../components/catalog-header";
@@ -114,8 +115,22 @@ export function CatalogPage() {
   );
 
   function handleAdd(product: CatalogProduct) {
-    if (product.saleUnit === "WEIGHT" && !product.isCombo) setSelectedProduct(product);
+    if (product.saleUnit === "WEIGHT" && !product.isCombo) handleSelectProduct(product);
     else if (branchSlug) addProduct(branchSlug, product.id);
+  }
+
+  function handleSelectProduct(product: CatalogProduct) {
+    setSelectedProduct(product);
+    captureAnalyticsEvent("product_viewed", {
+      product_id: product.id,
+      ...(product.categoryId ? { product_category: product.categoryId } : {}),
+    });
+  }
+
+  function handleOpenCart() {
+    setIsCartOpen(true);
+    if (itemCount > 0)
+      captureAnalyticsEvent("checkout_started", { cart_items_count: itemCount });
   }
 
   if (!branchesQuery.isPending && branches.length > 0 && !isValidBranch) {
@@ -149,7 +164,7 @@ export function CatalogPage() {
         branchName={catalog?.branch.name}
         cartItemCount={itemCount}
         onOpenCategories={() => setIsCategoryDrawerOpen(true)}
-        onOpenCart={() => setIsCartOpen(true)}
+        onOpenCart={handleOpenCart}
         onOpenQr={catalog ? () => setIsQrModalOpen(true) : undefined}
       />
       <main
@@ -260,7 +275,7 @@ export function CatalogPage() {
                 products={visibleProducts}
                 isLoading={isLoading}
                 onAdd={handleAdd}
-                onSelect={setSelectedProduct}
+                onSelect={handleSelectProduct}
                 onClearFilters={clearFilters}
                 suggestedCategories={categoryOptions
                   .filter((option) => Boolean(option.value))
@@ -288,7 +303,7 @@ export function CatalogPage() {
         <div className="fixed inset-x-0 bottom-0 z-30 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:hidden pointer-events-none">
           <button
             type="button"
-            onClick={() => setIsCartOpen(true)}
+            onClick={handleOpenCart}
             aria-label={`Ver pedido: ${itemCount} ${itemCount === 1 ? "producto" : "productos"}, total ${formatPrice(cartTotalAmount)}`}
             className="pointer-events-auto mx-auto flex min-h-[52px] w-full max-w-md items-center justify-between rounded-2xl bg-primary px-4 py-3 text-primary-foreground shadow-xl"
           >

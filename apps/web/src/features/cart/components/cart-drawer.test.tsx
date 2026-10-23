@@ -1,5 +1,8 @@
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const captureAnalyticsEvent = vi.hoisted(() => vi.fn());
+vi.mock("@/app/analytics/posthog", () => ({ captureAnalyticsEvent }));
 import { CartProvider, useCart } from "@/features/cart";
 import { CartDrawer } from "./cart-drawer";
 import type { CatalogBranch, CatalogProduct } from "@/features/catalog/types";
@@ -78,6 +81,10 @@ describe("CartDrawer", () => {
       expect(submit).toBeDisabled();
       fireEvent.click(submit);
       expect(open).not.toHaveBeenCalled();
+      expect(captureAnalyticsEvent).not.toHaveBeenCalledWith(
+        "whatsapp_checkout_clicked",
+        expect.anything()
+      );
       fireEvent.click(screen.getByRole("button", { name: /Eliminar Almendras/ }));
       expect(screen.getByText("Tu pedido está vacío")).toBeInTheDocument();
       open.mockRestore();
@@ -128,6 +135,7 @@ describe("CartDrawer", () => {
   afterEach(() => {
     cleanup();
     localStorage.clear();
+    captureAnalyticsEvent.mockClear();
   });
 
   it("renders empty state when there are no items in cart", () => {
@@ -222,6 +230,9 @@ describe("CartDrawer", () => {
     expect(calledUrl).toContain("https://wa.me/5493514210001?text=");
     expect(decodeURIComponent(calledUrl)).toContain("Carlos Pérez");
     expect(decodeURIComponent(calledUrl)).toContain("2x Almendras Nonpareil");
+    expect(captureAnalyticsEvent).toHaveBeenCalledWith("whatsapp_checkout_clicked", {
+      cart_items_count: 2,
+    });
 
     openSpy.mockRestore();
   });

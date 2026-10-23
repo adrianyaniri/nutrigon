@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/atoms/product-image";
 import { useCart } from "@/features/cart";
+import { captureAnalyticsEvent } from "@/app/analytics/posthog";
 import {
   buildWhatsAppOrderUrl,
   formatWhatsAppOrderMessage,
@@ -138,6 +139,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
 
     const whatsappUrl = buildWhatsAppOrderUrl(branch?.whatsappNumber, message);
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    captureAnalyticsEvent("whatsapp_checkout_clicked", { cart_items_count: itemCount });
     clear();
     onClose();
   }

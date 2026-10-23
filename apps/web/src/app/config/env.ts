@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
   VITE_API_URL: z.string().optional(),
+  VITE_POSTHOG_KEY: z.string().min(1).optional(),
+  VITE_POSTHOG_HOST: z.string().url().optional(),
   VITE_SUPABASE_URL: z.string().url("VITE_SUPABASE_URL must be a valid URL").optional(),
   VITE_SUPABASE_ANON_KEY: z
     .string()
@@ -22,6 +24,8 @@ function parseEnv(): {
 } {
   const rawEnv = {
     VITE_API_URL: import.meta.env.VITE_API_URL,
+    VITE_POSTHOG_KEY: import.meta.env.VITE_POSTHOG_KEY || undefined,
+    VITE_POSTHOG_HOST: import.meta.env.VITE_POSTHOG_HOST || undefined,
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     VITE_APP_NAME: import.meta.env.VITE_APP_NAME,
@@ -51,6 +55,8 @@ function parseEnv(): {
     return {
       env: {
         VITE_API_URL: rawEnv.VITE_API_URL,
+        VITE_POSTHOG_KEY: rawEnv.VITE_POSTHOG_KEY,
+        VITE_POSTHOG_HOST: rawEnv.VITE_POSTHOG_HOST,
         VITE_APP_NAME: "Nutrigon Dietética",
         VITE_APP_ENV: "development",
         VITE_SUPABASE_URL: url,
