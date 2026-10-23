@@ -25,8 +25,8 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export function isPublicAnalyticsHostname(hostname: string): boolean {
-  // Exclude all IP literals and local domains, not just familiar private ranges.
-  return !/(^localhost$|\.localhost$|\.local$|^[\d.]+$|:)/i.test(hostname);
+ return hostname === "www.nutrigon.ar" ||
+         hostname === "nutrigon.ar";
 }
 
 function canUseAnalytics(): boolean {
