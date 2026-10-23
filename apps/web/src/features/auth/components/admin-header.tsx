@@ -12,6 +12,7 @@ import {
   KeyRound,
   CheckCircle2,
   QrCode,
+  Smartphone,
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BranchQrModal } from "@/features/catalog/components/branch-qr-modal";
@@ -19,6 +20,7 @@ import { useBranches } from "@/features/catalog/hooks/use-catalog-queries";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "../context/auth-context";
 import { Role } from "../types";
+import { AdminPwaInstallModal } from "./admin-pwa-install-modal";
 import { ChangePasswordModal } from "./change-password-modal";
 
 export function AdminHeader() {
@@ -30,6 +32,7 @@ export function AdminHeader() {
   const isGeneralAdmin = user?.role === Role.ADMIN_GENERAL;
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isPwaInstallOpen, setIsPwaInstallOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [passwordNotification, setPasswordNotification] = useState<string | null>(null);
@@ -338,6 +341,19 @@ export function AdminHeader() {
                   <KeyRound className="size-4 text-muted-foreground shrink-0" aria-hidden="true" />
                   <span>Cambiar mi contraseña</span>
                 </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    setIsPwaInstallOpen(true);
+                  }}
+                  className="flex w-full min-h-[44px] items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-surface-hover rounded-xl transition-colors cursor-pointer text-left"
+                >
+                  <Smartphone className="size-4 text-brand-gold shrink-0" aria-hidden="true" />
+                  <span>Instalar app en el celular</span>
+                </button>
               </div>
 
               <div className="h-[1px] bg-outline/70 my-1" />
@@ -385,6 +401,11 @@ export function AdminHeader() {
           setPasswordNotification(msg);
           setTimeout(() => setPasswordNotification(null), 4000);
         }}
+      />
+
+      <AdminPwaInstallModal
+        isOpen={isPwaInstallOpen}
+        onClose={() => setIsPwaInstallOpen(false)}
       />
 
       {/* Branch QR Modal for Active Branch */}

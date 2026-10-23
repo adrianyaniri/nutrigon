@@ -5,4 +5,5 @@ export * from "./context/auth-provider";
 export * from "./components/protected-route";
 export * from "./components/admin-header";
 export * from "./components/admin-index-redirect";
+export * from "./components/admin-pwa-install-modal";
 export * from "./pages/admin-login-page";
