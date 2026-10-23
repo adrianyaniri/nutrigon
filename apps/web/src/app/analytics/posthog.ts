@@ -138,6 +138,8 @@ function initialize(): void {
         if (!allowedEvents.has(event.event)) return null;
         const props = event.properties ?? {};
         event.properties = {
+          token: props.token,
+          distinct_id: props.distinct_id,
           $session_id: props.$session_id,
           $window_id: props.$window_id,
           $current_url: sanitizeAnalyticsUrl(window.location.href),
