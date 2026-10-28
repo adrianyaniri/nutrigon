@@ -86,6 +86,10 @@ export class BranchProductsService {
         price: row.price !== null ? Number(row.price) : null,
         promotionalPrice:
           row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
+        weightOffers: (row.weightOffers ?? []).map((offer) => ({
+          weightGrams: offer.weightGrams,
+          promotionalPrice: Number(offer.promotionalPrice),
+        })),
         isOnSale: row.isOnSale ?? false,
         isAvailable: row.isAvailable ?? false,
         isFeatured: row.isFeatured ?? false,
@@ -148,6 +152,7 @@ export class BranchProductsService {
     saleUnit: string;
     price: string;
     promotionalPrice: string | null;
+    weightOffers?: { weightGrams: number; promotionalPrice: string }[];
     isOnSale: boolean;
     isFeatured: boolean;
     imageUrls: string[] | null;
@@ -165,6 +170,10 @@ export class BranchProductsService {
       price: Number(row.price),
       promotionalPrice:
         row.promotionalPrice !== null ? Number(row.promotionalPrice) : null,
+      weightOffers: (row.weightOffers ?? []).map((offer) => ({
+        weightGrams: offer.weightGrams,
+        promotionalPrice: Number(offer.promotionalPrice),
+      })),
       isOnSale: row.isOnSale,
       isFeatured: row.isFeatured,
       priceUnitLabel: row.saleUnit === SaleUnit.WEIGHT ? 'kg' : 'unidad',
@@ -192,6 +201,11 @@ export class BranchProductsService {
         `Promotional price must be greater than 0 and strictly less than the regular price (${regularPrice})`,
       );
     }
+  }
+
+  private calculateRegularPortionPrice(pricePerKg: number, weightGrams: number): number {
+    const priceCents = Math.round(pricePerKg * 100);
+    return Math.round((priceCents * weightGrams) / 1000) / 100;
   }
 
   async upsert(
@@ -264,24 +278,53 @@ export class BranchProductsService {
       );
     }
 
-    this.validateOfferPrice(
-      dto.isOnSale,
-      dto.promotionalPrice,
-      Number(existing.price),
-    );
+    const weightOffers = dto.weightOffers ?? [];
+    if (weightOffers.length > 0) {
+      const product = await this.productsRepository.findById(productId);
+      if (!product || product.saleUnit !== SaleUnit.WEIGHT) {
+        throw new BadRequestException('Weight offers are only valid for weight products');
+      }
 
-    const entity = await this.branchProductsRepository.upsert(
-      branchId,
-      productId,
+      const configuredWeights = product.weightOptionsGrams ?? [100, 250, 500, 1000];
+      for (const offer of weightOffers) {
+        if (!configuredWeights.includes(offer.weightGrams)) {
+          throw new BadRequestException(
+            `Weight ${offer.weightGrams} g is not configured for this product`,
+          );
+        }
+        const regularPortionPrice = this.calculateRegularPortionPrice(
+          Number(existing.price),
+          offer.weightGrams,
+        );
+        if (offer.promotionalPrice >= regularPortionPrice) {
+          throw new BadRequestException(
+            `Promotional price for ${offer.weightGrams} g must be strictly less than the regular portion price (${regularPortionPrice})`,
+          );
+        }
+      }
+    } else {
+      this.validateOfferPrice(
+        dto.isOnSale,
+        dto.promotionalPrice,
+        Number(existing.price),
+      );
+    }
+
+    const entity = await this.branchProductsRepository.updateOffer(
+      existing.id,
       {
-        price: existing.price,
         promotionalPrice:
           dto.isOnSale && dto.promotionalPrice
             ? dto.promotionalPrice.toFixed(2)
             : null,
         isOnSale: dto.isOnSale,
-        isAvailable: existing.isAvailable,
       },
+      dto.isOnSale
+        ? weightOffers.map((offer) => ({
+            weightGrams: offer.weightGrams,
+            promotionalPrice: offer.promotionalPrice.toFixed(2),
+          }))
+        : [],
     );
 
     return this.mapEntityToBranchProduct(entity);

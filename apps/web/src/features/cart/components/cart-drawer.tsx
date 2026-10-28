@@ -29,7 +29,7 @@ import { formatPrice } from "@/lib/format/price";
 import { cn } from "@/lib/utils/cn";
 
 import {
-  calculatePortionPrice,
+  getEffectivePortionPrice,
   getPortionOptions,
   portionGrams,
   formatWeight,
@@ -90,7 +90,7 @@ export function CartDrawer({ isOpen, onClose, branch, products }: CartDrawerProp
         const unitPrice = !isValid
           ? 0
           : product.saleUnit === "WEIGHT" && line.portion
-            ? calculatePortionPrice(basePrice, line.portion)
+            ? getEffectivePortionPrice(product, line.portion)
             : basePrice;
         const lineTotal = multiplyPrice(unitPrice, line.quantity);
         return {

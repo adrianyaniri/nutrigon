@@ -2,6 +2,10 @@ import type {
   BranchPricingRepository,
   BranchProductAdminItem,
 } from "./branch-pricing-repository";
+import {
+  calculatePortionPrice,
+  portionFromGrams,
+} from "@/features/catalog/lib/portion-pricing";
 
 export const INITIAL_MOCK_ITEMS: BranchProductAdminItem[] = [
   {
@@ -206,12 +210,32 @@ export function createInMemoryBranchPricingRepository(
         throw new Error("Configurá primero el precio base antes de activar una oferta.");
       }
 
-      validateOfferInput(input.isOnSale, input.promotionalPrice, current.price);
+      const weightOffers = input.weightOffers ?? [];
+      if (input.isOnSale && weightOffers.length > 0) {
+        for (const offer of weightOffers) {
+          if (!(current.weightOptionsGrams ?? []).includes(offer.weightGrams)) {
+            throw new Error("El gramaje seleccionado no está configurado para el producto.");
+          }
+          const regularPortionPrice = calculatePortionPrice(
+            current.price,
+            portionFromGrams(offer.weightGrams)
+          );
+          if (offer.promotionalPrice <= 0 || offer.promotionalPrice >= regularPortionPrice) {
+            throw new Error("El precio de oferta debe ser menor al precio regular.");
+          }
+        }
+      } else {
+        validateOfferInput(input.isOnSale, input.promotionalPrice, current.price);
+      }
 
       const updated: BranchProductAdminItem = {
         ...current,
         isOnSale: input.isOnSale,
-        promotionalPrice: input.isOnSale ? (input.promotionalPrice ?? null) : null,
+        promotionalPrice:
+          input.isOnSale && weightOffers.length === 0
+            ? (input.promotionalPrice ?? null)
+            : null,
+        weightOffers: input.isOnSale ? weightOffers : [],
       };
       items[idx] = updated;
 

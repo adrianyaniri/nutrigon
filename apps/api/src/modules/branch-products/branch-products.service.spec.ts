@@ -85,6 +85,11 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
     productId: string;
     data: UpsertBranchProductData;
   } | null = null;
+  public lastOfferUpdate: {
+    branchProductId: string;
+    data: { promotionalPrice: string | null; isOnSale: boolean };
+    weightOffers: { weightGrams: number; promotionalPrice: string }[];
+  } | null = null;
 
   async findAdminList(_branchId: string, query: BranchProductQueryDto) {
     this.lastAdminQuery = query;
@@ -117,6 +122,23 @@ class FakeBranchProductsRepository implements IBranchProductsRepository {
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       updatedAt: new Date('2026-01-02T00:00:00.000Z'),
     };
+  }
+
+  async updateOffer(
+    branchProductId: string,
+    data: { promotionalPrice: string | null; isOnSale: boolean },
+    weightOffers: { weightGrams: number; promotionalPrice: string }[],
+  ): Promise<BranchProductEntity> {
+    this.lastOfferUpdate = { branchProductId, data, weightOffers };
+    const current = this.existingBranchProduct!;
+    const updated = {
+      ...current,
+      promotionalPrice: data.promotionalPrice,
+      isOnSale: data.isOnSale,
+      updatedAt: new Date('2026-01-03T00:00:00.000Z'),
+    };
+    this.existingBranchProduct = updated;
+    return updated;
   }
 
   async findPublished(_branchId: string, query: BranchProductQueryDto) {
@@ -399,6 +421,66 @@ describe('BranchProductsService', () => {
       });
       expect(deactivated.isOnSale).toBe(false);
       expect(deactivated.promotionalPrice).toBeNull();
+    });
+
+    it('activates an exact offer only for the selected configured weight', async () => {
+      repo.existingBranchProduct = {
+        id: 'bp-1',
+        branchId: BRANCH_ID,
+        productId: PRODUCT_ID,
+        price: '1000.00',
+        promotionalPrice: null,
+        isOnSale: false,
+        isAvailable: true,
+        isFeatured: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const activated = await service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+        isOnSale: true,
+        promotionalPrice: null,
+        weightOffers: [{ weightGrams: 250, promotionalPrice: 125 }],
+      } as never);
+
+      expect(repo.lastOfferUpdate).toEqual({
+        branchProductId: 'bp-1',
+        data: { promotionalPrice: null, isOnSale: true },
+        weightOffers: [{ weightGrams: 250, promotionalPrice: '125.00' }],
+      });
+      expect(activated.isOnSale).toBe(true);
+      expect(activated.promotionalPrice).toBeNull();
+    });
+
+    it('rejects weight offers outside the product options or above their regular portion price', async () => {
+      repo.existingBranchProduct = {
+        id: 'bp-1',
+        branchId: BRANCH_ID,
+        productId: PRODUCT_ID,
+        price: '1000.00',
+        promotionalPrice: null,
+        isOnSale: false,
+        isAvailable: true,
+        isFeatured: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await expect(
+        service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+          isOnSale: true,
+          promotionalPrice: null,
+          weightOffers: [{ weightGrams: 75, promotionalPrice: 50 }],
+        } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      await expect(
+        service.updateOffer(BRANCH_ID, PRODUCT_ID, {
+          isOnSale: true,
+          promotionalPrice: null,
+          weightOffers: [{ weightGrams: 250, promotionalPrice: 250 }],
+        } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

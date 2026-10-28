@@ -36,6 +36,13 @@
       "when": 1792607274083,
       "tag": "0004_free_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793151575141,
+      "tag": "0005_light_jigsaw",
+      "breakpoints": true
     }
   ]
 }

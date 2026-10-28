@@ -111,6 +111,14 @@ export const BranchProductRow = memo(function BranchProductRow({
                 </span>
               </span>
             )}
+            {item.isOnSale && (item.weightOffers?.length ?? 0) > 0 && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-brand-gold/30 bg-brand-gold/15 px-2 py-0.5 text-[11px] font-bold text-brand-gold">
+                <Sparkles className="size-2.5 shrink-0" aria-hidden="true" />
+                <span>
+                  Oferta en {item.weightOffers!.map((offer) => formatWeight(offer.weightGrams)).join(", ")}
+                </span>
+              </span>
+            )}
 
             {item.isFeatured && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-300 shrink-0">
@@ -302,7 +310,9 @@ export const BranchProductRow = memo(function BranchProductRow({
                 title={
                   isConfigured
                     ? item.isOnSale
-                      ? `Oferta activa: ${formatPrice(displayPrice(item.promotionalPrice ?? 0))} (clic para editar)`
+                      ? item.promotionalPrice !== null
+                        ? `Oferta activa: ${formatPrice(displayPrice(item.promotionalPrice))} (clic para editar)`
+                        : `Oferta activa en ${item.weightOffers?.map((offer) => formatWeight(offer.weightGrams)).join(", ") ?? "gramajes específicos"} (clic para editar)`
                       : "Configurar oferta para este producto"
                     : "Guardá primero un precio base para habilitar ofertas"
                 }

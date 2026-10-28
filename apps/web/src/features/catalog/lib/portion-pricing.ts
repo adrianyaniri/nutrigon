@@ -7,6 +7,12 @@ export interface WeightConfiguration {
   priceReferenceGrams?: number;
 }
 
+export interface PortionOfferConfiguration {
+  price: number;
+  promotionalPrice: number | null;
+  weightOffers?: { weightGrams: number; promotionalPrice: number }[];
+}
+
 export interface PortionOption {
   value: WeightPortion;
   label: string;
@@ -88,6 +94,44 @@ export function calculatePortionPrice(
   return portion
     ? proportionalPrice(basePricePerKg, portionGrams(portion), 1000)
     : basePricePerKg;
+}
+
+export function getRegularPortionPrice(
+  product: Pick<PortionOfferConfiguration, "price">,
+  portion: WeightPortion
+): number {
+  return calculatePortionPrice(product.price, portion);
+}
+
+export function getEffectivePortionPrice(
+  product: PortionOfferConfiguration,
+  portion: WeightPortion
+): number {
+  const grams = portionGrams(portion);
+  const regularPortionPrice = getRegularPortionPrice(product, portion);
+  const weightOffer = product.weightOffers?.find((offer) => offer.weightGrams === grams);
+  if (
+    weightOffer &&
+    weightOffer.promotionalPrice > 0 &&
+    weightOffer.promotionalPrice < regularPortionPrice
+  ) {
+    return weightOffer.promotionalPrice;
+  }
+
+  const basePrice =
+    product.promotionalPrice !== null &&
+    product.promotionalPrice > 0 &&
+    product.promotionalPrice < product.price
+      ? product.promotionalPrice
+      : product.price;
+  return calculatePortionPrice(basePrice, portion);
+}
+
+export function isPortionOnSale(
+  product: PortionOfferConfiguration,
+  portion: WeightPortion
+): boolean {
+  return getEffectivePortionPrice(product, portion) < getRegularPortionPrice(product, portion);
 }
 
 export function referencePrice(pricePerKg: number, config: WeightConfiguration): number {

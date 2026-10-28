@@ -7,6 +7,7 @@ import { ProductImage } from "@/components/atoms/product-image";
 import { getEffectivePrice, isOnSale } from "@/features/catalog/lib/filter-products";
 import {
   calculatePortionPrice,
+  getEffectivePortionPrice,
   getDefaultPortion,
   formatWeight,
   portionGrams,
@@ -21,10 +22,10 @@ interface ProductCardProps {
   onSelect?: (product: CatalogProduct) => void;
 }
 
-function describeSaleUnit(product: CatalogProduct, initialWeight?: number): string {
+function describeSaleUnit(product: CatalogProduct): string {
   if (product.isCombo) return "Combo · Precio especial";
   return product.saleUnit === "WEIGHT"
-    ? `Granel · Precio inicial ${formatWeight(initialWeight ?? 0)}`
+    ? "Venta a granel"
     : "Venta por unidad";
 }
 
@@ -49,8 +50,13 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
   const defaultPortion = isWeight ? getDefaultPortion(product) : null;
   const defaultWeightGrams = defaultPortion ? portionGrams(defaultPortion) : undefined;
   const defaultPortionPrice = defaultPortion
-    ? calculatePortionPrice(effectivePrice, defaultPortion)
+    ? getEffectivePortionPrice(product, defaultPortion)
     : null;
+  const defaultRegularPrice = defaultPortion
+    ? calculatePortionPrice(product.price, defaultPortion)
+    : product.price;
+  const defaultOnSale =
+    defaultPortionPrice !== null && defaultPortionPrice < defaultRegularPrice;
 
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
@@ -100,7 +106,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
 
       <div className="flex flex-col gap-1">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {describeSaleUnit(product, defaultWeightGrams)}
+          {describeSaleUnit(product)}
         </span>
         <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
           {product.name}
@@ -137,17 +143,19 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
             className="min-w-0 [&>span:last-child]:flex-wrap"
             price={defaultPortionPrice ?? effectivePrice}
             originalPrice={
-              onSale
-                ? defaultPortion
-                  ? calculatePortionPrice(product.price, defaultPortion)
-                  : product.price
+              defaultOnSale
+                ? defaultRegularPrice
                 : undefined
             }
             unitLabel={getUnitLabel(product, defaultWeightGrams)}
           />
           {isWeight && (
             <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
-              Equivale a {formatPrice(effectivePrice)} / kg
+              {(product.weightOffers?.length ?? 0) > 0
+                ? `Oferta en ${product.weightOffers!
+                    .map((offer) => formatWeight(offer.weightGrams))
+                    .join(", ")}`
+                : `Precio por kg: ${formatPrice(effectivePrice)}`}
             </span>
           )}
         </div>

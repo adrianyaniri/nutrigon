@@ -18,6 +18,7 @@ export interface BranchProductAdminItem extends WeightConfiguration {
   status: BranchProductStatus;
   price: number | null;
   promotionalPrice: number | null;
+  weightOffers?: { weightGrams: number; promotionalPrice: number }[];
   isOnSale: boolean;
   isAvailable: boolean;
   isFeatured: boolean;
@@ -59,6 +60,7 @@ export interface UpsertBranchProductInput {
 export interface UpdateBranchOfferInput {
   isOnSale: boolean;
   promotionalPrice?: number | null;
+  weightOffers?: { weightGrams: number; promotionalPrice: number }[];
 }
 
 export interface BranchProductRecord {

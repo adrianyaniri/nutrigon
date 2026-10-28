@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/atoms/product-image";
 import { useCart } from "@/features/cart";
 import {
-  calculatePortionPrice,
+  getEffectivePortionPrice,
+  getRegularPortionPrice,
   getPortionOptions,
   getDefaultPortion,
   referencePrice,
   getPriceReferenceGrams,
   formatWeight,
   multiplyPrice,
+  portionGrams,
   type WeightPortion,
 } from "@/features/catalog/lib/portion-pricing";
 import { getEffectivePrice } from "@/features/catalog/lib/filter-products";
@@ -72,8 +74,12 @@ export function ProductModal({
   const isWeight = product.saleUnit === "WEIGHT" && !product.isCombo;
   const baseEffectivePrice = getEffectivePrice(product);
   const unitCalculatedPrice = isWeight
-    ? calculatePortionPrice(baseEffectivePrice, selectedPortion)
+    ? getEffectivePortionPrice(product, selectedPortion)
     : baseEffectivePrice;
+  const regularUnitPrice = isWeight
+    ? getRegularPortionPrice(product, selectedPortion)
+    : product.price;
+  const selectedOnSale = unitCalculatedPrice < regularUnitPrice;
   const totalPrice = multiplyPrice(unitCalculatedPrice, quantity);
 
   function handleAddToCart() {
@@ -139,7 +145,7 @@ export function ProductModal({
 
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {product.description ??
-                  "Frutos secos y alimentos naturales seleccionados. Venta a granel fraccionada en envase termosellado para conservar aroma, textura y frescura máxima."}
+                  "Frutos secos y alimentos naturales seleccionados para sumar a tu pedido."}
               </p>
             </div>
 
@@ -167,14 +173,14 @@ export function ProductModal({
                   <span className="font-headline text-2xl sm:text-3xl font-black text-primary tracking-tight">
                     {formatPrice(unitCalculatedPrice)}
                   </span>
-                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                  {selectedOnSale && (
                     <span className="text-base sm:text-lg text-muted-foreground line-through decoration-muted-foreground/60">
-                      {formatPrice(product.price)}
+                      {formatPrice(regularUnitPrice)}
                     </span>
                   )}
-                  {product.promotionalPrice && product.price > product.promotionalPrice && (
+                  {selectedOnSale && (
                     <span className="inline-flex items-center text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      Ahorrás {formatPrice(product.price - product.promotionalPrice)}
+                      Ahorrás {formatPrice(regularUnitPrice - unitCalculatedPrice)}
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground">
@@ -291,10 +297,7 @@ export function ProductModal({
                   >
                     {portionOptions.map((option) => {
                       const isSelected = selectedPortion === option.value;
-                      const optPrice = calculatePortionPrice(
-                        baseEffectivePrice,
-                        option.value
-                      );
+                      const optPrice = getEffectivePortionPrice(product, option.value);
 
                       return (
                         <button
@@ -361,11 +364,11 @@ export function ProductModal({
               <div className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-brand-surface/40">
                 <div className="flex flex-col min-w-0 pr-2">
                   <span className="font-headline text-xs font-bold text-foreground">
-                    {isWeight ? "Cantidad de paquetes" : "Cantidad"}
+                    Cantidad
                   </span>
                   <span className="text-[11px] text-muted-foreground truncate">
                     {isWeight
-                      ? `Bolsas termoselladas de ${selectedPortion}`
+                      ? `Cada porción: ${formatWeight(portionGrams(selectedPortion))}`
                       : "Unidades para el pedido"}
                   </span>
                 </div>
@@ -375,7 +378,7 @@ export function ProductModal({
                   <button
                     type="button"
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                    aria-label="Disminuir paquetes"
+                    aria-label="Disminuir cantidad"
                     disabled={quantity <= 1}
                     className="min-h-[44px] min-w-[44px] size-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 disabled:opacity-40 transition-all"
                   >
@@ -387,7 +390,7 @@ export function ProductModal({
                   <button
                     type="button"
                     onClick={() => setQuantity((prev) => prev + 1)}
-                    aria-label="Aumentar paquetes"
+                    aria-label="Aumentar cantidad"
                     className="min-h-[44px] min-w-[44px] size-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
                   >
                     <span className="text-base font-bold leading-none">+</span>

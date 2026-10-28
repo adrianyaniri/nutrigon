@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   calculatePortionPrice,
+  getEffectivePortionPrice,
+  isPortionOnSale,
   PORTION_OPTIONS,
   getPortionOptions,
   getDefaultPortion,
@@ -9,6 +11,19 @@ import {
 import { formatPrice } from "@/lib/format/price";
 
 describe("portion-pricing", () => {
+  it("applies an exact weight offer only to its matching portion", () => {
+    const product = {
+      price: 1000,
+      promotionalPrice: null,
+      weightOffers: [{ weightGrams: 250, promotionalPrice: 125 }],
+    };
+
+    expect(getEffectivePortionPrice(product, "100g")).toBe(100);
+    expect(getEffectivePortionPrice(product, "250g")).toBe(125);
+    expect(getEffectivePortionPrice(product, "500g")).toBe(500);
+    expect(isPortionOnSale(product, "250g")).toBe(true);
+    expect(isPortionOnSale(product, "500g")).toBe(false);
+  });
   it("calculates exact spice prices to cents without rounding to tens", () => {
     expect(calculatePortionPrice(10500, "25g")).toBe(262.5);
     expect(calculatePortionPrice(10500, "50g")).toBe(525);

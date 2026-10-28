@@ -261,6 +261,61 @@ describe("AdminProductsPage (Branch Pricing & Offers)", () => {
     });
   });
 
+  it("activates an offer only for the selected weight", async () => {
+    const item: BranchProductAdminItem = {
+      ...baseItem,
+      price: 1000,
+      weightOptionsGrams: [100, 250, 500, 1000],
+      promotionalPrice: null,
+      weightOffers: [],
+      isOnSale: false,
+    };
+    vi.spyOn(branchPricingRepository, "listProducts").mockResolvedValue({
+      items: [item],
+      total: 1,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+    });
+    const updateOffer = vi.spyOn(branchPricingRepository, "updateOffer").mockResolvedValue({
+      id: "bp",
+      branchId: "b-centro",
+      productId: item.productId,
+      price: 1000,
+      promotionalPrice: null,
+      isOnSale: true,
+      isAvailable: true,
+      isFeatured: false,
+    });
+
+    renderAdminProductsPage();
+    await screen.findByText(item.name);
+    fireEvent.click(screen.getByRole("button", { name: /oferta/i }));
+    fireEvent.click(screen.getByRole("radio", { name: "Gramajes específicos" }));
+    for (const weight of [100, 500, 1000]) {
+      fireEvent.change(screen.getByLabelText(`Precio promocional para ${weight === 1000 ? "1 kg" : `${weight} g`}`), {
+        target: { value: "0" },
+      });
+    }
+    fireEvent.change(screen.getByLabelText("Precio promocional para 250 g"), {
+      target: { value: "125" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Activar oferta" }));
+
+    await waitFor(() =>
+      expect(updateOffer).toHaveBeenCalledWith(
+        expect.any(String),
+        item.productId,
+        expect.any(String),
+        {
+          isOnSale: true,
+          promotionalPrice: null,
+          weightOffers: [{ weightGrams: 250, promotionalPrice: 125 }],
+        }
+      )
+    );
+  });
+
   it("filters products by En oferta tab", async () => {
     renderAdminProductsPage();
 

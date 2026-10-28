@@ -26,7 +26,9 @@ import type {
   IBranchProductsRepository,
   BranchProductAdminRow,
   BranchCatalogRow,
+  BranchWeightOfferRow,
   UpsertBranchProductData,
+  UpdateBranchOfferData,
 } from './branch-products.repository.interface.js';
 import type { BranchProductQueryDto } from './dto/branch-product.dto.js';
 
@@ -36,6 +38,19 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     @Inject(DRIZZLE_CLIENT)
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
+
+  private weightOffersSelection() {
+    return sql<BranchWeightOfferRow[]>`coalesce((
+      select json_agg(
+        json_build_object(
+          'weightGrams', ${schema.branchProductWeightOffers.weightGrams},
+          'promotionalPrice', ${schema.branchProductWeightOffers.promotionalPrice}
+        ) order by ${schema.branchProductWeightOffers.weightGrams}
+      )
+      from ${schema.branchProductWeightOffers}
+      where ${schema.branchProductWeightOffers.branchProductId} = ${schema.branchProducts.id}
+    ), '[]'::json)`;
+  }
 
   async findAdminList(
     branchId: string,
@@ -127,6 +142,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         branchProductId: schema.branchProducts.id,
         price: schema.branchProducts.price,
         promotionalPrice: schema.branchProducts.promotionalPrice,
+        weightOffers: this.weightOffersSelection(),
         isOnSale: schema.branchProducts.isOnSale,
         isAvailable: schema.branchProducts.isAvailable,
         isFeatured: schema.branchProducts.isFeatured,
@@ -209,36 +225,79 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     productId: string,
     data: UpsertBranchProductData,
   ): Promise<BranchProductEntity> {
-    const result = await this.db
-      .insert(schema.branchProducts)
-      .values({
-        branchId,
-        productId,
-        price: data.price,
-        promotionalPrice: data.promotionalPrice,
-        isOnSale: data.isOnSale,
-        isAvailable: data.isAvailable,
-        isFeatured: data.isFeatured ?? false,
-      })
-      .onConflictDoUpdate({
-        target: [
-          schema.branchProducts.branchId,
-          schema.branchProducts.productId,
-        ],
-        set: {
+    return this.db.transaction(async (tx) => {
+      const result = await tx
+        .insert(schema.branchProducts)
+        .values({
+          branchId,
+          productId,
           price: data.price,
           promotionalPrice: data.promotionalPrice,
           isOnSale: data.isOnSale,
           isAvailable: data.isAvailable,
-          ...(data.isFeatured !== undefined
-            ? { isFeatured: data.isFeatured }
-            : {}),
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+          isFeatured: data.isFeatured ?? false,
+        })
+        .onConflictDoUpdate({
+          target: [
+            schema.branchProducts.branchId,
+            schema.branchProducts.productId,
+          ],
+          set: {
+            price: data.price,
+            promotionalPrice: data.promotionalPrice,
+            isOnSale: data.isOnSale,
+            isAvailable: data.isAvailable,
+            ...(data.isFeatured !== undefined
+              ? { isFeatured: data.isFeatured }
+              : {}),
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
 
-    return result[0]!;
+      const entity = result[0]!;
+      if (!data.isOnSale) {
+        await tx
+          .delete(schema.branchProductWeightOffers)
+          .where(eq(schema.branchProductWeightOffers.branchProductId, entity.id));
+      }
+      return entity;
+    });
+  }
+
+  async updateOffer(
+    branchProductId: string,
+    data: UpdateBranchOfferData,
+    weightOffers: BranchWeightOfferRow[],
+  ): Promise<BranchProductEntity> {
+    return this.db.transaction(async (tx) => {
+      const result = await tx
+        .update(schema.branchProducts)
+        .set({
+          promotionalPrice: data.promotionalPrice,
+          isOnSale: data.isOnSale,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.branchProducts.id, branchProductId))
+        .returning();
+
+      const entity = result[0]!;
+      await tx
+        .delete(schema.branchProductWeightOffers)
+        .where(eq(schema.branchProductWeightOffers.branchProductId, branchProductId));
+
+      if (weightOffers.length > 0) {
+        await tx.insert(schema.branchProductWeightOffers).values(
+          weightOffers.map((offer) => ({
+            branchProductId,
+            weightGrams: offer.weightGrams,
+            promotionalPrice: offer.promotionalPrice,
+          })),
+        );
+      }
+
+      return entity;
+    });
   }
 
   async findPublished(
@@ -317,6 +376,7 @@ export class BranchProductsRepository implements IBranchProductsRepository {
         saleUnit: schema.products.saleUnit,
         price: schema.branchProducts.price,
         promotionalPrice: schema.branchProducts.promotionalPrice,
+        weightOffers: this.weightOffersSelection(),
         isOnSale: schema.branchProducts.isOnSale,
         isFeatured: schema.branchProducts.isFeatured,
         imageUrls: schema.products.imageUrls,

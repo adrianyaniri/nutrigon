@@ -26,6 +26,11 @@ export interface ComboItemSummary {
   unitPrice?: number;
 }
 
+export interface WeightOffer {
+  weightGrams: number;
+  promotionalPrice: number;
+}
+
 /**
  * Product as seen by a visitor of a specific branch.
  * `price` is per unit for `UNIT` products and per 1 kg for `WEIGHT` products.
@@ -42,6 +47,7 @@ export interface CatalogProduct {
   imageUrl: string | null;
   price: number;
   promotionalPrice: number | null;
+  weightOffers?: WeightOffer[];
   isFeatured?: boolean;
   isCombo?: boolean;
   comboItems?: ComboItemSummary[];

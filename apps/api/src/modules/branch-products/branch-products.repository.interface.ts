@@ -9,6 +9,11 @@ import type { BranchProductQueryDto } from './dto/branch-product.dto.js';
 
 export const BRANCH_PRODUCTS_REPOSITORY = Symbol('BRANCH_PRODUCTS_REPOSITORY');
 
+export interface BranchWeightOfferRow {
+  weightGrams: number;
+  promotionalPrice: string;
+}
+
 export interface BranchProductAdminRow {
   weightOptionsGrams?: number[];
   defaultWeightGrams?: number;
@@ -24,6 +29,7 @@ export interface BranchProductAdminRow {
   branchProductId: string | null;
   price: string | null;
   promotionalPrice: string | null;
+  weightOffers?: BranchWeightOfferRow[];
   isOnSale: boolean | null;
   isAvailable: boolean | null;
   isFeatured: boolean | null;
@@ -41,6 +47,7 @@ export interface BranchCatalogRow {
   saleUnit: SaleUnit | string;
   price: string;
   promotionalPrice: string | null;
+  weightOffers?: BranchWeightOfferRow[];
   isOnSale: boolean;
   isFeatured: boolean;
   imageUrls: string[];
@@ -52,6 +59,11 @@ export interface UpsertBranchProductData {
   isOnSale: boolean;
   isAvailable: boolean;
   isFeatured?: boolean;
+}
+
+export interface UpdateBranchOfferData {
+  promotionalPrice: string | null;
+  isOnSale: boolean;
 }
 
 export interface IBranchProductsRepository {
@@ -68,6 +80,11 @@ export interface IBranchProductsRepository {
     branchId: string,
     productId: string,
     data: UpsertBranchProductData,
+  ): Promise<BranchProductEntity>;
+  updateOffer(
+    branchProductId: string,
+    data: UpdateBranchOfferData,
+    weightOffers: BranchWeightOfferRow[],
   ): Promise<BranchProductEntity>;
   findPublished(
     branchId: string,

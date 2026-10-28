@@ -6,15 +6,19 @@ import type {
 } from "../types";
 
 export function isOnSale(
-  product: Pick<CatalogProduct, "price" | "promotionalPrice">
+  product: Pick<CatalogProduct, "price" | "promotionalPrice" | "weightOffers">
 ): boolean {
-  return product.promotionalPrice !== null && product.promotionalPrice < product.price;
+  const hasWholeProductOffer =
+    product.promotionalPrice !== null && product.promotionalPrice < product.price;
+  return hasWholeProductOffer || (product.weightOffers?.length ?? 0) > 0;
 }
 
 export function getEffectivePrice(
   product: Pick<CatalogProduct, "price" | "promotionalPrice">
 ): number {
-  return isOnSale(product) ? (product.promotionalPrice as number) : product.price;
+  return product.promotionalPrice !== null && product.promotionalPrice < product.price
+    ? product.promotionalPrice
+    : product.price;
 }
 
 function normalize(value: string): string {

@@ -40,6 +40,37 @@ const mockUnitProduct: CatalogProduct = {
 };
 
 describe("ProductModal", () => {
+  it("applies a weight offer only to the matching selected portion", () => {
+    const product: CatalogProduct = {
+      ...mockWeightProduct,
+      price: 1000,
+      weightOptionsGrams: [100, 250, 500, 1000],
+      defaultWeightGrams: 250,
+      weightOffers: [{ weightGrams: 250, promotionalPrice: 125 }],
+    };
+    render(
+      <CartProvider>
+        <ProductModal
+          isOpen
+          onClose={() => {}}
+          product={product}
+          branch={mockBranch}
+          categories={mockCategories}
+        />
+      </CartProvider>
+    );
+
+    expect(screen.getByRole("radio", { name: /250g.*125/ })).toHaveAttribute(
+      "aria-checked",
+      "true"
+    );
+    expect(screen.getByRole("button", { name: /Agregar al Pedido.*125/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: /500g.*500/ }));
+    expect(screen.getByRole("button", { name: /Agregar al Pedido.*500/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Ahorrás/)).not.toBeInTheDocument();
+  });
+
   it("shows configured spice weights, per100g reference and exact cent totals", () => {
     const spice = {
       ...mockWeightProduct,
@@ -69,7 +100,7 @@ describe("ProductModal", () => {
     expect(
       screen.getByRole("button", { name: /Agregar al Pedido.*262,50/ })
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Aumentar paquetes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar cantidad" }));
     expect(
       screen.getByRole("button", { name: /Agregar al Pedido.*525/ })
     ).toBeInTheDocument();
@@ -99,6 +130,8 @@ describe("ProductModal", () => {
     expect(
       screen.getByRole("radiogroup", { name: "Seleccionar gramaje" })
     ).toBeInTheDocument();
+    expect(screen.getByText("Cantidad")).toBeInTheDocument();
+    expect(screen.getByText("Cada porción: 250 g")).toBeInTheDocument();
 
     // Default portion is 250g (0.25 of 10000 = $2.500), appears in main price and 250g card
     expect(screen.getAllByText(/2\.500/).length).toBeGreaterThanOrEqual(1);
@@ -113,7 +146,7 @@ describe("ProductModal", () => {
     ).toBeInTheDocument();
 
     // Increase pack count to 2
-    const incrementBtn = screen.getByRole("button", { name: "Aumentar paquetes" });
+    const incrementBtn = screen.getByRole("button", { name: "Aumentar cantidad" });
     fireEvent.click(incrementBtn);
 
     // 5000 * 2 = 10000 -> $10.000
@@ -126,6 +159,27 @@ describe("ProductModal", () => {
     fireEvent.click(addBtn);
 
     expect(screen.getByText(/¡Agregado al pedido!/i)).toBeInTheDocument();
+  });
+
+  it("does not claim thermosealed packaging when the product has no description", () => {
+    render(
+      <CartProvider>
+        <ProductModal
+          isOpen
+          onClose={() => {}}
+          product={{ ...mockWeightProduct, description: null }}
+          branch={mockBranch}
+          categories={mockCategories}
+        />
+      </CartProvider>
+    );
+
+    expect(
+      screen.getByText(
+        "Frutos secos y alimentos naturales seleccionados para sumar a tu pedido."
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/termosellad/i)).not.toBeInTheDocument();
   });
 
   it("renders unit product without grammage selector", () => {

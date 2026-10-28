@@ -39,6 +39,7 @@ interface ApiCatalogProductItem {
   imageUrls: string[];
   price: number;
   promotionalPrice: number | null;
+  weightOffers?: { weightGrams: number; promotionalPrice: number }[];
   isOnSale: boolean;
   isFeatured?: boolean;
 }
@@ -66,6 +67,7 @@ function mapApiProductToCatalogProduct(item: ApiCatalogProductItem): CatalogProd
     imageUrl: item.imageUrls[0] || DEFAULT_PRODUCT_IMAGE,
     price: item.price,
     promotionalPrice: item.isOnSale ? item.promotionalPrice : null,
+    weightOffers: item.isOnSale ? (item.weightOffers ?? []) : [],
     isFeatured: item.isFeatured ?? false,
   };
 }
@@ -85,7 +87,12 @@ function createMockPage(
       const categoryId = catalog.categories.find((item) => item.slug === category)?.id;
       if (!categoryId || product.categoryId !== categoryId) return false;
     }
-    if (request.isOnSale && product.promotionalPrice === null) return false;
+    if (
+      request.isOnSale &&
+      product.promotionalPrice === null &&
+      (product.weightOffers?.length ?? 0) === 0
+    )
+      return false;
     return true;
   });
   const start = (request.page - 1) * request.limit;

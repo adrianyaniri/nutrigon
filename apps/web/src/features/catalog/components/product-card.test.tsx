@@ -27,10 +27,10 @@ describe("ProductCard", () => {
         }}
       />
     );
-    expect(screen.getByText("Granel · Precio inicial 25 g")).toBeInTheDocument();
+    expect(screen.getByText("Venta a granel")).toBeInTheDocument();
     expect(screen.getByText("/ 25 g")).toBeInTheDocument();
     expect(screen.getByText(/262,50/)).toBeInTheDocument();
-    expect(screen.getByText(/Equivale a.*10\.500.*kg/)).toBeInTheDocument();
+    expect(screen.getByText(/Precio por kg:.*10\.500/)).toBeInTheDocument();
   });
   afterEach(() => {
     cleanup();
@@ -41,10 +41,10 @@ describe("ProductCard", () => {
     expect(
       screen.getByRole("heading", { name: "Almendras Nonpareil" })
     ).toBeInTheDocument();
-    expect(screen.getByText("Granel · Precio inicial 250 g")).toBeInTheDocument();
+    expect(screen.getByText("Venta a granel")).toBeInTheDocument();
     expect(screen.getByText("/ 250 g")).toBeInTheDocument();
     expect(screen.getByText(/362,50/)).toBeInTheDocument();
-    expect(screen.getByText(/Equivale a.*1\.450.*kg/)).toBeInTheDocument();
+    expect(screen.getByText(/Precio por kg:.*1\.450/)).toBeInTheDocument();
     expect(screen.queryByText("Oferta")).not.toBeInTheDocument();
   });
 
@@ -53,7 +53,7 @@ describe("ProductCard", () => {
     expect(screen.getByText("Oferta")).toBeInTheDocument();
     expect(screen.getByText(/375/)).toBeInTheDocument();
     expect(screen.getAllByText(/500/)).toHaveLength(2);
-    expect(screen.getByText(/Equivale a.*1\.500.*kg/)).toBeInTheDocument();
+    expect(screen.getByText(/Precio por kg:.*1\.500/)).toBeInTheDocument();
   });
 
   it("renders an 'Elegir' button for WEIGHT products without false 'added' checkmark", () => {

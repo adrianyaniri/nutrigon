@@ -29,7 +29,9 @@ import { BranchOfferModal } from "../components/branch-offer-modal";
 import { BranchProductRow } from "../components/branch-product-row";
 import {
   calculatePortionPrice,
+  formatWeight,
   getPriceReferenceGrams,
+  portionFromGrams,
   referencePrice,
   toPricePerKg,
 } from "../lib/portion-pricing";
@@ -39,6 +41,7 @@ function displayedPrice(price: number, item: BranchProductAdminItem): number {
 }
 
 type FilterTab = "ALL" | BranchProductStatus | "ON_SALE";
+type OfferMode = "ALL" | "WEIGHT";
 
 export function AdminProductsPage() {
   const { user, token, selectedBranchSlug } = useAuth();
@@ -79,6 +82,8 @@ export function AdminProductsPage() {
     null
   );
   const [promoPriceInput, setPromoPriceInput] = useState("");
+  const [offerMode, setOfferMode] = useState<OfferMode>("ALL");
+  const [weightOfferInputs, setWeightOfferInputs] = useState<Record<number, string>>({});
   const [offerModalError, setOfferModalError] = useState<string | null>(null);
 
   // Reset pagination when filter or branch changes
@@ -183,11 +188,13 @@ export function AdminProductsPage() {
       productId: string;
       isOnSale: boolean;
       promotionalPrice?: number | null;
+      weightOffers?: { weightGrams: number; promotionalPrice: number }[];
       productName: string;
     }) =>
       branchPricingRepository.updateOffer(branchId, vars.productId, authToken, {
         isOnSale: vars.isOnSale,
         promotionalPrice: vars.promotionalPrice,
+        weightOffers: vars.weightOffers,
       }),
     onSuccess: async (_data, vars) => {
       await invalidateBranchQueries();
@@ -377,6 +384,13 @@ export function AdminProductsPage() {
 
     setOfferModalItem(item);
     setOfferModalError(null);
+    const existingWeightOffers = item.weightOffers ?? [];
+    setOfferMode(existingWeightOffers.length > 0 ? "WEIGHT" : "ALL");
+    setWeightOfferInputs(
+      Object.fromEntries(
+        existingWeightOffers.map((offer) => [offer.weightGrams, String(offer.promotionalPrice)])
+      )
+    );
     setPromoPriceInput(
       item.promotionalPrice !== null
         ? String(displayedPrice(item.promotionalPrice, item))
@@ -387,6 +401,44 @@ export function AdminProductsPage() {
   function handleActivateOffer() {
     if (!offerModalItem) return;
     const basePrice = offerModalItem.price ?? 0;
+
+    if (offerMode === "WEIGHT") {
+      const weightOffers: { weightGrams: number; promotionalPrice: number }[] = [];
+      for (const weightGrams of offerModalItem.weightOptionsGrams ?? []) {
+        const input = weightOfferInputs[weightGrams]?.trim() ?? "";
+        const promotionalPrice = Number(input);
+        if (!input || promotionalPrice === 0) continue;
+        const regularPrice = calculatePortionPrice(
+          basePrice,
+          portionFromGrams(weightGrams)
+        );
+        if (
+          !Number.isFinite(promotionalPrice) ||
+          promotionalPrice <= 0 ||
+          !/^\d*\.?\d{0,2}$/.test(input) ||
+          promotionalPrice >= regularPrice
+        ) {
+          setOfferModalError(
+            `La oferta para ${formatWeight(weightGrams)} debe ser mayor a $0 y menor al precio regular (${formatPrice(regularPrice)}).`
+          );
+          return;
+        }
+        weightOffers.push({ weightGrams, promotionalPrice });
+      }
+      if (weightOffers.length === 0) {
+        setOfferModalError("Ingresá al menos un precio promocional para un gramaje.");
+        return;
+      }
+      offerMutation.mutate({
+        productId: offerModalItem.productId,
+        isOnSale: true,
+        promotionalPrice: null,
+        weightOffers,
+        productName: offerModalItem.name,
+      });
+      return;
+    }
+
     const inputPromo = Number(promoPriceInput.trim());
 
     if (
@@ -429,6 +481,7 @@ export function AdminProductsPage() {
       productId: offerModalItem.productId,
       isOnSale: false,
       promotionalPrice: null,
+      weightOffers: [],
       productName: offerModalItem.name,
     });
   }
@@ -735,6 +788,16 @@ export function AdminProductsPage() {
       <BranchOfferModal
         item={offerModalItem}
         promoPriceInput={promoPriceInput}
+        offerMode={offerMode}
+        onOfferModeChange={(mode) => {
+          setOfferMode(mode);
+          setOfferModalError(null);
+        }}
+        weightOfferInputs={weightOfferInputs}
+        onWeightOfferInputChange={(weightGrams, value) => {
+          setWeightOfferInputs((current) => ({ ...current, [weightGrams]: value }));
+          setOfferModalError(null);
+        }}
         onPromoPriceInputChange={(val) => {
           setPromoPriceInput(val);
           setOfferModalError(null);

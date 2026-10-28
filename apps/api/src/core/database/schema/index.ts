@@ -3,6 +3,7 @@ import { branches } from './branches.js';
 import { categories } from './categories.js';
 import { products } from './products.js';
 import { branchProducts } from './branch-products.js';
+import { branchProductWeightOffers } from './branch-product-weight-offers.js';
 import { combos, comboItems, branchCombos } from './combos.js';
 import { users } from './users.js';
 
@@ -10,6 +11,7 @@ export * from './branches.js';
 export * from './categories.js';
 export * from './products.js';
 export * from './branch-products.js';
+export * from './branch-product-weight-offers.js';
 export * from './combos.js';
 export * from './users.js';
 
@@ -33,7 +35,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   comboItems: many(comboItems),
 }));
 
-export const branchProductsRelations = relations(branchProducts, ({ one }) => ({
+export const branchProductsRelations = relations(branchProducts, ({ one, many }) => ({
   branch: one(branches, {
     fields: [branchProducts.branchId],
     references: [branches.id],
@@ -42,7 +44,18 @@ export const branchProductsRelations = relations(branchProducts, ({ one }) => ({
     fields: [branchProducts.productId],
     references: [products.id],
   }),
+  weightOffers: many(branchProductWeightOffers),
 }));
+
+export const branchProductWeightOffersRelations = relations(
+  branchProductWeightOffers,
+  ({ one }) => ({
+    branchProduct: one(branchProducts, {
+      fields: [branchProductWeightOffers.branchProductId],
+      references: [branchProducts.id],
+    }),
+  }),
+);
 
 export const combosRelations = relations(combos, ({ many }) => ({
   items: many(comboItems),

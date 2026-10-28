@@ -24,7 +24,7 @@ import {
   filterAndSortProducts,
   getEffectivePrice,
 } from "../lib/filter-products";
-import { calculatePortionPrice } from "../lib/portion-pricing";
+import { getEffectivePortionPrice } from "../lib/portion-pricing";
 import type { BranchCatalogPage, CatalogProduct, SortOption } from "../types";
 
 const SORT_OPTIONS: readonly { value: SortOption; label: string }[] = [
@@ -99,7 +99,7 @@ export function CatalogPage() {
       const price = getEffectivePrice(product);
       const unitPrice =
         product.saleUnit === "WEIGHT" && line.portion
-          ? calculatePortionPrice(price, line.portion)
+          ? getEffectivePortionPrice(product, line.portion)
           : price;
       return total + unitPrice * line.quantity;
     }, 0);

@@ -64,6 +64,15 @@ export const upsertBranchProductSchema = z
 
 export type UpsertBranchProductDto = z.infer<typeof upsertBranchProductSchema>;
 
+export const branchWeightOfferSchema = z
+  .object({
+    weightGrams: z.number().int().positive(),
+    promotionalPrice: z.number().positive(),
+  })
+  .strict();
+
+export type BranchWeightOffer = z.infer<typeof branchWeightOfferSchema>;
+
 export const updateBranchProductOfferSchema = z
   .object({
     isOnSale: z.boolean(),
@@ -72,20 +81,38 @@ export const updateBranchProductOfferSchema = z
       .positive("Promotional price must be greater than 0")
       .nullable()
       .optional(),
+    weightOffers: z.array(branchWeightOfferSchema).default([]).optional(),
   })
   .strict()
-  .refine(
-    (data) => {
-      if (data.isOnSale && (!data.promotionalPrice || data.promotionalPrice <= 0)) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "A positive promotional price is required when activating an offer",
-      path: ["promotionalPrice"],
+  .superRefine((data, context) => {
+    const hasWholeProductOffer = data.promotionalPrice !== null && data.promotionalPrice !== undefined;
+    const weightOffers = data.weightOffers ?? [];
+    const hasWeightOffers = weightOffers.length > 0;
+
+    if (data.isOnSale && hasWholeProductOffer === hasWeightOffers) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose either a whole-product offer or one or more weight offers",
+        path: [hasWholeProductOffer ? "weightOffers" : "promotionalPrice"],
+      });
     }
-  );
+
+    if (!data.isOnSale && (hasWholeProductOffer || hasWeightOffers)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Disabled offers cannot include promotional prices",
+        path: hasWeightOffers ? ["weightOffers"] : ["promotionalPrice"],
+      });
+    }
+
+    if (new Set(weightOffers.map((offer) => offer.weightGrams)).size !== weightOffers.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Weight offers must use unique weights",
+        path: ["weightOffers"],
+      });
+    }
+  });
 
 export type UpdateBranchProductOfferDto = z.infer<typeof updateBranchProductOfferSchema>;
 
@@ -138,6 +165,7 @@ export const branchProductAdminItemSchema = z
     status: z.nativeEnum(BranchProductStatus),
     price: z.number().nullable(),
     promotionalPrice: z.number().nullable(),
+    weightOffers: z.array(branchWeightOfferSchema).default([]),
     isOnSale: z.boolean(),
     isAvailable: z.boolean(),
     isFeatured: z.boolean().default(false),
@@ -157,6 +185,7 @@ export const branchCatalogItemSchema = z
     saleUnit: z.nativeEnum(SaleUnit),
     price: z.number(),
     promotionalPrice: z.number().nullable(),
+    weightOffers: z.array(branchWeightOfferSchema).default([]),
     isOnSale: z.boolean(),
     isFeatured: z.boolean().default(false),
     priceUnitLabel: z.string(),
