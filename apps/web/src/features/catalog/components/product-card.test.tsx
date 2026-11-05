@@ -15,6 +15,24 @@ const base: CatalogProduct = {
 };
 
 describe("ProductCard", () => {
+  it.each([
+    ["MIX EUROPEO", "Mix europeo"],
+    ["Mix frutos secos", "Mix frutos secos"],
+    ["mix frutos secos", "Mix frutos secos"],
+    ["ARÁNDANOS SECOS", "Arándanos secos"],
+  ])(
+    "displays %s in sentence case without changing the selected product",
+    (name, displayName) => {
+      const product = { ...base, name };
+      const onSelect = vi.fn();
+      render(<ProductCard product={product} onSelect={onSelect} />);
+
+      fireEvent.click(screen.getByRole("heading", { name: displayName }));
+
+      expect(onSelect).toHaveBeenCalledWith(product);
+      expect(product.name).toBe(name);
+    }
+  );
   it("highlights the configured initial spice portion and keeps the kg price secondary", () => {
     render(
       <ProductCard
@@ -39,7 +57,7 @@ describe("ProductCard", () => {
   it("uses the current legacy default portion and keeps the kg price secondary", () => {
     render(<ProductCard product={base} />);
     expect(
-      screen.getByRole("heading", { name: "Almendras Nonpareil" })
+      screen.getByRole("heading", { name: "Almendras nonpareil" })
     ).toBeInTheDocument();
     expect(screen.getByText("Venta a granel")).toBeInTheDocument();
     expect(screen.getByText("/ 250 g")).toBeInTheDocument();
@@ -79,7 +97,7 @@ describe("ProductCard", () => {
     const onSelect = vi.fn();
     render(<ProductCard product={base} onAdd={onAdd} onSelect={onSelect} />);
 
-    fireEvent.click(screen.getByRole("heading", { name: "Almendras Nonpareil" }));
+    fireEvent.click(screen.getByRole("heading", { name: "Almendras nonpareil" }));
     expect(onSelect).toHaveBeenCalledWith(base);
     expect(onAdd).not.toHaveBeenCalled();
   });

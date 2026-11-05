@@ -37,7 +37,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("renders products of the specified branch route", async () => {
     renderPage("/catalogo/centro");
-    expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
+    expect(await screen.findByText("Almendras nonpareil")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Todos los productos"
     );
@@ -46,13 +46,13 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("filters by search term and offers to clear filters when nothing matches", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
       target: { value: "quinoa" },
     });
-    expect(await screen.findByText("Quinoa Real")).toBeInTheDocument();
-    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(await screen.findByText("Quinoa real")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras nonpareil")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
       target: { value: "zzzz" },
@@ -60,12 +60,12 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(await screen.findByText("No encontramos productos")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Quitar filtros" }));
-    expect(await screen.findByText("Almendras Nonpareil")).toBeInTheDocument();
+    expect(await screen.findByText("Almendras nonpareil")).toBeInTheDocument();
   });
 
   it("renders branch info in footer without catalog switching links", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     expect(screen.getByText("Sucursal Sur")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Sur" })).not.toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("adds UNIT products directly to cart and shows mobile sticky cart dock", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Galletas de Arroz");
+    await screen.findByText("Galletas de arroz");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
     fireEvent.click(
@@ -93,7 +93,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("opens portion modal when clicking the choose button on WEIGHT products", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
     expect(screen.getByRole("button", { name: "Mi pedido, vacío" })).toBeInTheDocument();
 
     fireEvent.click(
@@ -119,7 +119,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("opens the cart drawer when clicking the cart button in header", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Galletas de Arroz");
+    await screen.findByText("Galletas de arroz");
 
     fireEvent.click(
       screen.getByRole("button", { name: "Agregar Galletas de Arroz al pedido" })
@@ -136,9 +136,9 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("opens the product detail modal when clicking a product card in the grid", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
-    const heading = screen.getByRole("heading", { name: "Almendras Nonpareil" });
+    const heading = screen.getByRole("heading", { name: "Almendras nonpareil" });
     fireEvent.click(heading);
 
     expect(
@@ -155,8 +155,8 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("applies the category from the URL", async () => {
     renderPage("/catalogo/centro?categoria=suplementos");
-    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
-    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(await screen.findByText("Colágeno hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras nonpareil")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Suplementos");
     const nav = screen.getAllByRole("navigation", { name: "Categorías" })[0]!;
     expect(within(nav).getAllByRole("button").length).toBeGreaterThan(1);
@@ -164,7 +164,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("opens mobile category drawer and selects a category", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     // Click "Categorías" drawer trigger on mobile
     const drawerTrigger = screen.getByRole("button", {
@@ -183,8 +183,8 @@ describe("CatalogPage & Route-based Branching", () => {
     fireEvent.click(suplementosOption);
 
     // Verify filter applied
-    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
-    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(await screen.findByText("Colágeno hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras nonpareil")).not.toBeInTheDocument();
   });
 
   it("shows an actionable branch-not-found state", async () => {
@@ -211,7 +211,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("displays a read-only branch badge in header so customers cannot switch branches without QR", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     // Static badge is present, not an interactive button
     expect(screen.getByLabelText("Sucursal actual: Centro")).toBeInTheDocument();
@@ -225,7 +225,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("renders CatalogHero with branch name on root view and hides it when filtering", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     // Hero is visible
     expect(
@@ -247,7 +247,7 @@ describe("CatalogPage & Route-based Branching", () => {
 
   it("filters category directly via mobile CategoryChips dock without opening drawer", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     // Click the "Suplementos" chip in CategoryChips navigation
     const categoryNavs = screen.getAllByRole("navigation", { name: "Categorías" });
@@ -258,14 +258,14 @@ describe("CatalogPage & Route-based Branching", () => {
     fireEvent.click(suplementosChip);
 
     // Filter applied directly without opening modal drawer
-    expect(await screen.findByText("Colágeno Hidrolizado")).toBeInTheDocument();
-    expect(screen.queryByText("Almendras Nonpareil")).not.toBeInTheDocument();
+    expect(await screen.findByText("Colágeno hidrolizado")).toBeInTheDocument();
+    expect(screen.queryByText("Almendras nonpareil")).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog", { name: "Categorías" })).not.toBeInTheDocument();
   });
 
   it("opens the branch QR modal when clicking the QR share button in the public catalog header", async () => {
     renderPage("/catalogo/centro");
-    await screen.findByText("Almendras Nonpareil");
+    await screen.findByText("Almendras nonpareil");
 
     const qrBtn = screen.getByRole("button", {
       name: /Ver y compartir QR de Sucursal Centro/i,

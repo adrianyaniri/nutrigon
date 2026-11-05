@@ -24,9 +24,7 @@ interface ProductCardProps {
 
 function describeSaleUnit(product: CatalogProduct): string {
   if (product.isCombo) return "Combo · Precio especial";
-  return product.saleUnit === "WEIGHT"
-    ? "Venta a granel"
-    : "Venta por unidad";
+  return product.saleUnit === "WEIGHT" ? "Venta a granel" : "Venta por unidad";
 }
 
 function getUnitLabel(product: CatalogProduct, initialWeight?: number): string {
@@ -42,6 +40,9 @@ function getUnitLabel(product: CatalogProduct, initialWeight?: number): string {
  * and aligned price/actions across any screen resolution without nesting interactive controls.
  */
 export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
+  const displayName =
+    product.name.charAt(0).toLocaleUpperCase("es-AR") +
+    product.name.slice(1).toLocaleLowerCase("es-AR");
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
   const onSale = isOnSale(product);
   const isClickable = Boolean(onSelect);
@@ -109,7 +110,7 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
           {describeSaleUnit(product)}
         </span>
         <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
-          {product.name}
+          {displayName}
         </h3>
       </div>
     </>
@@ -142,18 +143,14 @@ export function ProductCard({ product, onAdd, onSelect }: ProductCardProps) {
           <PriceTag
             className="min-w-0 [&>span:last-child]:flex-wrap"
             price={defaultPortionPrice ?? effectivePrice}
-            originalPrice={
-              defaultOnSale
-                ? defaultRegularPrice
-                : undefined
-            }
+            originalPrice={defaultOnSale ? defaultRegularPrice : undefined}
             unitLabel={getUnitLabel(product, defaultWeightGrams)}
           />
           {isWeight && (
             <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
               {(product.weightOffers?.length ?? 0) > 0
-                ? `Oferta en ${product.weightOffers!
-                    .map((offer) => formatWeight(offer.weightGrams))
+                ? `Oferta en ${product
+                    .weightOffers!.map((offer) => formatWeight(offer.weightGrams))
                     .join(", ")}`
                 : `Precio por kg: ${formatPrice(effectivePrice)}`}
             </span>

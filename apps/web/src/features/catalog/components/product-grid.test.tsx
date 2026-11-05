@@ -48,8 +48,8 @@ describe("ProductGrid", () => {
         onClearFilters={vi.fn()}
       />
     );
-    expect(screen.getByText("Nueces Chandler")).toBeInTheDocument();
-    expect(screen.getByText("Barra Proteica")).toBeInTheDocument();
+    expect(screen.getByText("Nueces chandler")).toBeInTheDocument();
+    expect(screen.getByText("Barra proteica")).toBeInTheDocument();
   });
 
   it("renders empty state with clear filters button when products array is empty", () => {
