@@ -16,6 +16,9 @@ export interface CatalogCategory {
   id: string;
   name: string;
   slug: string;
+  /** Full published branch totals, independent of search, category and pagination. */
+  count?: number;
+  offersCount?: number;
 }
 
 export interface ComboItemSummary {

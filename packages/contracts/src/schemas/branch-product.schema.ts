@@ -85,7 +85,8 @@ export const updateBranchProductOfferSchema = z
   })
   .strict()
   .superRefine((data, context) => {
-    const hasWholeProductOffer = data.promotionalPrice !== null && data.promotionalPrice !== undefined;
+    const hasWholeProductOffer =
+      data.promotionalPrice !== null && data.promotionalPrice !== undefined;
     const weightOffers = data.weightOffers ?? [];
     const hasWeightOffers = weightOffers.length > 0;
 
@@ -105,7 +106,9 @@ export const updateBranchProductOfferSchema = z
       });
     }
 
-    if (new Set(weightOffers.map((offer) => offer.weightGrams)).size !== weightOffers.length) {
+    if (
+      new Set(weightOffers.map((offer) => offer.weightGrams)).size !== weightOffers.length
+    ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Weight offers must use unique weights",
@@ -200,6 +203,8 @@ export const branchCatalogCategorySchema = z
     id: z.string().uuid(),
     name: z.string(),
     slug: z.string(),
+    count: z.number().int().nonnegative().optional(),
+    offersCount: z.number().int().nonnegative().optional(),
   })
   .strict();
 

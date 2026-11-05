@@ -13,7 +13,9 @@ const categories: CatalogCategory[] = [
   { id: "c3", name: "Suplementos", slug: "suplementos" },
 ];
 
-function product(overrides: Partial<CatalogProduct> & Pick<CatalogProduct, "id" | "name">) {
+function product(
+  overrides: Partial<CatalogProduct> & Pick<CatalogProduct, "id" | "name">
+) {
   return {
     categoryId: "c1",
     description: null,
@@ -29,7 +31,13 @@ const products: CatalogProduct[] = [
   product({ id: "p1", name: "Almendras", price: 1450 }),
   product({ id: "p2", name: "Avena Arrollada", categoryId: "c2", price: 600 }),
   product({ id: "p3", name: "Nueces Mariposa", price: 2000, promotionalPrice: 1500 }),
-  product({ id: "p4", name: "Proteína Vegetal", categoryId: "c3", saleUnit: "UNIT", price: 9000 }),
+  product({
+    id: "p4",
+    name: "Proteína Vegetal",
+    categoryId: "c3",
+    saleUnit: "UNIT",
+    price: 9000,
+  }),
 ];
 
 describe("getEffectivePrice / isOnSale", () => {
@@ -75,29 +83,47 @@ describe("filterAndSortProducts", () => {
   });
 
   it("returns nothing for an unknown category slug", () => {
-    const result = filterAndSortProducts(products, categories, { ...base, categorySlug: "nope" });
+    const result = filterAndSortProducts(products, categories, {
+      ...base,
+      categorySlug: "nope",
+    });
     expect(result).toEqual([]);
   });
 
   it("searches ignoring case and accents", () => {
-    const result = filterAndSortProducts(products, categories, { ...base, search: "proteina" });
+    const result = filterAndSortProducts(products, categories, {
+      ...base,
+      search: "proteina",
+    });
     expect(result.map((p) => p.id)).toEqual(["p4"]);
   });
 
   it("ignores surrounding whitespace in the search term", () => {
-    const result = filterAndSortProducts(products, categories, { ...base, search: "  AVENA " });
+    const result = filterAndSortProducts(products, categories, {
+      ...base,
+      search: "  AVENA ",
+    });
     expect(result.map((p) => p.id)).toEqual(["p2"]);
   });
 
   it("sorts by effective price ascending and descending", () => {
-    const asc = filterAndSortProducts(products, categories, { ...base, sort: "price-asc" });
+    const asc = filterAndSortProducts(products, categories, {
+      ...base,
+      sort: "price-asc",
+    });
     expect(asc.map((p) => p.id)).toEqual(["p2", "p1", "p3", "p4"]);
-    const desc = filterAndSortProducts(products, categories, { ...base, sort: "price-desc" });
+    const desc = filterAndSortProducts(products, categories, {
+      ...base,
+      sort: "price-desc",
+    });
     expect(desc.map((p) => p.id)).toEqual(["p4", "p3", "p1", "p2"]);
   });
 
   it("sorts by name using Spanish collation", () => {
-    const result = filterAndSortProducts(products, categories, { ...base, sort: "name-asc" });
+    const result = filterAndSortProducts(products, categories, {
+      ...base,
+      sort: "name-asc",
+    });
     expect(result.map((p) => p.name)).toEqual([
       "Almendras",
       "Avena Arrollada",
@@ -114,6 +140,31 @@ describe("filterAndSortProducts", () => {
 });
 
 describe("buildCategoryOptions", () => {
+  it.each([
+    { loadedProducts: [] },
+    { loadedProducts: [products[0]!] },
+    { loadedProducts: products },
+  ])(
+    "uses full branch totals instead of the loaded products (%#)",
+    ({ loadedProducts }) => {
+      const countedCategories = categories.map((category, index) => ({
+        ...category,
+        count: [40, 12, 8][index]!,
+        offersCount: [2, 1, 0][index]!,
+      }));
+      expect(
+        buildCategoryOptions(countedCategories, loadedProducts, {
+          includeSpecialFilters: true,
+        })
+      ).toEqual([
+        { value: null, label: "Todos", count: 60 },
+        { value: "ofertas", label: "Ofertas", count: 3 },
+        { value: "frutos-secos", label: "Frutos Secos", count: 40 },
+        { value: "harinas-granos", label: "Harinas & Granos", count: 12 },
+        { value: "suplementos", label: "Suplementos", count: 8 },
+      ]);
+    }
+  );
   it("prepends an 'all' option and counts products per category", () => {
     const options = buildCategoryOptions(categories, products);
     expect(options).toEqual([
@@ -142,7 +193,9 @@ describe("buildCategoryOptions", () => {
         isCombo: true,
       }),
     ];
-    const options = buildCategoryOptions(categories, withCombo, { includeSpecialFilters: true });
+    const options = buildCategoryOptions(categories, withCombo, {
+      includeSpecialFilters: true,
+    });
     expect(options.slice(0, 3)).toEqual([
       { value: null, label: "Todos", count: 5 },
       { value: "ofertas", label: "Ofertas", count: 1 },
@@ -164,4 +217,3 @@ describe("buildCategoryOptions", () => {
     expect(combosOnly.map((p) => p.id)).toEqual(["combo-1"]);
   });
 });
-

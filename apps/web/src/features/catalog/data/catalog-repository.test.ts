@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createHttpCatalogRepository } from "./catalog-repository";
+import { createHttpCatalogRepository, mockCatalogRepository } from "./catalog-repository";
 
 const page = {
   branch: {
@@ -10,7 +10,9 @@ const page = {
     phone: null,
     whatsappNumber: null,
   },
-  categories: [{ id: "cat-1", name: "Semillas", slug: "semillas" }],
+  categories: [
+    { id: "cat-1", name: "Semillas", slug: "semillas", count: 60, offersCount: 3 },
+  ],
   items: [
     {
       id: "prod-1",
@@ -31,6 +33,27 @@ const page = {
 };
 
 describe("createHttpCatalogRepository", () => {
+  it("returns full branch category counts regardless of page or filters", async () => {
+    const first = await mockCatalogRepository.getBranchCatalogPage("centro", {
+      page: 1,
+      limit: 1,
+    });
+    const filtered = await mockCatalogRepository.getBranchCatalogPage("centro", {
+      page: 2,
+      limit: 1,
+      categorySlug: "suplementos",
+      search: "colágeno",
+    });
+    expect(first.products).toHaveLength(1);
+    expect(filtered.products).toHaveLength(0);
+    expect(first.categories[0]).toMatchObject({ count: 4, offersCount: 1 });
+    expect(filtered.categories).toEqual(first.categories);
+    const sur = await mockCatalogRepository.getBranchCatalogPage("sur", {
+      page: 1,
+      limit: 1,
+    });
+    expect(sur.categories[0]).toMatchObject({ count: 3, offersCount: 1 });
+  });
   it("fetches active branches from the public endpoint", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
@@ -67,6 +90,7 @@ describe("createHttpCatalogRepository", () => {
       "http://localhost:3000/api/v1/branches/vergara/catalog?page=2&limit=24&search=chia&categorySlug=semillas"
     );
     expect(catalog).toMatchObject({
+      categories: page.categories,
       page: 2,
       limit: 24,
       total: 48,

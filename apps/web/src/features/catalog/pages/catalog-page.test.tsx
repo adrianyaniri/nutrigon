@@ -44,6 +44,31 @@ describe("CatalogPage & Route-based Branching", () => {
     expect(screen.getByText(/en Sucursal Centro/)).toBeInTheDocument();
   });
 
+  it("keeps branch category totals when filtering and searching", async () => {
+    renderPage("/catalogo/centro");
+    await screen.findByText("Almendras nonpareil");
+    const nav = screen.getAllByRole("navigation", { name: "Categorías" })[0]!;
+    const expectCounts = () => {
+      expect(within(nav).getByRole("button", { name: "Todos 14" })).toBeInTheDocument();
+      expect(
+        within(nav).getByRole("button", { name: "Frutos Secos 4" })
+      ).toBeInTheDocument();
+      expect(
+        within(nav).getByRole("button", { name: "Suplementos 2" })
+      ).toBeInTheDocument();
+      expect(within(nav).getByRole("button", { name: "Ofertas 3" })).toBeInTheDocument();
+    };
+    expectCounts();
+    fireEvent.click(within(nav).getByRole("button", { name: "Suplementos 2" }));
+    await screen.findByText("Colágeno hidrolizado");
+    expectCounts();
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar productos" }), {
+      target: { value: "zzzz" },
+    });
+    await screen.findByText("No encontramos productos");
+    expectCounts();
+  });
+
   it("filters by search term and offers to clear filters when nothing matches", async () => {
     renderPage("/catalogo/centro");
     await screen.findByText("Almendras nonpareil");

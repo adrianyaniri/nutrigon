@@ -485,6 +485,26 @@ describe('BranchProductsService', () => {
   });
 
   describe('getPublicCatalog & getPublicOffers', () => {
+    it('preserves full category totals even when a filtered page is empty', async () => {
+      repo.publishedCategories = [
+        {
+          id: CATEGORY_ID,
+          name: 'Frutos secos',
+          slug: 'frutos-secos',
+          count: 40,
+          offersCount: 2,
+        },
+      ];
+      const result = await service.getPublicCatalog('centro', {
+        search: 'missing',
+        categorySlug: 'frutos-secos',
+        page: 2,
+        limit: 1,
+      });
+      expect(result.categories).toEqual(repo.publishedCategories);
+      expect(result.items).toEqual([]);
+      expect(result.total).toBe(0);
+    });
     it('throws NotFound for an unknown slug', async () => {
       await expect(service.getPublicCatalog('nope', {})).rejects.toBeInstanceOf(
         NotFoundException,

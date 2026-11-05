@@ -259,7 +259,9 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       if (!data.isOnSale) {
         await tx
           .delete(schema.branchProductWeightOffers)
-          .where(eq(schema.branchProductWeightOffers.branchProductId, entity.id));
+          .where(
+            eq(schema.branchProductWeightOffers.branchProductId, entity.id),
+          );
       }
       return entity;
     });
@@ -284,7 +286,9 @@ export class BranchProductsRepository implements IBranchProductsRepository {
       const entity = result[0]!;
       await tx
         .delete(schema.branchProductWeightOffers)
-        .where(eq(schema.branchProductWeightOffers.branchProductId, branchProductId));
+        .where(
+          eq(schema.branchProductWeightOffers.branchProductId, branchProductId),
+        );
 
       if (weightOffers.length > 0) {
         await tx.insert(schema.branchProductWeightOffers).values(
@@ -412,14 +416,16 @@ export class BranchProductsRepository implements IBranchProductsRepository {
     branchId: string,
   ): Promise<BranchCatalogCategory[]> {
     const rows = await this.db
-      .selectDistinctOn(
-        [schema.categories.orderIndex, schema.categories.name],
-        {
-          id: schema.categories.id,
-          name: schema.categories.name,
-          slug: schema.categories.slug,
-        },
-      )
+      .select({
+        id: schema.categories.id,
+        name: schema.categories.name,
+        slug: schema.categories.slug,
+        count: count(),
+        offersCount:
+          sql<number>`count(*) filter (where ${schema.branchProducts.isOnSale} = true)`.mapWith(
+            Number,
+          ),
+      })
       .from(schema.branchProducts)
       .innerJoin(
         schema.products,
@@ -436,6 +442,12 @@ export class BranchProductsRepository implements IBranchProductsRepository {
           eq(schema.products.isActive, true),
           eq(schema.categories.isActive, true),
         ),
+      )
+      .groupBy(
+        schema.categories.id,
+        schema.categories.name,
+        schema.categories.slug,
+        schema.categories.orderIndex,
       )
       .orderBy(asc(schema.categories.orderIndex), asc(schema.categories.name));
 

@@ -65,6 +65,13 @@ apps/web/src/
 
 ## 3. Responsive Dual-Canvas Strategy & Mobile Optimization
 
+Category badges use full published branch totals, not the currently loaded product page.
+`GET /api/v1/branches/:slug/catalog` includes `count` and `offersCount` on each category,
+aggregated from available branch products with active products and active categories.
+These counts are independent of search, category filters, and pagination. `Todos` and
+`Ofertas` sum the corresponding category totals; the result summary still uses the
+filtered response's `total`. Legacy responses without counts retain local counting.
+
 In adherence to project mobile-first rules:
 1. **Mobile (< 768px)**:
    - Header is simplified into two compact rows:

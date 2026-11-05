@@ -1,4 +1,5 @@
 import { DEFAULT_PRODUCT_IMAGE } from "@/components/atoms/product-image";
+import { isOnSale } from "../lib/filter-products";
 import type {
   BranchCatalogPage,
   CatalogBranch,
@@ -98,7 +99,16 @@ function createMockPage(
   const start = (request.page - 1) * request.limit;
   return {
     branch: catalog.branch,
-    categories: catalog.categories,
+    categories: catalog.categories.map((category) => {
+      const products = catalog.products.filter(
+        (product) => !product.isCombo && product.categoryId === category.id
+      );
+      return {
+        ...category,
+        count: products.length,
+        offersCount: products.filter(isOnSale).length,
+      };
+    }),
     products: matchingProducts.slice(start, start + request.limit),
     total: matchingProducts.length,
     page: request.page,

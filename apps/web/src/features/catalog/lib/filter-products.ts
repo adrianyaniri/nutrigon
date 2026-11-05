@@ -100,6 +100,22 @@ export function buildCategoryOptions(
     );
   }
 
+  const hasBranchCounts =
+    categories.length > 0 &&
+    categories.every(
+      (category) => category.count !== undefined && category.offersCount !== undefined
+    );
+  if (hasBranchCounts) {
+    offersCount = 0;
+    for (const category of categories) {
+      countByCategory.set(category.id, category.count!);
+      offersCount += category.offersCount!;
+    }
+  }
+  const totalCount = hasBranchCounts
+    ? categories.reduce((total, category) => total + category.count!, combosCount)
+    : products.length;
+
   const specialOptions: CategoryOption[] = [];
   if (config?.includeSpecialFilters) {
     if (offersCount > 0) {
@@ -130,7 +146,7 @@ export function buildCategoryOptions(
     }));
 
   return [
-    { value: null, label: "Todos", count: products.length },
+    { value: null, label: "Todos", count: totalCount },
     ...specialOptions,
     ...options,
   ];
